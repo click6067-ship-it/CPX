@@ -139,3 +139,7 @@
 - 판정: 파일럿=진단 smoke로 유효, ②"23% 성능" 증거로는 무효(구성 불일치: 일반 구조 ② vs 사례특이 임상 피드백). 23%=아티팩트+부분 실제갭 혼합.
 - 처방(둘 다): ② **2층 분리(②A 구조/②B 임상)** + 출력 taxonomy. 실험 **재설계**(atomic label·카테고리별 P/R/F1·인간 adjudication·CI). 논문 과대주장 금지.
 - ⚠️ 큰 재설계는 권고로 보류(인간 adjudication=교수 필요). 정직 프레임만 반영. 기록 ~/main/council/2026-06-19_h2-review/.
+
+### ②B 임상 리뷰어 추가 + H2 비교 — 2026-06-19 (용하 ㄱㄱ 승인)
+- `reviewer.py`: **②B review_clinical**(RAG 근거 임상심사, taxonomy: CLINICAL_CONTENT/INTERNAL_LOGIC/SP_FEASIBILITY/…). `llm.py`: 503/429 재시도 백오프. `ingest.py`: 모델 폴백 체인(2.5-flash→lite). `h2_compare.py`: 공정비교(전문가 지적 1회 고정 + draft 캐시).
+- 결과: ②A **19%** → ②A+②B **26%** (+6%p). ②B 방향 맞으나 갭 잔존, 자동 judge 노이즈. → **인간 adjudication 필요(교수)**.

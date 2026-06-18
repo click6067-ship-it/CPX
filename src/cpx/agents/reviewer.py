@@ -44,6 +44,44 @@ class ReviewOut(BaseModel):
     fixes: list[str]      # 우선 수정 제안
 
 
+# ─────────── ②B 임상 리뷰어 (Codex 검수 후 추가) ───────────
+Category = Literal["CLINICAL_CONTENT", "INTERNAL_LOGIC", "SP_FEASIBILITY",
+                   "SAFETY_OVERCLAIM", "EDUCATIONAL_ALIGNMENT"]
+
+
+class Critique(BaseModel):
+    category: Category
+    issue: str           # 임상 지적
+    evidence: str        # 사례 어디서
+    suggested_edit: str  # 수정 제안
+    severity: Literal["must_fix", "optional"]
+
+
+class ClinicalReview(BaseModel):
+    critiques: list[Critique]
+    summary: str
+
+
+def review_clinical(case: CpxCase, model: str | None = None) -> ClinicalReview:
+    """②B: 사례를 *임상적으로* 심사 (구조/형식 제외). 교과서 RAG 근거 위에서."""
+    from cpx import llm, rag
+    ground = rag.grounding(f"{case.chief_complaint} {case.diagnosis} 핵심 병력 위험인자 신체진찰 감별", k=3)
+    gb = f"\n[의학 근거(교과서 RAG) — 이 진단에서 무엇을 물어야/봐야 하는지 참고]\n{ground}\n" if ground else ""
+    prompt = f"""당신은 CPX 사례를 **임상적으로** 심사하는 전문의다. 구조/형식이 아니라 **의학 내용**을 본다.
+점검 항목:
+- 임상 타당성 / 이 진단에서 **꼭 물어야 할 핵심 병력·위험인자 누락**
+- red flag(놓치면 안 되는 증상) 누락
+- 내적 논리: 연령·성별·직업·과거력·활력징후·진단이 임상적으로 일관한가
+- SP 연기 현실성, 인구통계 적합성
+- (해당 시) 안전·과대 표현, 교육 정렬
+{gb}
+각 비평: category(CLINICAL_CONTENT/INTERNAL_LOGIC/SP_FEASIBILITY/SAFETY_OVERCLAIM/EDUCATIONAL_ALIGNMENT) · issue · evidence(사례 근거) · suggested_edit · severity(must_fix/optional). 구조/형식 지적은 하지 말 것(②A 담당).
+
+[사례(JSON)]
+{case.model_dump_json(indent=2)[:9000]}"""
+    return llm.complete_json(prompt, ClinicalReview, model=model)
+
+
 def review(case: CpxCase, model: str | None = None) -> ReviewOut:
     from cpx import llm
     rubric = "\n".join(f"{i+1}. {c}" for i, c in enumerate(RUBRIC))

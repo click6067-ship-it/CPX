@@ -20,3 +20,8 @@
   - **실험 재설계:** 전문가 피드백→atomic label 분해→카테고리화→non-case-quality(SP로지스틱스) 분리→**인간 adjudication**(자동judge=pre-screen만)→per-category recall/precision/F1+valid-extra+bootstrap CI+인간-인간 일치도 먼저.
 - **논문 주장 경계:** "AI가 전문가 피드백 재현" ❌ / "교수 검토 대체" ❌. 가능(재설계 후): "개발단계 소규모 평가서 ②가 일부 구조결함 식별, 사례특이 임상 정교화 recall은 제한적; 카테고리별 상이 → 2층 리뷰어 + 인간 adjudication 지지."
 - **다음 1수:** 22개 전문가 지적을 adjudicated taxonomy로 relabel → 카테고리별 structural-only ② vs clinical-enhanced ② 재실행.
+
+## ②B 추가 후 비교 (2026-06-19, 공정 비교 — 전문가 지적 1회 고정)
+- structural-only(②A): **9/47 = 19%** · structural+clinical(②A+②B): **12/47 = 26%** (②B 효과 **+6%p**).
+- ②B(RAG 근거 임상 리뷰어)가 임상 지적 일부 추가(특히 폐농양 4→9). 단 recall 여전히 낮음(26%) + 자동 judge 노이즈(객혈_2024 3→1).
+- **결론: ②B는 옳은 방향(+6%p)이나 갭을 메우진 못함.** → 본검증 = **인간 adjudication(교수)** + 카테고리별 + ②B 프롬프트 반복개선 + (필요시) 상위모델. 과대주장 금지.
