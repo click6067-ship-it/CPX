@@ -1,0 +1,18 @@
+{
+  "case_id": "headache_park",
+  "title": "두통이 있는 박지훈씨",
+  "chief_complaint": "두통",
+  "diagnosis": "긴장성 두통",
+  "demographics": {"sex": "남", "age": 34, "note": "hand-authored gold (smoke)"},
+  "situation_instruction": "34세 남자 박지훈씨가 두통으로 외래에 왔다.",
+  "vitals": {"bp": "126/82", "hr": 78, "rr": 16, "bt": 36.6},
+  "patient": {"sex": "남", "age": 34, "name": "박지훈", "job": "회사원"},
+  "checklist": [
+    {"id": "hx_onset", "domain": "병력청취", "scoring_rule": "두통 시작 시점을 물었다", "keywords": ["언제부터", "시작", "며칠"], "points": 1},
+    {"id": "hx_location", "domain": "병력청취", "scoring_rule": "두통의 위치를 물었다", "keywords": ["어디", "부위", "어느 쪽", "위치"], "points": 1},
+    {"id": "hx_character", "domain": "병력청취", "scoring_rule": "두통 양상을 물었다", "keywords": ["어떻게 아", "욱신", "조이", "짓누", "양상"], "points": 1},
+    {"id": "hx_associated", "domain": "병력청취", "scoring_rule": "동반증상(구역·시야 등)을 물었다", "keywords": ["구역", "구토", "시야", "빛", "동반"], "points": 1},
+    {"id": "edu_plan", "domain": "환자교육", "scoring_rule": "검사·관리 계획을 설명했다", "keywords": ["검사", "진통", "휴식", "스트레스", "계획"], "points": 1},
+    {"id": "ppi_empathy", "domain": "환자의사관계", "scoring_rule": "환자 불편에 공감했다", "keywords": ["힘드셨", "고생", "불편", "걱정"], "points": 1}
+  ]
+}

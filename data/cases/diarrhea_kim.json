@@ -1,0 +1,32 @@
+{
+  "case_id": "diarrhea_kim_001",
+  "title": "설사를 하는 김선미씨",
+  "chief_complaint": "설사",
+  "diagnosis": "급성 감염성 장염 (감별: 항생제 연관 설사)",
+  "demographics": {"sex": "여", "age": 46, "note": "hand-authored gold sample (엔지니어링 게이트용, 교수 확정 아님)"},
+  "situation_instruction": "46세 여자 김선미씨가 외래로 왔다.",
+  "vitals": {"bp": "120/80", "hr": 86, "rr": 18, "bt": 37.4},
+  "examinee_task": "증상 관련 병력청취, 적절한 신체진찰, 향후 진단·치료계획을 환자와 논의하시오.",
+  "patient": {
+    "sex": "여", "age": 46, "name": "김선미", "job": "택배회사 사무직",
+    "daily_impact": "설사로 밤에 깨고 직장생활이 불편하다.",
+    "expectation": "약이라도 받아 빨리 좋아지고 싶다."
+  },
+  "present_illness": [
+    {"time_point": "7일 전", "detail": "귓불 염증으로 소염진통제+항생제 3일간 복용"},
+    {"time_point": "5일 전", "detail": "복통과 설사 시작. 하루 5~10회, 점액 섞임"},
+    {"time_point": "2일 전", "detail": "메스꺼움, 피로, 짜증"}
+  ],
+  "past_hx": "특이 질환 없음, 알레르기·수술 없음",
+  "social_hx": "흡연 안함, 음주 월 1회, 커피 하루 1~2잔",
+  "checklist": [
+    {"id": "hx_onset", "domain": "병력청취", "question_open": "설사가 언제부터 시작됐나요?", "patient_answer": "5일 정도 됐어요.", "scoring_rule": "설사 발생 시점을 물었다", "keywords": ["언제부터", "시작", "며칠", "얼마나 됐"], "points": 1},
+    {"id": "hx_frequency", "domain": "병력청취", "question_open": "하루에 몇 번 정도 보세요?", "patient_answer": "하루 5번 이상, 많으면 10번이요.", "scoring_rule": "설사 횟수 또는 양을 물었다", "keywords": ["몇 번", "횟수", "하루에", "얼마나 자주", "양"], "points": 1},
+    {"id": "hx_form", "domain": "병력청취", "question_open": "변 형태가 어떤가요?", "patient_answer": "물 같진 않고 점액이 섞여요.", "scoring_rule": "변의 형태/성상을 물었다", "keywords": ["형태", "모양", "물설사", "점액", "어떻게 생"], "points": 1},
+    {"id": "hx_blood", "domain": "병력청취", "question_closed": "변에 피가 섞여 나오나요?", "patient_answer": "피는 없어요.", "scoring_rule": "혈변 동반 여부를 물었다", "keywords": ["피", "혈변", "붉은", "출혈"], "points": 1},
+    {"id": "hx_med", "domain": "병력청취", "question_open": "최근에 드신 약이 있나요?", "patient_answer": "일주일 전에 항생제를 3일 먹었어요.", "scoring_rule": "최근 약물(특히 항생제) 복용력을 물었다", "keywords": ["약", "복용", "항생제", "드신", "먹은"], "points": 1},
+    {"id": "hx_fever", "domain": "병력청취", "question_closed": "열이 나거나 오한이 있나요?", "patient_answer": "열은 잘 모르겠어요.", "scoring_rule": "발열/오한 동반 여부를 물었다", "keywords": ["열", "발열", "오한", "미열"], "points": 1},
+    {"id": "edu_plan", "domain": "환자교육", "question_open": "향후 검사·치료 계획을 설명한다", "patient_answer": "", "scoring_rule": "초기 검사계획(대변검사 등) 또는 수분보충을 설명했다", "keywords": ["검사", "대변검사", "수분", "탈수", "계획"], "points": 1},
+    {"id": "ppi_empathy", "domain": "환자의사관계", "question_open": "환자 불편에 공감을 표현한다", "patient_answer": "", "scoring_rule": "환자의 불편/고생에 공감을 표현했다", "keywords": ["힘드셨", "불편하셨", "고생", "걱정되"], "points": 1}
+  ]
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "case": "chestpain_lee", "name": "동의어(synonym) — 다 도달해야",
+    "transcript": "의사: 가슴 아픈 게 갑자기 시작됐나요?\n환자: 네 아침에 갑자기요.\n의사: 어떤 식으로 아파요, 짓누르는 느낌인가요?\n환자: 쥐어짜는 느낌이요.\n의사: 그 느낌이 다른 데로 퍼지나요?\n환자: 왼쪽 어깨로요.\n의사: 숨쉴 때 답답하진 않으세요?\n환자: 좀 답답해요.\n의사: 평소 담배나 혈압약 드시는 거 있어요?\n환자: 담배 피웁니다.\n의사: 갑자기 이러시니 많이 무서우셨겠어요.\n환자: 네 너무 놀랐어요.",
+    "gold": {"hx_onset": true, "hx_character": true, "hx_radiation": true, "hx_dyspnea": true, "hx_risk": true, "ppi_empathy": true}
+  },
+  {
+    "case": "chestpain_lee", "name": "헛공감('아 네')+red-flag 누락 — 과대평가 함정",
+    "transcript": "의사: 언제부터 아프셨어요?\n환자: 한 시간 전이요.\n의사: 어떻게 아파요?\n환자: 쥐어짜듯이요.\n의사: 아 네.\n환자: ...\n의사: 숨은 괜찮으세요?\n환자: 좀 차요.",
+    "gold": {"hx_onset": true, "hx_character": true, "hx_radiation": false, "hx_dyspnea": true, "hx_risk": false, "ppi_empathy": false}
+  },
+  {
+    "case": "chestpain_lee", "name": "유도성+전문용어 — 내용은 도달(품질은 debrief 몫)",
+    "transcript": "의사: 가슴 통증 언제 시작했어요?\n환자: 아침에요.\n의사: 통증이 왼팔로 방사되죠?\n환자: 네 그런 것 같아요.\n의사: 흡연하세요?\n환자: 네.",
+    "gold": {"hx_onset": true, "hx_character": false, "hx_radiation": true, "hx_dyspnea": false, "hx_risk": true, "ppi_empathy": false}
+  }
+]

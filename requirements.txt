@@ -1,0 +1,9 @@
+# CPX-AI — 핵심 의존성 (모듈 빌드하며 추가)
+pydantic>=2.0           # 데이터 계약 + 구조화 출력 (models.py)
+# --- 다음 단계에서 추가 예정 ---
+# google-genai          # LLM 어댑터 (llm.py)
+# rank-bm25             # 하이브리드 RAG 중 lexical (rag.py)
+# scikit-learn          # kappa (harness/metrics.py)
+# pingouin              # ICC (harness/metrics.py)
+# langgraph langsmith   # 오케스트레이션·추적 (후반)
+# streamlit             # 데모 UI (후반)

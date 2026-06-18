@@ -1,0 +1,17 @@
+[
+  {
+    "case": "diarrhea_kim",
+    "transcript": "diarrhea_kim_demo.txt",
+    "gold": {"hx_onset": true, "hx_frequency": true, "hx_form": true, "hx_blood": true, "hx_med": true, "hx_fever": false, "edu_plan": true, "ppi_empathy": true}
+  },
+  {
+    "case": "headache_park",
+    "transcript": "headache_park_demo.txt",
+    "gold": {"hx_onset": true, "hx_location": true, "hx_character": true, "hx_associated": true, "edu_plan": false, "ppi_empathy": true}
+  },
+  {
+    "case": "chestpain_lee",
+    "transcript": "chestpain_lee_demo.txt",
+    "gold": {"hx_onset": true, "hx_character": true, "hx_radiation": true, "hx_dyspnea": true, "hx_risk": false, "ppi_empathy": true}
+  }
+]

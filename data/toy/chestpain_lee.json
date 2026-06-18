@@ -1,0 +1,18 @@
+{
+  "case_id": "chestpain_lee",
+  "title": "가슴 통증이 있는 이상철씨",
+  "chief_complaint": "흉통",
+  "diagnosis": "급성 심근경색 (감별: 협심증)",
+  "demographics": {"sex": "남", "age": 58, "note": "hand-authored gold (smoke). red-flag 사례"},
+  "situation_instruction": "58세 남자 이상철씨가 가슴 통증으로 응급실에 왔다.",
+  "vitals": {"bp": "148/92", "hr": 98, "rr": 20, "bt": 36.8},
+  "patient": {"sex": "남", "age": 58, "name": "이상철", "job": "자영업"},
+  "checklist": [
+    {"id": "hx_onset", "domain": "병력청취", "scoring_rule": "흉통 시작 시점·발생상황을 물었다", "keywords": ["언제부터", "시작", "갑자기", "언제"], "points": 1},
+    {"id": "hx_character", "domain": "병력청취", "scoring_rule": "통증 양상을 물었다", "keywords": ["조이", "누르", "쥐어", "답답", "양상", "어떻게 아"], "points": 1},
+    {"id": "hx_radiation", "domain": "병력청취", "scoring_rule": "방사통(팔·턱 등)을 물었다", "keywords": ["퍼지", "방사", "팔", "어깨", "턱"], "points": 1},
+    {"id": "hx_dyspnea", "domain": "병력청취", "scoring_rule": "호흡곤란 동반 여부를 물었다", "keywords": ["숨", "호흡곤란", "숨차"], "points": 1},
+    {"id": "hx_risk", "domain": "병력청취", "scoring_rule": "위험인자(흡연·고혈압·가족력 등)를 물었다", "keywords": ["흡연", "담배", "고혈압", "당뇨", "가족력"], "points": 1},
+    {"id": "ppi_empathy", "domain": "환자의사관계", "scoring_rule": "환자 불안에 공감했다", "keywords": ["힘드", "걱정", "불안", "놀라"], "points": 1}
+  ]
+}

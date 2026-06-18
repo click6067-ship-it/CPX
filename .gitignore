@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+# 원본 대용량/민감 자료는 git에 올리지 않음 (개인정보·저작권 — architecture.md §7, data-governance.md)
+data/raw/
+# 실제 부산대 사례 원본 — 절대 커밋 금지
+data/raw_private/
+# 비식별 작업본 + 분할(train_prompt/dev_tune/locked_eval) — 비공개
+data/working/
+*.zip
+*.hwp
+*.pdf
