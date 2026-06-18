@@ -16,7 +16,10 @@ from cpx import llm
 
 
 def _draft(symptom: str, diagnosis: str, model: str | None = None) -> CpxCase:
-    prompt = f"""한국 의과대학 CPX 사례를 생성하라. 주증상="{symptom}", 진단="{diagnosis}".
+    from cpx import rag
+    ground = rag.grounding(f"{symptom} {diagnosis} 병력청취 신체진찰 진단", k=3)
+    ground_block = f"\n[의학 근거 — 교과서 발췌(RAG), 임상 사실 일관성에 참고]\n{ground}\n" if ground else ""
+    prompt = f"""한국 의과대학 CPX 사례를 생성하라. 주증상="{symptom}", 진단="{diagnosis}".{ground_block}
 [붙임2] 양식(CpxCase 스키마)으로 채운다:
 - demographics: 진단에 **현실적으로** 맞는 나이·성별 (흔한 '65세 남성 흡연자' 편향 피하고 진단조건부로 다양하게)
 - patient: 주증상 서술 + 생각/걱정/기대/배경을 구체적으로, **환자 구어체**

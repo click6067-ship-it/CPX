@@ -46,3 +46,15 @@ def complete_json(prompt: str, schema, *, model: str | None = None, temperature:
         },
     )
     return resp.parsed
+
+
+EMBED_MODEL = os.environ.get("EMBED_MODEL", "gemini-embedding-001")  # MTEB 상위, 다국어
+
+
+def embed(texts: list[str], *, model: str | None = None, batch: int = 100) -> list[list[float]]:
+    """텍스트 임베딩 (배치). 다국어 — 한국어 질의↔영어 교과서 의미매칭."""
+    out: list[list[float]] = []
+    for i in range(0, len(texts), batch):
+        r = _client().models.embed_content(model=model or EMBED_MODEL, contents=texts[i:i + batch])
+        out.extend(e.values for e in r.embeddings)
+    return out

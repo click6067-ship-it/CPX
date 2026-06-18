@@ -7,3 +7,4 @@ pydantic>=2.0           # 데이터 계약 + 구조화 출력 (models.py)
 # pingouin              # ICC (harness/metrics.py)
 # langgraph langsmith   # 오케스트레이션·추적 (후반)
 # streamlit             # 데모 UI (후반)
+numpy

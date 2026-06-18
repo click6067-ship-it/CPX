@@ -100,3 +100,10 @@
 - **① 생성** (agents/generator.py): 멀티에이전트 생성→②비평→수정. 연구반영(checklist-as-seed·진단조건부 인구통계·self-check).
 - **전체 파이프라인** (demo_pipeline.py): 발열/급성신우신염 → ①생성(**28세 여성**=진단조건부, '65세 남성 흡연자' 편향 회피 ✅; draft→Major→수정) → ②심사 **Accept 13/13**(루프가 Major→Accept 개선) → ③가상환자 → ④채점. **①→②→③→④ 작동.**
 - ⚠️ toy/가설. 실제 검증은 부산대 사례+전문가 라벨 후.
+
+### 나) RAG 근거층 — 2026-06-18
+- `llm.embed()`(gemini-embedding-001, 다국어 3072d) + `src/cpx/rag.py`(청크→임베딩→코사인 top-k).
+- `scripts/build_rag_index.py`: Harrison 내과 1200청크 인덱스 → `data/working/rag_index/`(gitignore, 저작권).
+- `demo_rag.py`: **한국어 질의→영어 교과서 의미검색 작동**(신우신염→cystitis/uropathogen, 흉통→cardiac risk, 설사→diarrhea workup, 코사인 0.66~0.72).
+- ① 생성에 **근거 주입**(generator._draft): parametric 아닌 교과서 grounding 위에서 생성. (폐렴 생성 시 PCP 근거 940자 주입 확인)
+- ⚠️ 프로토타입: 코퍼스 일부(1책 샘플). 하이브리드(BM25)·전체코퍼스·리랭커·한국 자료 주코퍼스 = 후속.
