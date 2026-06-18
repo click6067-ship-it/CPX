@@ -107,3 +107,11 @@
 - `demo_rag.py`: **한국어 질의→영어 교과서 의미검색 작동**(신우신염→cystitis/uropathogen, 흉통→cardiac risk, 설사→diarrhea workup, 코사인 0.66~0.72).
 - ① 생성에 **근거 주입**(generator._draft): parametric 아닌 교과서 grounding 위에서 생성. (폐렴 생성 시 PCP 근거 940자 주입 확인)
 - ⚠️ 프로토타입: 코퍼스 일부(1책 샘플). 하이브리드(BM25)·전체코퍼스·리랭커·한국 자료 주코퍼스 = 후속.
+
+### 다) LangGraph 오케스트레이션 — 2026-06-18
+- `src/cpx/graph.py`: StateGraph로 **①생성→②심사→(조건부)수정→재심사 루프**. demo_graph.py: 생성→Minor→수정→Minor→수정→**Accept** 자동 루프 작동. 함수호출 대비 상태·분기·루프·(추후 LangSmith 추적·중단재개).
+- ⚠️ ③④(학생 상호작용 런타임)는 이 개발그래프와 별도.
+
+### 라) 검증 인프라 — 2026-06-18
+- `docs/ppi-rubric.md`: PPI 미시행동 0/1/2 루브릭(이분법 불가 영역, 진정성=인간 최종). debrief 플래그 연결.
+- `data/labeling_workbook_template.csv`: H4-real 임상교원 2인 블라인드 라벨→불일치 합의→AI 비교 (논문 methods 산출물).

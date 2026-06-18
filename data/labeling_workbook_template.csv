@@ -1,0 +1,6 @@
+case_id,item_id,domain,transcript_id,human_A,human_B,adjudicated,disagreement_reason,final_rationale,ai_pred
+# H4-real 라벨링 워크북 (Codex 권고). 임상교원 2인 블라인드 라벨 → 불일치 합의 → AI와 비교.
+# human_A/human_B/adjudicated/ai_pred: 1=도달 0=누락. 불일치 시 disagreement_reason + 합의 final_rationale.
+# 이 파일이 곧 H2/H4 검증 산출물 + 논문 methods appendix. (data/working/ 비공개로 작업)
+diarrhea_kim,hx_onset,병력청취,t001,,,,,,
+diarrhea_kim,hx_blood,병력청취,t001,,,,,,
