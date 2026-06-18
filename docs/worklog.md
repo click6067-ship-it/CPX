@@ -94,3 +94,9 @@
 - **#3 적대 transcript 팩** (`data/adversarial.json` + `adversarial_smoke.py`): 동의어·헛공감·유도성+전문용어 3종. **18/18 일치, FP/FN 0** — 채점 강건(헛공감 과대평가 안 함, 유도성이어도 내용 인정). 오류 surfacing(FP=헛점/FN=놓침) 틀 마련.
 - **#4 VP probe** (`vp_probe.py`): 과공개("구토?"에 '속불편' 흘림 ⚠️ 포착=FSM 필요 근거) + 일관성(3회 동일 ✅).
 - **#5 재현성 패키지**: `README.md`(실행법·한계 명시) · `data/toy/`(가상 사례 공개 복사) · `data/DATASET_VERSION.md`(템플릿) · `docs/validation-registry.md`(주장↔재현좌표 템플릿).
+
+### 파이프라인 완성 — ②심사 + ①생성 + 전체 루프 — 2026-06-18
+- **② 심사** (agents/reviewer.py): 실기문항저자점검표 13항목 루브릭 → 통과/지적 + verdict(Accept/Minor/Major/Reject) + 수정안. 데모(설사 손사례): 10/13, Major, 정확한 지적(생각/걱정 빔·항목 8개뿐·교육 약함).
+- **① 생성** (agents/generator.py): 멀티에이전트 생성→②비평→수정. 연구반영(checklist-as-seed·진단조건부 인구통계·self-check).
+- **전체 파이프라인** (demo_pipeline.py): 발열/급성신우신염 → ①생성(**28세 여성**=진단조건부, '65세 남성 흡연자' 편향 회피 ✅; draft→Major→수정) → ②심사 **Accept 13/13**(루프가 Major→Accept 개선) → ③가상환자 → ④채점. **①→②→③→④ 작동.**
+- ⚠️ toy/가설. 실제 검증은 부산대 사례+전문가 라벨 후.
