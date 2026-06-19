@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from cpx.models import CpxCase
 from cpx.agents import reviewer
-from cpx import llm
+from cpx import llm, governance
 
 
 def _draft(symptom: str, diagnosis: str, model: str | None = None) -> CpxCase:
@@ -68,4 +68,5 @@ def generate(symptom: str, diagnosis: str, model: str | None = None, rounds: int
         case = _revise(case, rv, must_fix, model)
         log.append(f"✏️ 수정 R{i+1}")
     log.append("종료: " + ("✅ accepted (②A Accept/Minor · ②B must_fix=0)" if accepted else "⚠️ budget_exhausted — 수정예산 소진·미충족본 반환"))
+    log.append("provenance: " + str(governance.provenance("case", f"gen:{symptom}/{diagnosis}", model)))   # 재현·감사 스탬프
     return case.model_copy(update={"case_id": f"gen_{symptom}_{diagnosis}"[:40]}), log

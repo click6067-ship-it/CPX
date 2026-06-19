@@ -34,3 +34,19 @@
 ## 6. 재현성 패키지 (오픈소스 — 사례 비공개 유지하며)
 - 공개: **toy CPX 데이터셋**(가상 3~5건+transcript+라벨) · 프롬프트 manifest · 모델/provider/버전 로그 · 의존성 lock · eval 스크립트 · 실행법 · 기대출력 · data card · 한계.
 - 비공개: 부산대 원본·비식별 작업본·locked_eval. (CONSORT-AI: 개입·입출력·인간-AI 상호작용·오류사례 보고)
+
+## 7. Provider 데이터 사용 정책 (외부 API — Codex '놓친 필수' 반영)
+> 외부 API엔 **비식별 데이터만**, **재학습(학습 사용) 금지**. 약관·단가는 변동 → 청구·배포 전 각 콘솔 재확인. (아래는 2026-06 기준 — 정확한 약관은 provider 문서 확인 필요)
+
+| Provider | 사용 API | 학습 미사용(no-training) | content 권리 | 비고 |
+|---|---|---|---|---|
+| OpenAI | gpt-5.5 (①②) | API 데이터 기본 학습 미사용(약관) | 입력 보유·출력 소유 | 남용 모니터링용 보존 가능 → **민감정보 금지** · gpt-5.5 ≈ $5/$30 per 1M |
+| Google | gemini-2.5-flash·embedding-001 | **유료 tier=미사용 / 무료(free quota)=학습 사용** → **반드시 유료(빌링 활성) tier** | 출력=Google ownership claim 없음; **입력 권리는 사용자 책임** | flash $0.30/$2.50·embedding $0.15/1M |
+| Anthropic | (결제 보류·미사용) | API 기본 학습 미사용(복귀 시 재확인) | 입력·출력 권리 보유 | 복귀 시 ①② 라우팅 |
+
+- 공통: 비식별만 입력 · 사례·교과서 원문 외부 전송 금지 · 키 `.env`(비공개) · 코드/로그 하드코딩 금지.
+- ⚠️ **feedback/bug report·콘솔 제출은 학습에 쓰일 수 있음** → 제출 금지(자동 학습 미사용은 API 호출에 한정).
+- ⚠️ **Google free quota = 학습 사용** → `GOOGLE_API_KEY`가 **빌링 활성(유료) 프로젝트**인지 확인(미확인 시 학교자료 유출 위험). `llm.py`는 tier를 검증하지 않으므로 운영자가 보장.
+- ⚠️ **의료**: 산출물·UI·프롬프트에 "CPX 교육/연구용 · 임상 사용 금지" 명시(provider 약관도 임상 영역 사용 제한).
+- 코드 유틸: `src/cpx/governance.py` — near-copy 탐지(베낌 방지)·provenance 스탬프·버전 freeze(`VERSION`/`PROMPT_VERSION`)·비용 추정(`PRICING`). 단가/약관 미확정은 `None`·"확인 필요"로 표기(추측 청구 금지).
+- ⚠️ 위 표는 **추정**이며 확정 아님 — 실제 청구/공개 전 각 provider 약관·콘솔에서 검증.
