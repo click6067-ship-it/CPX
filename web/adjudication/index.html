@@ -112,6 +112,15 @@ const FV=[["valid_major","타당·중요"],["valid_minor","타당·경미"],["re
 let PW="",judge="",CASES=[],ci=0,V={},DEMO=false;
 function K(){return "cpxval_"+judge+"_"+MODE}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function fmtDraft(s){ // 한 줄로 뭉친 추출본을 섹션/항목별 줄바꿈·들여쓰기로 구조화
+  if(!s) return '';
+  s=s.replace(/\s+/g,' ').trim();
+  s=s.replace(/\s*(상\s?황\s?지\s?침|수험생\s?지침|표준화환자|활력징후|현\s?병력|과거력|약물력|복용약|가족력|사회력|산부인과력|월경력|여성력|신체\s?진찰|환자\s?교육|채점표|채점\s?기준|병력\s?청취|환자[·\-\s]?의사\s?관계|감별\s?진단|진단명|공개\s?항목)\s*/g,'\n\n$1 ');
+  s=s.replace(/\s*([○●■□☐☑▣◆◇▶·•※])\s*/g,'\n   $1 ');
+  s=s.replace(/\s+(\d{1,2}[).]\s)/g,'\n   $1');
+  s=s.replace(/\s*([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])\s*/g,'\n   $1 ');
+  return s.replace(/\n{3,}/g,'\n\n').trim();
+}
 function gerr(m){document.getElementById('gerr').textContent=m}
 function bullets(arr){return arr.map(t=>'• '+t).join('\n')}
 function aiText(c){return bullets(c.ai_findings.map(f=>f.text))}
@@ -152,7 +161,7 @@ function rubric(side,locked){const s=st(CASES[ci]);const b=side==='A'?s.bA:s.bB;
     [1,2,3,4,5].map(n=>`<button class="${b[k]==n?'sel':''}" ${locked?'disabled':''} onclick="setR('${side}','${k}',${n})">${n}</button>`).join('')+`<span class=ends>높음</span></div></div>`).join('')}
 function renderCase(){const c=CASES[ci],s=st(c);
   let h=`<div class=card><div><span class=tag>사례 ${ci+1}/${CASES.length}</span><span class=tag>${esc(c.symptom)}</span>${MODE!=='full'?'<span class=tag>'+MODE+'</span>':''}</div>`;
-  h+=`<div class=lab>📄 사례 초안 전문</div><div class="box case">${esc(c.draft)}</div>`;
+  h+=`<div class=lab>📄 사례 초안 전문</div><div class="box case">${esc(fmtDraft(c.draft))}</div>`;
   if(MODE!=='recall'){
     h+=`<div class=phase><h3>1단계 · 블라인드 비교</h3><div class=sub>두 검토 의견 중 하나는 실제 교수 피드백, 하나는 AI 리뷰입니다(어느 쪽인지 비공개·사례마다 균형 배치). <b>⚠️ 문체·길이로 AI를 추측하지 마시고 내용의 질만</b> 1~5로 평가해 주세요.</div>`;
     const lock=s.ph>1;
@@ -175,7 +184,7 @@ function renderCase(){const c=CASES[ci],s=st(c);
     if(MODE==='full')h+=`<div class=phase><div class=reveal>🔓 공개: <b>검토 의견 ${aiSide}</b>가 AI였습니다. (의견 ${aiSide==='A'?'B':'A'} = 실제 교수 피드백)</div>`;
     else h+=`<div class=phase>`;
     h+=`<h3>2단계 · 교수 지적을 AI가 잡았나</h3>`;
-    h+=`<div class=lab>👩‍🏫 실제 교수 피드백 전문</div><div class="box exp">${esc(c.expert_review)}</div>`;
+    h+=`<div class=lab>👩‍🏫 실제 교수 피드백 전문</div><div class="box exp">${esc(fmtDraft(c.expert_review))}</div>`;
     h+=`<div class=lab>🤖 AI 리뷰 전체</div><div class="box ai">${esc(aiText(c))}</div>`;
     h+=`<div class=sub>아래 각 '교수 지적'을, 위 AI 리뷰가 잡아냈는지 표시하세요.</div>`;
     c.expert_points.forEach((p,n)=>{h+=`<div class=qrow><div class=qt>${n+1}. ${esc(p.text)} <span class=tag>${esc(p.category)}</span></div><div class=opts>`+
