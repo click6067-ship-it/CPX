@@ -57,6 +57,8 @@ def consensus(vs):
     if not c:
         return None
     t = c.most_common()
+    if len(t) > 1 and t[0][1] == t[1][1]:    # 동률 = ambiguous → 제외(임의 확정 금지)
+        return None
     return t[0][0]
 
 
@@ -236,6 +238,10 @@ def main():
             if a.mode == "hybrid" and cc.get("pick") != "eval": continue
             for fid, v in (cc.get("findings") or {}).items():
                 fv[(cc["case_id"], fid)].append(v)
+    exp_f = sum(len(m.get("finding_ids", [])) for m in meta) * len(judges)
+    got_f = sum(len(v) for v in fv.values())
+    if a.mode in ("full", "recall", "hybrid") and exp_f and got_f < exp_f:
+        print(f"  ⚠️ finding 결측: {got_f}/{exp_f} 판정 (미완 {exp_f-got_f}) — precision/safety 과대평가 주의")
     fc = [consensus(v) for v in fv.values()]
     tot = [x for x in fc if x]
     if tot:
@@ -245,10 +251,17 @@ def main():
         print(f"    타당(중복포함) {valid}/{len(tot)} = {valid/len(tot):.0%} · 중요 {cnt['valid_major']} · 경미 {cnt['valid_minor']} · 중복 {cnt['redundant']} · 틀림 {cnt['wrong']}")
         h = cnt["harmful"]
         print(f"    🚨 안전 게이트 — harmful(위험/유해) {h}건 ({h/len(tot):.0%})  " + ("✅ 0건" if h == 0 else "❌ >0 → 본검증 차단/원인분석 필요"))
-        if allrec:                          # 탐색적 조화요약 (recall=교수지적 재현·precision_strict=AI지적 valid; 서로 다른 모집단 → 표준 F1 아님)
-            R = mean(allrec); Pst = (cnt["valid_major"] + cnt["valid_minor"]) / len(tot)
-            hs = 2 * Pst * R / (Pst + R) if (Pst + R) > 0 else 0.0
-            print(f"    📊 탐색적 조화요약 = {hs:.0%}  (recall {R:.0%} · precision_strict {Pst:.0%}; 서로 다른 모집단=표준 F1 아님, exploratory)")
+        if cons:                            # C1 근사 pseudo-F1 — 완전 매칭 adjudication 아님 (codebook=docs/f1-codebook.md)
+            TP = sum(1 for l in cons.values() if l == "caught")
+            FN = sum(1 for l in cons.values() if l in ("missed", "partial"))   # partial=FN(보수적)
+            FP = cnt["wrong"] + cnt["harmful"]                                  # AI가 틀린/유해 지적
+            extra = cnt["valid_major"] + cnt["valid_minor"]; red = cnt["redundant"]
+            prec = TP / (TP + FP) if (TP + FP) else float("nan")
+            rec = TP / (TP + FN) if (TP + FN) else float("nan")
+            f1 = 2 * TP / (2 * TP + FP + FN) if (2 * TP + FP + FN) else float("nan")
+            print(f"    📊 근사 pseudo-F1(매칭 미adjudication): TP={TP}(교수caught)·FN={FN}(교수missed/partial)·FP={FP}(AI wrong/harmful)")
+            print(f"       precision≈{prec:.0%}·recall≈{rec:.0%}·F1≈{f1:.0%}  ⚠️ TP=교수point뷰·FP=finding뷰·1:1 가정 → 완전 F1은 본검증(adjudication)")
+            print(f"       AI 추가기여(valid_extra) {extra}건·redundant {red}건 [별도 축, F1 제외 — reproduction precision 아님]")
     print("\n⚠️ 파일럿·dev_tune·다수결. 표본<30클러스터 → CI·카테고리·precision exploratory. 비열등성 δ·사전등록·코호트분리·BARS훈련은 본검증.")
 
 
