@@ -118,7 +118,7 @@ small{color:#7a8aa0}.done{text-align:center;padding:30px}
   <button class=ib style="margin-top:8px" onclick=download()>결과 파일 내려받기(백업)</button>
 </div>
 </div><script>
-let MODE=(new URLSearchParams(location.search).get('mode')||'full'); if(!['full','blind','recall','browse'].includes(MODE))MODE='full';  // browse=자유열람
+let MODE=(new URLSearchParams(location.search).get('mode')||'full'); if(!['full','blind','recall','browse','hybrid'].includes(MODE))MODE='full';  // browse=자유열람, hybrid=사례별 평가/열람 선택
 const DIMS=[["완전성","놓친 결함 없이 다 짚었나","1 대부분 놓침 · 3 절반 · 5 빠짐없이"],
   ["정확성","틀리거나 부적절한 지적은 없나","1 틀린 게 많음 · 3 일부 · 5 모두 타당"],
   ["유용성","구체적·실행가능·교육적인가","1 막연·무용 · 3 보통 · 5 바로 적용가능"],
@@ -164,7 +164,7 @@ function fmtReview(s){ // 교수 피드백(○·-·N번 구조)을 항목별 불
   return abbr(s.replace(/\n[ ]*[•·\-]?[ ]*(?=\n|$)/g,'').replace(/\n{2,}/g,'\n').trim());
 }
 function revText(c,side){return c.blind[side]==='expert'?fmtReview(c.expert_review):aiTerse(c)}
-function st(c){return V[c.case_id]||(V[c.case_id]={bA:{},bB:{},guess:'',conf:'',read:false,pts:{},fnd:{},memo:'',rnote:{A:'',B:''},ph:(MODE==='recall'?2:1)})}
+function st(c){return V[c.case_id]||(V[c.case_id]={bA:{},bB:{},guess:'',conf:'',read:false,pts:{},fnd:{},memo:'',rnote:{A:'',B:''},pick:'',ph:(MODE==='recall'?2:1)})}
 async function enter(){
   PW=document.getElementById('pw').value.trim();judge=document.getElementById('jname').value.trim().replace(/\s+/g,' ');
   if(!PW||!judge){gerr('암호와 성함을 모두 입력하세요');return}
@@ -192,6 +192,7 @@ function ptsDone(s,c){return c.expert_points.every(p=>s.pts[p.id])}
 function fndDone(s,c){return c.ai_findings.every(f=>s.fnd[f.id])}
 function caseDone(c){const s=V[c.case_id];if(!s)return false;
   if(MODE==='browse')return false;
+  if(MODE==='hybrid'){if(!s.pick)return false;return s.pick==='browse'?true:p1Done(s)}
   if(MODE==='blind')return p1Done(s);
   if(MODE==='recall')return ptsDone(s,c)&&fndDone(s,c);
   return s.ph>=3&&p1Done(s)&&ptsDone(s,c)&&fndDone(s,c)}
@@ -199,20 +200,27 @@ function rubric(side,locked){const s=st(CASES[ci]);const b=side==='A'?s.bA:s.bB;
   return DIMS.map(([k,desc,an])=>`<div class=dim><div class=dl>${k} <small style="font-weight:400">(${desc})</small></div><div class=an>${an}</div><div class=lk><span class=ends>낮음</span>`+
     [1,2,3,4,5].map(n=>`<button class="${b[k]==n?'sel':''}" ${locked?'disabled':''} onclick="setR('${side}','${k}',${n})">${n}</button>`).join('')+`<span class=ends>높음</span></div></div>`).join('')}
 function renderCase(){const c=CASES[ci],s=st(c);
+  const EM = MODE==='hybrid' ? (s.pick==='eval'?'blind' : s.pick==='browse'?'browse' : 'pick') : MODE;  // hybrid: 사례별 평가(blind 1단계)/열람(browse)/미선택(pick)
   const dd=buildDraft(c.draft,c.case_id,HL);
   const _de=esc(fmtDraft(c.draft)),hlSet=new Set(c.ai_findings.filter(f=>f.quote&&testHL(_de,f.quote)).map(f=>f.id));
   let L=`<div class=lab>📄 사례 초안 전문 <button class=ib style="float:right;padding:2px 8px" onclick="toggleFull(this)">⤢ 펼치기</button></div>`;
   if(dd.toc.length) L+=`<div class=toc><span class=tl>목차:</span>`+dd.toc.map(t=>`<a onclick="jumpSec('${t.id}')">${esc(t.label)}</a>`).join('')+`</div>`;
   L+=`<div class=draft id=draftbox>${dd.html}</div>`;
   let R='';
-  if(MODE==='browse'){
+  if(EM==='pick'){
+    R+=`<div class=phase><h3>이 사례, 어떻게 하시겠어요?</h3><div class=sub><b>블라인드 평가</b>는 검증 데이터가 됩니다. 부담되면 <b>열람만</b> 하셔도 돼요(자유 메모 환영). <b>원하는 사례만</b> 하시면 됩니다.</div>`;
+    R+=`<div class=lab>📄 왼쪽 사례 초안을 먼저 보시고 선택하세요.</div>`;
+    R+=`<button class=go onclick="pickMode('eval')">⭐ 블라인드로 평가 (권장)</button> <button class=ib style="padding:8px 14px" onclick="pickMode('browse')">👁 그냥 열람만</button>`;
+    R+=`<div style="margin-top:14px"><button class=ib onclick="finishAll()">여기까지 제출하고 끝내기</button></div></div>`;
+  }
+  else if(EM==='browse'){
     R+=`<div class=phase><h3>📂 사례 열람 (자유 검토)</h3><div class=sub>판정 없이 사례·교수 피드백·AI 리뷰를 봅니다. 아래 메모로 자유 피드백 남겨 주세요.</div>`;
     R+=`<div class=lab>👩‍🏫 교수 피드백 전문</div><div class="box exp">${esc(fmtReview(c.expert_review))}</div>`;
     R+=`<div class=lab>🤖 AI 리뷰 <small style="font-weight:400">(🔍=왼쪽 사례에 근거)</small></div>`+aiList(c,hlSet);
     R+=`<div class=lab style="margin-top:14px">✏️ 이 사례 자유 메모 (교수·팀 피드백 — AI 개선에 활용)</div><textarea class=note rows=3 placeholder="이 사례·AI 리뷰에 대한 자유 의견(비정형 환영)" oninput="setMemo(this.value)">${esc(s.memo||'')}</textarea>`;
     R+=`<button class=go onclick=${ci===CASES.length-1?'finishAll()':'nextCase()'}>${ci===CASES.length-1?'완료·메모 제출':'다음 사례 →'}</button></div>`;
   } else {
-  if(MODE!=='recall'){
+  if(EM!=='recall'){
     R+=`<div class=phase><h3>1단계 · 블라인드 비교</h3><div class=sub>두 검토 의견 중 하나는 교수 피드백, 하나는 AI입니다(비공개·균형 배치). <b>⚠️ 문체·길이 말고 내용의 질만</b> 1~5로 평가.</div>`;
     const lock=s.ph>1;
     R+=`<div class=lab>📝 검토 의견 A</div><div class="box rev">${esc(revText(c,'A'))}</div>${rubric('A',lock)}<textarea class=note rows=1 placeholder="의견 A 자유평(선택)" ${lock?'disabled':''} oninput="setRN('A',this.value)">${esc((s.rnote||{}).A||'')}</textarea>`;
@@ -221,11 +229,11 @@ function renderCase(){const c=CASES[ci],s=st(c);
     R+=`<div class=sub style="margin-top:6px">확신도</div><div class=opts>`+[["low","낮음"],["mid","보통"],["high","높음"]].map(o=>`<button class="${s.conf===o[0]?'sel':''}" ${lock?'disabled':''} onclick="setC('${o[0]}')">${o[1]}</button>`).join('')+`</div>`;
     if(s.ph===1){const last=ci===CASES.length-1;
       R+=`<label class=chk><input type=checkbox ${s.read?'checked':''} onclick="setRead(this.checked)"> 사례·두 의견 <b>전문을 모두 읽었습니다.</b></label>`;
-      R+= MODE==='blind'?`<button class=go ${p1Done(s)?'':'disabled'} onclick=${last?'finishAll()':'nextCase()'}>${last?'완료·제출 ✓':'다음 →'}</button>`:`<button class=go ${p1Done(s)?'':'disabled'} onclick=adv2()>블라인드 확정, 공개 →</button>`;}
+      R+= EM==='blind'?`<button class=go ${p1Done(s)?'':'disabled'} onclick=${last?'finishAll()':'nextCase()'}>${last?'완료·제출 ✓':'다음 →'}</button>`:`<button class=go ${p1Done(s)?'':'disabled'} onclick=adv2()>블라인드 확정, 공개 →</button>`;}
     R+=`</div>`;
   }
-  if(MODE!=='blind'&&s.ph>=2){const aiSide=c.blind.A==='ai'?'A':'B';
-    R+=(MODE==='full')?`<div class=phase><div class=reveal>🔓 공개: <b>의견 ${aiSide}</b>=AI (의견 ${aiSide==='A'?'B':'A'}=교수)</div>`:`<div class=phase>`;
+  if(EM!=='blind'&&s.ph>=2){const aiSide=c.blind.A==='ai'?'A':'B';
+    R+=(EM==='full')?`<div class=phase><div class=reveal>🔓 공개: <b>의견 ${aiSide}</b>=AI (의견 ${aiSide==='A'?'B':'A'}=교수)</div>`:`<div class=phase>`;
     R+=`<h3>2단계 · 교수 지적을 AI가 잡았나</h3>`;
     R+=`<div class=lab>👩‍🏫 교수 피드백 전문</div><div class="box exp">${esc(fmtReview(c.expert_review))}</div>`;
     R+=`<div class=lab>🤖 AI 리뷰 <small style="font-weight:400">(🔍=왼쪽 사례에 근거 하이라이트)</small></div>`+aiList(c,hlSet);
@@ -233,12 +241,12 @@ function renderCase(){const c=CASES[ci],s=st(c);
     c.expert_points.forEach((p,n)=>{R+=`<div class=qrow><div class=qt>${n+1}. ${esc(abbr(p.text))} <span class=tag>${esc(p.category)}</span></div><div class=opts>`+PV.map(o=>`<button class="${s.pts[p.id]===o[0]?'sel':''}" onclick="setP('${p.id}','${o[0]}')">${o[1]}</button>`).join('')+`</div></div>`});
     if(s.ph===2)R+=`<button class=go ${ptsDone(s,c)?'':'disabled'} onclick=adv3()>다음 →</button>`;
     R+=`</div>`;}
-  if(MODE!=='blind'&&s.ph>=3){R+=`<div class=phase><h3>3단계 · AI 지적은 타당한가</h3><div class=sub>🔍=왼쪽 사례에 근거 하이라이트. 각 지적이 타당/틀림/위험한지.</div>`;
+  if(EM!=='blind'&&s.ph>=3){R+=`<div class=phase><h3>3단계 · AI 지적은 타당한가</h3><div class=sub>🔍=왼쪽 사례에 근거 하이라이트. 각 지적이 타당/틀림/위험한지.</div>`;
     c.ai_findings.forEach((f,n)=>{R+=`<div class=qrow><div class=qt>${hlSet.has(f.id)?`<span class=aiq onclick="setHLById('${f.id}')">🔍</span> `:''}${n+1}. ${esc(abbr(f.text))}</div><div class=opts>`+FV.map(o=>`<button class="${s.fnd[f.id]===o[0]?'sel':''}" onclick="setF('${f.id}','${o[0]}')">${o[1]}</button>`).join('')+`</div></div>`});
     const last=ci===CASES.length-1;
     R+=`<button class=go ${fndDone(s,c)?'':'disabled'} onclick=${last?'finishAll()':'nextCase()'}>${last?'완료·제출 ✓':'다음 사례 →'}</button></div>`;}
   }
-  if(MODE!=='browse')R+=`<div class=lab style="margin-top:16px">✏️ 이 사례 메모 (선택)</div><textarea class=note rows=2 placeholder="자유 의견·애매한 점" oninput="setMemo(this.value)">${esc(s.memo||'')}</textarea>`;
+  if(EM!=='browse'&&EM!=='pick')R+=`<div class=lab style="margin-top:16px">✏️ 이 사례 메모 (선택)</div><textarea class=note rows=2 placeholder="자유 의견·애매한 점" oninput="setMemo(this.value)">${esc(s.memo||'')}</textarea>`;
   let h=`<div class=card><div><span class=tag>사례 ${ci+1}/${CASES.length}</span><span class=tag>${esc(c.symptom)}</span>${MODE!=='full'?'<span class=tag>'+MODE+'</span>':''}</div><div class=split><div class=pane-left>${L}</div><div class=pane-right>${R}</div></div></div>`;
   document.getElementById('casebox').innerHTML=h;
   const done=CASES.filter(caseDone).length;document.getElementById('fill').style.width=(done/CASES.length*100)+'%';
@@ -252,6 +260,7 @@ function setP(id,v){st(CASES[ci]).pts[id]=v;save();renderCase()}
 function setF(id,v){st(CASES[ci]).fnd[id]=v;save();renderCase()}
 function setMemo(v){st(CASES[ci]).memo=v;save()}
 function setRN(side,v){const s=st(CASES[ci]);if(!s.rnote)s.rnote={A:'',B:''};s.rnote[side]=v;save()}
+function pickMode(v){const s=st(CASES[ci]);s.pick=v;if(v==='eval')s.ph=1;save();renderCase();window.scrollTo(0,0)}  // hybrid 사례별 선택
 function toggleFull(btn){const p=btn.closest('.pane-left');p.classList.toggle('full');btn.textContent=p.classList.contains('full')?'▲ 접기':'⤢ 펼치기'}
 function setHLById(fid){const f=CASES[ci].ai_findings.find(x=>x.id===fid);HL=(f&&f.quote)||'';renderCase();setTimeout(()=>{const m=document.querySelector('.hl');if(m)m.scrollIntoView({block:'center',behavior:'smooth'})},80)}
 function testHL(de,q){const pat=esc(q).trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'[\\s•·○●■□☐☑▷◦\\-–—]*');try{return new RegExp(pat).test(de)}catch(e){return false}}
@@ -262,7 +271,7 @@ function save(){try{localStorage.setItem(K(),JSON.stringify(V))}catch(e){}}
 function nextCase(){HL='';if(ci<CASES.length-1){ci++;renderCase();window.scrollTo(0,0)}else finishAll()}
 function prevCase(){HL='';if(ci>0){ci--;renderCase();window.scrollTo(0,0)}}
 function finishAll(){document.getElementById('app').style.display='none';document.getElementById('fin').style.display='block';document.getElementById('helpbtn').style.display='none';submitAll()}
-function payload(){return {pw:PW,judge,mode:MODE,ts:Date.now(),cases:CASES.map(c=>{const s=st(c);return {case_id:c.case_id,blind:c.blind,bA:s.bA,bB:s.bB,rnote:s.rnote||{},guess:s.guess,conf:s.conf,read:s.read,points:s.pts,findings:s.fnd,memo:s.memo||''}})}}
+function payload(){return {pw:PW,judge,mode:MODE,ts:Date.now(),cases:CASES.map(c=>{const s=st(c);return {case_id:c.case_id,blind:c.blind,pick:s.pick||'',bA:s.bA,bB:s.bB,rnote:s.rnote||{},guess:s.guess,conf:s.conf,read:s.read,points:s.pts,findings:s.fnd,memo:s.memo||''}})}}
 async function submitAll(){const fm=document.getElementById('finmsg');fm.textContent='제출 중…';
   try{const r=await fetch('/api/submit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload())});
     const j=await r.json().catch(()=>({}));
