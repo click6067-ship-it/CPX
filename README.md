@@ -6,7 +6,7 @@
 의대 CPX 연습용: **④ 자동채점 · ③ 가상환자 · ② 심사 · ① 사례생성** + 검증 하네스. 투명·재현 가능을 원칙으로.
 
 ## 작동방식
-> GitHub·노션에서 자동 렌더. 편집용 그림 = [`docs/cpx-flow.excalidraw`](docs/cpx-flow.excalidraw) (excalidraw.com) · 상세 = [`docs/transparency.md`](docs/transparency.md)
+> GitHub·노션에서 자동 렌더. 편집용 그림 = [`docs/cpx-flow.excalidraw`](docs/cpx-flow.excalidraw) ([온라인 편집](https://excalidraw.com/#json=MDRx6v86yhWXLqAxpekQJ,WzNaXnBRwxKblOzIa5XZeA)) · 상세 = [`docs/transparency.md`](docs/transparency.md)
 
 ```mermaid
 flowchart TD

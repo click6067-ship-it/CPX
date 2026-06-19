@@ -115,7 +115,7 @@ for i in range(len(boxes)):
 doc = {"type": "excalidraw", "version": 2, "source": "https://excalidraw.com",
        "elements": els, "appState": {"viewBackgroundColor": "#ffffff", "gridSize": None},
        "files": {}}
-out = os.path.join(os.path.dirname(__file__), "..", "docs", "cpx-flow-claude.excalidraw")
+out = os.path.join(os.path.dirname(__file__), "..", "docs", "cpx-flow.excalidraw")
 with open(out, "w", encoding="utf-8") as f:
     json.dump(doc, f, ensure_ascii=False, indent=2)
 print(f"SAVED {os.path.relpath(out)} (elements={len(els)}, nodes={len(boxes)}, overlaps={warn})")

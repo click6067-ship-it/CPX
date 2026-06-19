@@ -1,6 +1,6 @@
 # CPX-AI 작동방식 (다이어그램)
 
-> GitHub·노션에서 아래 블록이 자동 렌더됩니다. 편집 그림은 `cpx-flow.excalidraw`(excalidraw.com), 원본 mermaid는 `cpx-flow.mmd`.
+> GitHub·노션에서 아래 블록이 자동 렌더됩니다. 편집 그림 = `cpx-flow.excalidraw` ([온라인 편집](https://excalidraw.com/#json=MDRx6v86yhWXLqAxpekQJ,WzNaXnBRwxKblOzIa5XZeA)), 원본 mermaid는 `cpx-flow.mmd`.
 > 모델·데이터 상세 = [`transparency.md`](transparency.md) · 검증 설계 = [`validation-design.md`](validation-design.md)
 
 ```mermaid
