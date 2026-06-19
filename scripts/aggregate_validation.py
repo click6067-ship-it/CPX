@@ -109,7 +109,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--items"); ap.add_argument("--results"); ap.add_argument("--url"); ap.add_argument("--pw", default="cpx-demo")
     ap.add_argument("--demo", action="store_true"); ap.add_argument("--boot", type=int, default=3000)
-    ap.add_argument("--mode", default="full", choices=["full", "blind", "recall"])  # 코호트 분리(혼용 오염 방지)
+    ap.add_argument("--mode", default="full", choices=["full", "blind", "recall", "hybrid"])  # 코호트 분리. hybrid=사례별 eval(블라인드)/browse(열람) 선택 → eval만 정량
     a = ap.parse_args()
     if a.demo:
         meta, subs = demo(); print("⚠️  데모 모드 — 가상 데이터(수식 검증용)\n")
@@ -131,12 +131,26 @@ def main():
     judges = [s["judge"] for s in subs]
     print("=" * 66)
     print(f"판정자 {len(judges)}명: {', '.join(judges)} · 사례 {len(meta)}")
+    if a.mode == "hybrid":
+        pk = Counter(); inv = []
+        for s in subs:
+            for cc in s.get("cases", []):
+                p = cc.get("pick")
+                pk["eval" if p == "eval" else "browse" if p == "browse" else "missing" if not p else "invalid"] += 1
+                if p and p not in ("eval", "browse"):
+                    inv.append(p)
+        tp = sum(pk.values()) or 1
+        ec = Counter(cc["case_id"] for s in subs for cc in s.get("cases", []) if cc.get("pick") == "eval")
+        print(f"하이브리드 pick: eval {pk['eval']} · browse {pk['browse']} · 누락 {pk['missing']} · 무효 {pk['invalid']}" + (f" {sorted(set(inv))}" if inv else ""))
+        print(f"  ⚠️ eval 비율 {pk['eval']}/{tp}={pk['eval']/tp:.0%} — 정량분석은 eval 선택 건만(선택편향). 전체 코호트 추정 불가·exploratory. browse=정성 별도.")
+        print(f"  사례별 eval 판정자 수: " + (", ".join(f"{c}:{n}" for c, n in sorted(ec.items())) if ec else "없음"))
     print("=" * 66)
 
     # perCJ[case][judge] = {'ai','ex','guess','conf'}
     perCJ = defaultdict(dict)
     for s in subs:
         for cc in s.get("cases", []):
+            if a.mode == "hybrid" and cc.get("pick") != "eval": continue
             bl = (Mm.get(cc["case_id"], {}) or {}).get("blind") or cc.get("blind")  # meta 신뢰(client 조작 방지)
             if not bl or not cc.get("bA") or not cc.get("bB"):
                 continue
@@ -168,7 +182,8 @@ def main():
         ai_mat = [[mean([cj[j]["ai"][d] for d in DIMS if d in cj[j]["ai"]]) for j in judges] for c in cids_full for cj in [perCJ[c]]]
         ex_mat = [[mean([cj[j]["ex"][d] for d in DIMS if d in cj[j]["ex"]]) for j in judges] for c in cids_full for cj in [perCJ[c]]]
         ia, ie = icc2k(ai_mat), icc2k(ex_mat)
-        print(f"    판정자 신뢰도 ICC(2,k): AI리뷰 {ia:.2f}" + (f" · 전문가 {ie:.2f}" if ie is not None else "") + f"  (완전판정 {len(cids_full)}사례)" if ia is not None else "")
+        if ia is not None:
+            print(f"    판정자 신뢰도 ICC(2,k): AI리뷰 {ia:.2f}" + (f" · 전문가 {ie:.2f}" if ie is not None else "") + f"  (완전판정 {len(cids_full)}사례)")
     # 블라인드 성공률
     g = [(r["guess"], r["conf"], r["aiSide"]) for cj in perCJ.values() for r in cj.values() if r.get("guess")]
     decided = [(gu, co, sd) for gu, co, sd in g if gu in ("A", "B")]
@@ -180,6 +195,7 @@ def main():
     pv = defaultdict(lambda: defaultdict(list))
     for s in subs:
         for cc in s.get("cases", []):
+            if a.mode == "hybrid" and cc.get("pick") != "eval": continue
             for pid, v in (cc.get("points") or {}).items():
                 pv[cc["case_id"]][pid].append(v)
     exp_pts = sum(len(m["points"]) for m in meta) * len(judges)
@@ -217,6 +233,7 @@ def main():
     fv = defaultdict(list)
     for s in subs:
         for cc in s.get("cases", []):
+            if a.mode == "hybrid" and cc.get("pick") != "eval": continue
             for fid, v in (cc.get("findings") or {}).items():
                 fv[(cc["case_id"], fid)].append(v)
     fc = [consensus(v) for v in fv.values()]
@@ -228,6 +245,10 @@ def main():
         print(f"    타당(중복포함) {valid}/{len(tot)} = {valid/len(tot):.0%} · 중요 {cnt['valid_major']} · 경미 {cnt['valid_minor']} · 중복 {cnt['redundant']} · 틀림 {cnt['wrong']}")
         h = cnt["harmful"]
         print(f"    🚨 안전 게이트 — harmful(위험/유해) {h}건 ({h/len(tot):.0%})  " + ("✅ 0건" if h == 0 else "❌ >0 → 본검증 차단/원인분석 필요"))
+        if allrec:                          # 탐색적 조화요약 (recall=교수지적 재현·precision_strict=AI지적 valid; 서로 다른 모집단 → 표준 F1 아님)
+            R = mean(allrec); Pst = (cnt["valid_major"] + cnt["valid_minor"]) / len(tot)
+            hs = 2 * Pst * R / (Pst + R) if (Pst + R) > 0 else 0.0
+            print(f"    📊 탐색적 조화요약 = {hs:.0%}  (recall {R:.0%} · precision_strict {Pst:.0%}; 서로 다른 모집단=표준 F1 아님, exploratory)")
     print("\n⚠️ 파일럿·dev_tune·다수결. 표본<30클러스터 → CI·카테고리·precision exploratory. 비열등성 δ·사전등록·코호트분리·BARS훈련은 본검증.")
 
 
