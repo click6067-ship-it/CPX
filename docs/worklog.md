@@ -143,3 +143,9 @@
 ### ②B 임상 리뷰어 추가 + H2 비교 — 2026-06-19 (용하 ㄱㄱ 승인)
 - `reviewer.py`: **②B review_clinical**(RAG 근거 임상심사, taxonomy: CLINICAL_CONTENT/INTERNAL_LOGIC/SP_FEASIBILITY/…). `llm.py`: 503/429 재시도 백오프. `ingest.py`: 모델 폴백 체인(2.5-flash→lite). `h2_compare.py`: 공정비교(전문가 지적 1회 고정 + draft 캐시).
 - 결과: ②A **19%** → ②A+②B **26%** (+6%p). ②B 방향 맞으나 갭 잔존, 자동 judge 노이즈. → **인간 adjudication 필요(교수)**.
+
+### 교수 adjudication 인프라 — 배포형 설문 + 집계 파이프라인 — 2026-06-19 (용하 지시)
+- **배포 설문 웹앱**(`web/adjudication/`, Vercel): 교수가 **주소+암호만** 받아 한 문항씩 클릭(AI 잠정판정 미리선택) → **중앙 자동수집**(Blob). 3명→N명 확장. 암호 게이트+noindex+URL추측불가, CPX repo와 **분리 배포**(사례데이터 안 올라감). Live: cpx-adj-web.vercel.app. **현재 토이데이터** — 실데이터는 PI 동의 후 전환(SURVEY_PW+CSV교체+재배포, 판정자/관리자 암호 분리 예정).
+- 스크립트: `build_adjudication_sheets.py`(CSV 생성, 배치1=9페어·전문가지적84·②지적76) · `build_adjudication_html.py`(오프라인 단일HTML 대안) · `build_survey_data.py`(CSV→data.js+items_meta.json, 실데이터 검증: 73지적/카테고리분포) · `aggregate_adjudication.py`(**Fleiss kappa+다수결 합의+카테고리별 recall/precision/F1+페어부트스트랩 CI**, `--demo`/`--url` 지원, 데모+live e2e 검증 완료).
+- excluded(사례품질 아님) 다수결은 분모 제외 = Codex 지적 구성불일치를 사람판정으로 교정. tie는 재검토 플래그.
+- 다음: PI 동의 → 실데이터 전환 → 교수 판정 → 집계(첫 진짜 H2 결과). 배치2~3로 30페어 확대. locked15 봉인 유지.
