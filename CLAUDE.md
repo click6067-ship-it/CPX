@@ -13,4 +13,4 @@
 - 실제 사례·전문가 라벨 전 = 손-라벨 **smoke**. 타당성 주장은 그 후.
 
 ## 문서
-`context-map` · `architecture`(v3) · `research-llm-cpx-sota` · `worklog` · `roadmap`(완성체크) · `competitor-meditutor`(참고만)
+`transparency`(모델·데이터 정본) · `context-map` · `architecture`(v3) · `research-llm-cpx-sota` · `worklog` · `roadmap`(완성체크) · `competitor-meditutor`(참고만)
