@@ -1,3 +1,5 @@
+> ⚠️ **[예전 버전 — v1, 현재 사용 안 함]** per-point CSV 방식 옛 설계. 현 정본: **`validation-design.md`**(설계)·**`handoff.md`**(교수 전달)·웹 설문(`web/adjudication/`). 혼동 방지용으로만 보존.
+
 # 교수 adjudication 가이드 (H2 검증)
 
 > 목적: **②AI 심사가 전문가 피드백을 얼마나 재현하나(H2)** 를 검증. 판정자 3명이 **독립** 판정 → Fleiss kappa(일치도) + 다수결 합의(gold).
