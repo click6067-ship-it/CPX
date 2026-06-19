@@ -5,6 +5,27 @@
 ## 무엇
 의대 CPX 연습용: **④ 자동채점 · ③ 가상환자 · ② 심사 · ① 사례생성** + 검증 하네스. 투명·재현 가능을 원칙으로.
 
+## 작동방식
+> GitHub·노션에서 자동 렌더. 편집용 그림 = [`docs/cpx-flow.excalidraw`](docs/cpx-flow.excalidraw) (excalidraw.com) · 상세 = [`docs/transparency.md`](docs/transparency.md)
+
+```mermaid
+flowchart TD
+  subgraph A["A. 사례개발 루프 (교수 지원)"]
+    seed["기존 CPX 사례(씨앗)"] --> gen["① 생성<br/>gpt-5.5"] --> review["② 검토<br/>gpt-5.5 · 구조+임상"] --> accept{"Accept?"}
+    rag["RAG 근거<br/>dense: Gemini 임베딩<br/>sparse: BM25 → 교과서(MedQA)"] --> review
+    accept -- 예 --> confirmed["확정 사례"]
+    accept -- "아니오 (수정 루프)" --> gen
+  end
+  subgraph B["B. 검증 H2 (현재 파일럿)"]
+    prof["교수 과거 피드백(정답지)"] --> blind["블라인드 설문<br/>교수 A/B 익명 평가"]
+    ai["② AI 리뷰"] --> blind --> agg["집계<br/>recall·precision·ICC·CI"]
+  end
+  subgraph C["C. 학생 런타임"]
+    confirmed --> vp["③ 가상환자<br/>GPT-4o · 음성"] --> stu["학생 대화"] --> grade["④ 자동채점<br/>GPT-4o"] --> fb["피드백"]
+  end
+  review --> ai
+```
+
 ## 빠른 시작
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
