@@ -1,0 +1,98 @@
+<!doctype html><html lang=ko><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta name=robots content="noindex,nofollow">
+<title>CPX 사례 심사 검증</title><style>
+*{box-sizing:border-box}body{font-family:-apple-system,system-ui,'Apple SD Gothic Neo',sans-serif;margin:0;background:#f4f6f9;color:#1a2233}
+.wrap{max-width:680px;margin:0 auto;padding:16px}
+.bar{height:8px;background:#e3e8ef;border-radius:8px;overflow:hidden;margin:10px 0}
+.bar>i{display:block;height:100%;background:#2c7be5;width:0;transition:width .2s}
+.card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 6px #0001;margin:12px 0}
+.tag{display:inline-block;font-size:12px;background:#eef2f7;color:#5b6b82;border-radius:6px;padding:2px 8px;margin:0 6px 4px 0}
+.q{font-size:19px;font-weight:700;line-height:1.5;margin:10px 0}
+.hint{font-size:14px;color:#5b6b82;background:#f8fafc;border-left:3px solid #2c7be5;padding:8px 10px;border-radius:6px;margin:10px 0}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+button.opt{padding:14px;font-size:16px;border:2px solid #d7deea;background:#fff;border-radius:10px;cursor:pointer}
+button.opt.sel{border-color:#2c7be5;background:#eaf2fe;font-weight:700}
+.nav{display:flex;justify-content:space-between;margin-top:14px;gap:8px}
+.nav button{padding:10px 18px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer;flex:1}
+.note{width:100%;margin-top:8px;padding:10px;border:1px solid #d7deea;border-radius:8px;font-size:15px}
+.dl{background:#2c7be5;color:#fff;border:none;font-weight:700;width:100%}
+small{color:#7a8aa0}.done{text-align:center;padding:30px}
+.demo{background:#fff7e6;border:1px solid #ffd591;color:#ad6800;font-size:13px;padding:8px 10px;border-radius:8px;margin:8px 0}
+</style></head><body><div class=wrap>
+<h2>CPX 사례 심사 검증 <small id=pct></small></h2>
+
+<div id=gate class=card>
+  <p>이 설문은 <b>비공개</b>입니다. 안내받은 <b>접속 암호</b>와 <b>성함</b>을 입력하세요.</p>
+  <input class=note id=pw type=password placeholder="접속 암호" autocomplete=off>
+  <input class=note id=jname placeholder="성함 (예: 홍길동)" autocomplete=off>
+  <button class="opt dl" style="margin-top:12px" onclick=enter()>시작</button>
+  <p id=gerr style="color:#c0392b;font-size:14px;min-height:18px"></p>
+  <p style="font-size:13px;color:#7a8aa0">전문가가 단 지적을 <b>②AI가 잡았는지</b> 판정합니다. AI 잠정판정이 미리 선택돼 있으니 <b>동의하면 '다음', 아니면 고쳐</b> 주세요. 다른 분과 상의 없이 독립적으로. 중간에 닫아도 이어집니다.</p>
+</div>
+
+<div id=app style=display:none>
+  <div id=demobar></div>
+  <div class=bar><i id=fill></i></div>
+  <div class=card id=card></div>
+  <div class=nav><button onclick=prev()>← 이전</button><button onclick=next()>다음 →</button></div>
+  <p><small>자동 저장됨 · 마지막 문항에서 자동 제출</small></p>
+</div>
+
+<div id=fin class=done style=display:none>
+  <h2>완료! 🎉</h2>
+  <p id=finmsg>제출 중…</p>
+  <button class="opt dl" onclick=submitAll()>다시 제출</button>
+  <button class=opt style="margin-top:8px;width:100%" onclick=download()>결과 파일 내려받기(백업)</button>
+</div>
+</div><script>
+const OPT={EXPERT:[["caught","✅ 잡음"],["partial","🟡 부분"],["missed","❌ 못잡음"]],
+  AI:[["in_expert","전문가에도 있음"],["valid_extra","✔ 타당한 추가지적"],["invalid","✖ 틀림/환각"]]};
+let PW="",judge="",ITEMS=[],i=0,V={},DEMO=false;
+function K(){return "cpxadj_"+judge}
+async function enter(){
+  PW=document.getElementById('pw').value.trim();judge=document.getElementById('jname').value.trim();
+  if(!PW||!judge){gerr('암호와 성함을 모두 입력하세요');return}
+  gerr('불러오는 중…');
+  try{const r=await fetch('/api/items?pw='+encodeURIComponent(PW));
+    if(r.status===403){gerr('암호가 올바르지 않습니다');return}
+    if(!r.ok){gerr('오류('+r.status+')');return}
+    const d=await r.json();ITEMS=d.items;DEMO=d.demo;
+  }catch(e){gerr('네트워크 오류 — 다시 시도해 주세요');return}
+  V=JSON.parse(localStorage.getItem(K())||'{}');
+  document.getElementById('gate').style.display='none';
+  document.getElementById('app').style.display='block';
+  if(DEMO)document.getElementById('demobar').innerHTML='<div class=demo>⚠️ 데모(가상 데이터) — 실제 사례 아님. 흐름 확인용입니다.</div>';
+  i=ITEMS.findIndex(x=>!V[x.id]);if(i<0)i=0;render();
+}
+function gerr(m){document.getElementById('gerr').textContent=m}
+function render(){const x=ITEMS[i];if(!x)return fin();
+  const opts=OPT[x.type];const cur=V[x.id]?V[x.id].v:(x.type==='EXPERT'?x.tent:'');
+  let h=`<div><span class=tag>${esc(x.pair)}</span><span class=tag>${x.type==='EXPERT'?'전문가 지적':'②AI 지적'}</span>${x.cat?'<span class=tag>'+esc(x.cat)+'</span>':''}</div><div class=q>${esc(x.item)}</div>`;
+  if(x.type==='EXPERT'&&x.cand)h+=`<div class=hint>②가 잡은 것(AI 잠정): <b>${esc(x.cand)}</b><br><small>AI 잠정판정: ${x.tent} — 동의하면 그대로 '다음'</small></div>`;
+  if(x.type==='EXPERT'&&!x.cand)h+=`<div class=hint><small>②가 대응 지적을 못 냈습니다(AI 잠정: 못잡음). 동의하면 '다음'.</small></div>`;
+  if(x.type==='AI')h+=`<div class=hint><small>②가 든 이 지적이 타당한가요?</small></div>`;
+  h+=`<div class=btns>`+opts.map(o=>`<button class="opt ${cur===o[0]?'sel':''}" onclick="pick('${o[0]}')">${o[1]}</button>`).join('')+`</div>`;
+  h+=`<input class=note id=nt placeholder="메모(선택)" value="${V[x.id]?esc(V[x.id].n||''):''}" oninput="V['${x.id}']&&(V['${x.id}'].n=this.value,save())">`;
+  document.getElementById('card').innerHTML=h;
+  const done=Object.keys(V).length;document.getElementById('fill').style.width=(done/ITEMS.length*100)+'%';
+  document.getElementById('pct').textContent=`(${i+1}/${ITEMS.length} · 완료 ${done})`;
+}
+function pick(v){const x=ITEMS[i];V[x.id]={v,n:(V[x.id]&&V[x.id].n)||(document.getElementById('nt')?document.getElementById('nt').value:'')};save();setTimeout(next,140)}
+function save(){localStorage.setItem(K(),JSON.stringify(V))}
+function next(){if(i<ITEMS.length-1){i++;render()}else fin()}
+function prev(){if(i>0){i--;render()}}
+function fin(){document.getElementById('app').style.display='none';document.getElementById('fin').style.display='block';document.getElementById('fill').style.width='100%';submitAll()}
+async function submitAll(){const fm=document.getElementById('finmsg');fm.textContent='제출 중…';
+  const payload={pw:PW,judge,ts:Date.now(),verdicts:ITEMS.map(x=>({id:x.id,pair:x.pair,type:x.type,verdict:(V[x.id]||{}).v||'',note:(V[x.id]||{}).n||''}))};
+  try{const r=await fetch('/api/submit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+    const j=await r.json().catch(()=>({}));
+    if(r.ok)fm.innerHTML='✅ <b>제출 완료. 감사합니다!</b>'+(j.stored==='none'?'<br><small>(데모: 서버 저장 비활성)</small>':'');
+    else fm.innerHTML='⚠️ 제출 실패: '+esc(j.error||'')+'<br>아래 백업 버튼으로 파일을 내려받아 회신해 주세요.';
+  }catch(e){fm.innerHTML='⚠️ 제출 실패(네트워크).<br>아래 백업 버튼으로 파일을 내려받아 회신해 주세요.'}
+}
+function download(){const out={judge,ts:Date.now(),verdicts:ITEMS.map(x=>({id:x.id,pair:x.pair,type:x.type,item:x.item,verdict:(V[x.id]||{}).v||'',note:(V[x.id]||{}).n||''}))};
+  const b=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download='adjudication_'+judge+'.json';a.click()}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+</script></body></html>
