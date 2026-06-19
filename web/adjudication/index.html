@@ -58,10 +58,9 @@ small{color:#7a8aa0}.done{text-align:center;padding:30px}
   <p style="font-size:14px;color:#5b6b82">안녕하세요, 교수님. 참여해 주셔서 감사합니다. 시작 전 아래 안내를 읽어 주세요. (약 2분)</p>
 
   <h3><span class=n>1</span>누가 하는 연구인가요?</h3>
-  <p>• <b>연구책임자(PI):</b> 임선주 교수 — 양산부산대학교병원·부산대학교 의과대학<br>
+  <p>• <b>연구책임자:</b> 임선주 교수 — 양산부산대학교병원·부산대학교 의과대학<br>
   • <b>도구 개발·운영:</b> 김용하(학부생 개발자)<br>
-  • <b>연구·참여 문의:</b> <span class=ph>[연구책임자 공식 이메일 — 기입]</span><br>
-  • <b>연구윤리(IRB):</b> <span class=ph>[IRB 승인/면제확인 번호 — 기입]</span></p>
+  • <b>문의:</b> 연구팀(임선주 교수)</p>
 
   <h3><span class=n>2</span>왜·무엇을 하는 연구인가요?</h3>
   <p>CPX(임상수행평가) 사례를 <b>AI로 자동 생성·검토</b>해 교수님 출제 부담을 줄이고 학생 연습을 늘리려는 <b>비영리·학술·오픈소스</b> 연구입니다(상용 서비스 아님). AI는 ①생성→<b>②검토</b>→③가상환자→④채점으로 일하며, 오늘은 <b>②'AI 검토자'가 교수 피드백에 얼마나 필적하는지</b> 확인하는 <b>예비(feasibility) 파일럿</b>입니다.</p>
@@ -75,7 +74,7 @@ small{color:#7a8aa0}.done{text-align:center;padding:30px}
 
   <h3><span class=n>4</span>제 응답·개인정보는요?</h3>
   <p>• <b>수집 항목:</b> 평가 점수·주관식 메모·완료시간. 성함은 응답 관리용이며 <b>논문·발표에는 익명·집계로만</b> 보고됩니다.<br>
-  • 원자료는 연구팀만 접근하고 <b>외부 공개하지 않습니다.</b> 보관·파기: <span class=ph>[연구 종료 후 ○년 보관 후 파기 — 기입]</span><br>
+  • 원자료는 연구팀만 접근하고 <b>외부 공개하지 않습니다.</b><br>
   • 사례·검토 의견은 <b>비공개 연구자료</b>입니다 — 외부 공유·캡처·재배포를 삼가 주세요.<br>
   • 사례는 <b>교육용·비식별</b> 자료입니다(실제 환자 식별정보 없음). 응답에 학생·환자·동료 식별정보를 적지 말아 주세요.</p>
 
@@ -85,8 +84,7 @@ small{color:#7a8aa0}.done{text-align:center;padding:30px}
   <h3><span class=n>6</span>한계</h3>
   <p class=muted>본 조사는 <b>사례 수가 적은 예비 파일럿</b>으로, 결과로 "AI가 전문가에 필적한다/대체한다"고 <b>단정하지 않습니다.</b> 본검증(사례·판정자 확대, 사전등록)을 위한 절차·도구 점검이 목적입니다.</p>
 
-  <label class=chk style="background:#f1f6fe;padding:12px;border-radius:8px"><input type=checkbox id=consent onclick="document.getElementById('startbtn').disabled=!this.checked"> <span>위 내용을 읽고 이해했으며, <b>자발적으로 본 연구 참여에 동의</b>합니다.</span></label>
-  <button id=startbtn class=go disabled onclick=startApp()>동의하고 시작하기 →</button>
+  <button class=go onclick=startApp()>이해했어요, 시작하기 →</button>
 </div>
 
 <div id=app style=display:none>
