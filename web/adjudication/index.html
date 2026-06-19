@@ -40,6 +40,8 @@ small{color:#7a8aa0}.done{text-align:center;padding:30px}
 .flow{background:#f1f6fe;border-radius:10px;padding:12px 14px;font-size:14.5px;margin:8px 0}.flow b{color:#1a56a8}
 .ib{background:none;border:1px solid #cdd6e4;border-radius:8px;padding:4px 10px;font-size:13px;cursor:pointer;color:#5b6b82}
 .muted{font-size:13px;color:#7a8aa0}
+.ph{background:#fff3cd;color:#8a6d00;border-radius:4px;padding:1px 5px;font-size:13px;font-weight:600}
+.chk span{font-size:14px}
 </style></head><body><div class=wrap>
 <div class=top><h2 style="margin:8px 0">CPX 사례 검증 <small id=pct></small></h2><button id=helpbtn class=ib style="display:none" onclick=showIntro()>ℹ️ 설명</button></div>
 
@@ -52,16 +54,39 @@ small{color:#7a8aa0}.done{text-align:center;padding:30px}
 </div>
 
 <div id=intro class="card intro" style="display:none">
-  <p style="font-size:16px">안녕하세요, 교수님 🙏 <b>AI 검증 연구</b>에 참여해 주셔서 감사합니다. 시작 전 <b>2분만</b> 읽어 주세요.</p>
-  <h3><span class=n>1</span>이 연구가 뭔가요?</h3>
-  <p>학생들이 진료를 연습하는 <b>CPX(임상수행평가)</b> 사례(환자 시나리오)를 <b>AI가 자동 생성</b>해 교수님 출제 부담을 줄이고 학생 연습을 늘리려는 <b>부산대 의대 학술 연구</b>입니다. <small>(비영리·오픈소스·무료)</small></p>
-  <h3><span class=n>2</span>오늘 검증할 것</h3>
-  <div class=flow>AI는 ①생성 → <b>②검토(문제점 점검)</b> → ③가상환자 → ④채점 단계로 일합니다.<br>오늘은 <b>②'AI 검토자'가 교수님만큼 사례 결함을 잡아내는지</b> 봅니다.</div>
-  <h3><span class=n>3</span>사례마다 이렇게 평가</h3>
-  <p><b>1단계 (블라인드 비교):</b> 같은 사례에 대한 <b>두 검토 의견(A·B)</b>이 나옵니다. 하나는 <b>실제 교수 피드백</b>, 하나는 <b>AI 리뷰</b>인데 <b>어느 쪽인지 숨겨</b> 둡니다. <b>문체·길이가 아니라 내용의 질</b>만 보고 각 의견을 <b>완전성·정확성·유용성·안전성(1~5)</b>로 평가하고, 마지막에 "어느 쪽이 AI 같은지" 추측해 주세요.</p>
-  <p id=p23><b>2단계 (공개 후):</b> 어느 쪽이 AI였는지 공개합니다. <b>교수 피드백의 각 지적을 AI가 잡았는지</b> 표시.<br><b>3단계:</b> AI가 낸 지적이 <b>타당/틀림/위험</b>한지 표시.</p>
-  <p class=muted>※ 사례 초안 전문·두 의견 전문·AI 리뷰 전체가 <b>모두 화면에 그대로</b> 표시됩니다(파일 열 필요 없음). 정답 시험이 아니라 <b>AI 평가</b>이니 솔직히. <b>다른 분과 상의 없이 독립</b> 판단. 중간에 닫아도 이어집니다. 비공개·연구용입니다.</p>
-  <button class=go onclick=startApp()>이해했어요, 시작하기 →</button>
+  <p style="font-size:17px;font-weight:700;margin-bottom:2px">부산대학교 의과대학 CPX 사례 검토 AI 연구 — 전문가 평가 설문</p>
+  <p style="font-size:14px;color:#5b6b82">안녕하세요, 교수님. 참여해 주셔서 감사합니다. 시작 전 아래 안내를 읽어 주세요. (약 2분)</p>
+
+  <h3><span class=n>1</span>누가 하는 연구인가요?</h3>
+  <p>• <b>연구책임자(PI):</b> 임선주 교수 — 양산부산대학교병원·부산대학교 의과대학<br>
+  • <b>도구 개발·운영:</b> 김용하(학부생 개발자)<br>
+  • <b>연구·참여 문의:</b> <span class=ph>[연구책임자 공식 이메일 — 기입]</span><br>
+  • <b>연구윤리(IRB):</b> <span class=ph>[IRB 승인/면제확인 번호 — 기입]</span></p>
+
+  <h3><span class=n>2</span>왜·무엇을 하는 연구인가요?</h3>
+  <p>CPX(임상수행평가) 사례를 <b>AI로 자동 생성·검토</b>해 교수님 출제 부담을 줄이고 학생 연습을 늘리려는 <b>비영리·학술·오픈소스</b> 연구입니다(상용 서비스 아님). AI는 ①생성→<b>②검토</b>→③가상환자→④채점으로 일하며, 오늘은 <b>②'AI 검토자'가 교수 피드백에 얼마나 필적하는지</b> 확인하는 <b>예비(feasibility) 파일럿</b>입니다.</p>
+  <div class=flow>• <b>교수님 개인 역량을 평가하는 설문이 아닙니다.</b><br>• <b>AI가 교수보다 낫다는 걸 증명하려는 연구가 아닙니다.</b> 있는 그대로의 전문 판단이 필요합니다.</div>
+
+  <h3><span class=n>3</span>무엇을, 얼마나 하나요?</h3>
+  <p><b>약 6개 사례 · 총 30~45분</b>(사례당 5~8분). 모바일 가능, <b>중간에 닫아도 이어서</b> 하실 수 있습니다. 사례마다 3단계:</p>
+  <p><b>1단계 (블라인드):</b> 사례 초안과 <b>두 검토 의견(A·B)</b> — 하나는 실제 교수 피드백, 하나는 AI인데 <b>누가 썼는지 가립니다.</b> <b>어느 쪽이 AI인지 맞히는 게 아니라</b>, 각 의견이 사례 개선에 얼마나 타당·유용한지 <b>완전성·정확성·유용성·안전성(1~5)</b>로 평가합니다(각 점수 기준은 화면에 표시).</p>
+  <p id=p23><b>2단계 (공개 후):</b> 작성자를 공개하고, 교수 피드백의 각 지적을 AI가 잡았는지 표시.<br><b>3단계:</b> AI가 낸 지적이 타당/틀림/위험한지 표시.</p>
+  <div class=flow>📌 정답이 있는 시험이 아닙니다. <b>교수님의 독립적 전문 판단 자체가 자료</b>입니다. 모호하면 확신 낮게 표시하거나 메모를 남겨 주세요. <b>다른 분과 상의 없이</b> 판단해 주세요.</div>
+
+  <h3><span class=n>4</span>제 응답·개인정보는요?</h3>
+  <p>• <b>수집 항목:</b> 평가 점수·주관식 메모·완료시간. 성함은 응답 관리용이며 <b>논문·발표에는 익명·집계로만</b> 보고됩니다.<br>
+  • 원자료는 연구팀만 접근하고 <b>외부 공개하지 않습니다.</b> 보관·파기: <span class=ph>[연구 종료 후 ○년 보관 후 파기 — 기입]</span><br>
+  • 사례·검토 의견은 <b>비공개 연구자료</b>입니다 — 외부 공유·캡처·재배포를 삼가 주세요.<br>
+  • 사례는 <b>교육용·비식별</b> 자료입니다(실제 환자 식별정보 없음). 응답에 학생·환자·동료 식별정보를 적지 말아 주세요.</p>
+
+  <h3><span class=n>5</span>참여는 자발적입니다</h3>
+  <p>참여는 전적으로 자발적이며, <b>불참·중단해도 어떤 불이익도 없습니다.</b> 제출 전 언제든 그만두실 수 있습니다. (응답은 익명 처리되어 제출 후 개별 철회가 어려울 수 있습니다.)</p>
+
+  <h3><span class=n>6</span>한계</h3>
+  <p class=muted>본 조사는 <b>사례 수가 적은 예비 파일럿</b>으로, 결과로 "AI가 전문가에 필적한다/대체한다"고 <b>단정하지 않습니다.</b> 본검증(사례·판정자 확대, 사전등록)을 위한 절차·도구 점검이 목적입니다.</p>
+
+  <label class=chk style="background:#f1f6fe;padding:12px;border-radius:8px"><input type=checkbox id=consent onclick="document.getElementById('startbtn').disabled=!this.checked"> <span>위 내용을 읽고 이해했으며, <b>자발적으로 본 연구 참여에 동의</b>합니다.</span></label>
+  <button id=startbtn class=go disabled onclick=startApp()>동의하고 시작하기 →</button>
 </div>
 
 <div id=app style=display:none>

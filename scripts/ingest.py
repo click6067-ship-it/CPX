@@ -21,16 +21,22 @@ from cpx import llm
 
 _PII = [
     (re.compile(r"[\w.+-]+@[\w.-]+\.\w+"), "[이메일]"),
-    (re.compile(r"01[016-9][-\s.]?\d{3,4}[-\s.]?\d{4}"), "[전화]"),
-    (re.compile(r"0\d{1,2}[-\s.]\d{3,4}[-\s.]\d{4}"), "[전화]"),
+    (re.compile(r"01[016-9][-\s.]*\d{3,4}[-\s.]*\d{4}"), "[전화]"),
+    (re.compile(r"0\d{1,2}[-\s.]*\d{3,4}[-\s.]*\d{4}"), "[전화]"),
     (re.compile(r"\d{6}[-\s]?[1-4]\d{6}"), "[주민번호]"),
 ]
 
 
 def deid(text: str) -> str:
-    """API 전송 전 PII 제거(이메일·전화·주민번호). 이름은 CpxCase에 필드가 없어 미전파 + 프롬프트로도 제외."""
+    """PII 제거: 이메일·전화·주민번호 마스킹 + **개발자/작성자 메타데이터 블록(이름·소속·연락처) 제거**."""
+    text = re.sub(r"\s*@\s*", "@", text)        # 추출로 끊긴 이메일("id @gmail") 복원
+    text = re.sub(r"[\w.+-]+@[\w.\-]*", "[이메일]", text)  # 도메인 깨진 잔재(id@영역)까지 마스킹
     for pat, repl in _PII:
         text = pat.sub(repl, text)
+    # 워크시트 머리말의 개발자 정보 블록 제거 (마스킹된 placeholder를 끝점으로). 이름이 여기 들어있어 함께 제거됨.
+    for end in (r"\[이메일\](?:\s*\[전화\])?", r"\[전화\](?:\s*\[이메일\])?"):
+        text = re.sub(r"(개발자?|작성자|성명|이름|휴대폰|연락처|e-?mail|메일)[\s\S]{0,200}?" + end,
+                      " [개발자 정보 비공개] ", text, flags=re.IGNORECASE)
     return text
 
 
@@ -41,8 +47,12 @@ def extract_text(path: Path) -> str:
             xs = glob.glob(f"{td}/*.xhtml") + glob.glob(f"{td}/*.html")
             if xs:
                 t = Path(xs[0]).read_text(encoding="utf-8", errors="replace")
+                t = re.sub(r"(?is)<(style|script|head)\b[^>]*>.*?</\1>", " ", t)  # CSS/스크립트 블록 통째 제거
                 t = re.sub(r"<[^>]+>", " ", t)
                 t = html.unescape(t)
+                t = re.sub(r"[.#][A-Za-z][\w-]*\s*\{[^}]*\}", " ", t)             # .Section-0 {...} 잔재
+                t = re.sub(r"\b[A-Za-z-]+\s*:\s*[^;{}\n]{1,40};", " ", t)          # margin-top: 10mm; 류
+                t = re.sub(r"CPX\s*워크시트\s*/?\s*\d*", " ", t)                    # 페이지 머리말
                 t = re.sub(r"[ \t]+", " ", t)
                 t = re.sub(r"(\n\s*){2,}", "\n", t)
                 return t.strip()
