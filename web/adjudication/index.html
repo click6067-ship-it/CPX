@@ -150,6 +150,7 @@ function jumpSec(id){const el=document.getElementById(id);if(el)el.scrollIntoVie
 function gerr(m){document.getElementById('gerr').textContent=m}
 function bullets(arr){return arr.map(t=>'• '+t).join('\n')}
 function aiText(c){return bullets(c.ai_findings.map(f=>f.text))}
+function aiTerse(c){return bullets(c.ai_findings.map(f=>{let t=f.text.split('(제안')[0].trim();return t.length>95?t.slice(0,93)+'…':t}))}  // 블라인드용 간결(제안부 제거·길이컷)
 function fmtReview(s){ // 교수 피드백(○·-·N번 구조)을 항목별 불릿으로 — 원문 손실 없이 줄바꿈만
   if(!s) return '';
   s=s.replace(/\s+/g,' ').trim();
@@ -160,7 +161,7 @@ function fmtReview(s){ // 교수 피드백(○·-·N번 구조)을 항목별 불
   s=s.replace(/\s+(\d{1,2}[).]\s)/g,'\n• $1');
   return s.replace(/\n[ ]*[•·\-]?[ ]*(?=\n|$)/g,'').replace(/\n{2,}/g,'\n').trim();
 }
-function revText(c,side){return c.blind[side]==='expert'?fmtReview(c.expert_review):aiText(c)}
+function revText(c,side){return c.blind[side]==='expert'?fmtReview(c.expert_review):aiTerse(c)}
 function st(c){return V[c.case_id]||(V[c.case_id]={bA:{},bB:{},guess:'',conf:'',read:false,pts:{},fnd:{},memo:'',ph:(MODE==='recall'?2:1)})}
 async function enter(){
   PW=document.getElementById('pw').value.trim();judge=document.getElementById('jname').value.trim().replace(/\s+/g,' ');
