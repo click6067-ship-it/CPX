@@ -47,6 +47,14 @@ def _provider(model: str) -> str:
     return "gemini"
 
 
+def _oai_temp(model: str, temperature: float) -> dict:
+    """추론모델(gpt-5*·o*)은 temperature 미지원 → 생략. gpt-4*만 temperature 전달."""
+    m = (model or "").lower()
+    if m.startswith(("gpt-5", "o1", "o3", "o4")):
+        return {}
+    return {"temperature": temperature}
+
+
 @lru_cache(maxsize=1)
 def _gemini():
     from google import genai
@@ -78,7 +86,7 @@ def complete(prompt: str, *, model: str | None = None, temperature: float = 0.0)
             messages=[{"role": "user", "content": prompt}]))
         return "".join(b.text for b in r.content if getattr(b, "type", "") == "text")
     r = _retry(lambda: _openai().chat.completions.create(
-        model=model, temperature=temperature, messages=[{"role": "user", "content": prompt}]))
+        model=model, messages=[{"role": "user", "content": prompt}], **_oai_temp(model, temperature)))
     return r.choices[0].message.content
 
 
@@ -93,8 +101,8 @@ def complete_json(prompt: str, schema, *, model: str | None = None, temperature:
                     "response_schema": schema})).parsed
     if p == "openai":
         r = _retry(lambda: _openai().beta.chat.completions.parse(
-            model=model, temperature=temperature,
-            messages=[{"role": "user", "content": prompt}], response_format=schema))
+            model=model, messages=[{"role": "user", "content": prompt}],
+            response_format=schema, **_oai_temp(model, temperature)))
         return r.choices[0].message.parsed
     # anthropic: tool-use로 구조화 강제
     tool = {"name": "emit", "description": "Return the structured result.",

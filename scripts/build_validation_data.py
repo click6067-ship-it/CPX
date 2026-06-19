@@ -29,7 +29,8 @@ FB_YEARS = {"2021", "2022", "2023", "2024", "2026"}
 CACHE = Path("data/working/dev_drafts"); CACHE.mkdir(parents=True, exist_ok=True)
 OUT = Path("data/working/validation_build"); OUT.mkdir(parents=True, exist_ok=True)
 N = next((int(a.split("=")[1]) for a in sys.argv if a.startswith("--n=")), 6)
-MODEL = next((a.split("=")[1] for a in sys.argv if a.startswith("--model=")), "gemini-2.5-pro")
+MODEL = next((a.split("=")[1] for a in sys.argv if a.startswith("--model=")), "gpt-5.5")   # ②(검증 대상)=최상위
+SCAFFOLD = "gemini-2.5-flash"   # 보조(피드백 발췌·분해·근거추출)는 빠른 모델
 
 Cat = Literal["CLINICAL_CONTENT", "STRUCTURAL", "INTERNAL_LOGIC", "SP_FEASIBILITY",
               "SCORING_VALIDITY", "EDUCATIONAL_ALIGNMENT", "SP_LOGISTICS", "OTHER"]
@@ -116,7 +117,7 @@ for idx, (k, v) in enumerate(pairs):
             qs = llm.complete_json(
                 "각 AI 지적의 근거가 되는 '사례 본문 부분'을 **그대로(verbatim) ≤2줄** 발췌. 지적이 '누락/없음'에 관한 것이면 본문에 근거가 없으니 \"\". findings 순서대로 quotes.\n[사례 본문]\n"
                 + draft[:18000] + "\n[AI 지적]\n" + "\n".join(f"{i}. {f['text']}" for i, f in enumerate(ai_findings)),
-                Quotes, model=MODEL).quotes
+                Quotes, model=SCAFFOLD).quotes
             for i, f in enumerate(ai_findings):
                 f["quote"] = qs[i].strip() if i < len(qs) else ""
         except Exception:
@@ -126,12 +127,12 @@ for idx, (k, v) in enumerate(pairs):
         if yr not in fbc:
             fs = glob.glob(f"{BASE}/**/*피드백*{yr}*.hwp", recursive=True)
             fbc[yr] = clean(deid(extract_text(Path(fs[0])))) if fs else ""
-        fb = llm.complete_json(f"아래 연도 피드백서에서 '{sym}'({v['dx']}) 사례에 대한 피드백 부분만 **빠짐없이 원문 그대로** 발췌. JSON feedback. 없으면 빈문자열.\n\n{fbc[yr][:40000]}", FB, model=MODEL)
+        fb = llm.complete_json(f"아래 연도 피드백서에서 '{sym}'({v['dx']}) 사례에 대한 피드백 부분만 **빠짐없이 원문 그대로** 발췌. JSON feedback. 없으면 빈문자열.\n\n{fbc[yr][:40000]}", FB, model=SCAFFOLD)
         expert_text = clean(fb.feedback)
         if not expert_text:
             print(f"  skip {k} (피드백 매칭 실패)"); continue
         pts = llm.complete_json(
-            f"다음 전문가 피드백을 개별 지적(atomic)으로 enumerate. 각 지적은 구체적으로(원문 표현·대상 유지). category 부여. JSON.\n\n{expert_text}", Points, model=MODEL).points
+            f"다음 전문가 피드백을 개별 지적(atomic)으로 enumerate. 각 지적은 구체적으로(원문 표현·대상 유지). category 부여. JSON.\n\n{expert_text}", Points, model=SCAFFOLD).points
         expert_points = [{"id": f"P{i}", "text": p.point, "category": p.category} for i, p in enumerate(pts)]
         # blind A/B (결정적: 짝수 idx면 A=expert)
         blind = {"A": "expert", "B": "ai"} if idx % 2 == 0 else {"A": "ai", "B": "expert"}
