@@ -1,0 +1,30 @@
+%% CPX-AI 작동방식 (Codex 생성, mermaid). excalidraw ☰ → "Mermaid to Excalidraw"로 import 가능.
+flowchart TD
+  subgraph A["A. 사례개발 루프(교수 지원)"]
+    seed["기존 CPX 사례(씨앗)"]
+    gen["① 생성<br/>(gpt-5.5)"]
+    review["② 검토<br/>(gpt-5.5; 구조 + 임상)"]
+    rag["RAG 근거<br/>(dense: Gemini 임베딩 + sparse: BM25)<br/>교과서 · MedQA"]
+    accept{"② 결과<br/>Accept?"}
+    confirmed["확정 사례"]
+    seed --> gen --> review --> accept
+    rag --> review
+    accept -- "예" --> confirmed
+    accept -- "아니오: 수정 루프" --> gen
+  end
+  subgraph B["B. 검증 H2(현재 파일럿)"]
+    prof_key["교수 과거 피드백<br/>(정답지)"]
+    ai_review["② AI 리뷰<br/>(gpt-5.5)"]
+    blind["블라인드 설문<br/>(교수 A/B 익명 평가, cpx-adj-web)"]
+    aggregate["집계<br/>(recall · precision · ICC · blind성공 · CI)"]
+    prof_key --> blind
+    ai_review --> blind --> aggregate
+  end
+  subgraph C["C. 학생 런타임"]
+    vp["③ 가상환자<br/>(GPT-4o, 음성 STT/TTS)"]
+    student["학생 대화"]
+    grading["④ 자동채점<br/>(GPT-4o, 체크리스트)"]
+    feedback["피드백"]
+    confirmed --> vp --> student --> grading --> feedback
+  end
+  review --> ai_review
