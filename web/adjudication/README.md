@@ -3,7 +3,7 @@
 교수(판정자)가 **주소+암호만** 받아 사례별로 검증 → **중앙 자동수집**. 설계 근거: `docs/validation-design.md`(Codex 1·2라운드 반영).
 
 - **Live:** https://cpx-adj-web.vercel.app  (암호 게이트 + noindex, CPX repo와 분리 배포=사례데이터 안 올라감)
-- **스택:** Vercel 정적 + 서버리스(`/api/*`) + Blob 수집. ② 모델 = gemini-2.5-flash(모델-agnostic, 교체 가능).
+- **스택:** Vercel 정적 + 서버리스(`/api/*`) + Blob 수집. **② 모델 = gpt-5.5**(검증 대상; 모델-agnostic 하네스라 교체 가능). transparency·기술보고서와 동일.
 
 ## 사례별 흐름 (전부 화면에 표시, 생략 없음)
 1. **사례 초안 전문**
@@ -24,7 +24,7 @@
 
 ## 실데이터 전환 / 집계
 ```
-PYTHONPATH=src .venv/bin/python scripts/build_validation_data.py --n=6 --model=gemini-2.5-flash
+PYTHONPATH=src .venv/bin/python scripts/build_validation_data.py --n=6 --model=gpt-5.5
 cp data/working/validation_build/data.js /tmp/cpx-adj-web/lib/data.js
 (cd /tmp/cpx-adj-web && vercel env add SURVEY_PW production; vercel env add ADMIN_PW production; vercel --prod --yes)
 # 집계: scripts/aggregate_validation.py --items data/working/validation_build/cases_meta.json --url <U> --pw <ADMIN_PW>

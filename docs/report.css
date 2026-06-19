@@ -1,0 +1,32 @@
+@page {
+  size: A4;
+  margin: 2cm 1.7cm 2cm 1.7cm;
+  @bottom-center { content: counter(page); color: #999; font-size: 9pt; }
+}
+body {
+  font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+  font-size: 10.5pt; line-height: 1.62; color: #222;
+}
+h1 { font-size: 21pt; color: #1971c2; border-bottom: 3px solid #1971c2; padding-bottom: 6px; margin-top: 0.2em; }
+h2 { font-size: 15pt; color: #1864ab; margin-top: 1.5em; border-bottom: 1px solid #ccd; padding-bottom: 3px; page-break-after: avoid; }
+h3 { font-size: 12pt; color: #2b3a55; margin-top: 1.1em; page-break-after: avoid; }
+p { margin: 0.5em 0; }
+table { border-collapse: collapse; width: 100%; font-size: 9.3pt; margin: 0.7em 0; page-break-inside: avoid; }
+th, td { border: 1px solid #bbb; padding: 5px 7px; text-align: left; vertical-align: top; }
+th { background: #e7f1fb; color: #1864ab; font-weight: bold; }
+tr:nth-child(even) td { background: #fafcff; }
+code { background: #f1f3f5; padding: 1px 4px; border-radius: 3px; font-size: 9pt; font-family: 'Cascadia Code','Consolas',monospace; }
+pre { background: #f6f8fa; border: 1px solid #dde; border-radius: 5px; padding: 9px 11px; font-size: 8pt; line-height: 1.32; page-break-inside: avoid; white-space: pre; }
+pre code { background: none; padding: 0; font-size: 8pt; }
+img { max-width: 100%; display: block; margin: 0.6em auto; border: 1px solid #e0e0e0; border-radius: 4px; }
+blockquote { border-left: 4px solid #ffd43b; background: #fffdf0; margin: 0.6em 0; padding: 6px 13px; color: #555; font-size: 10pt; }
+a { color: #1971c2; text-decoration: none; }
+strong { color: #111; }
+hr { border: none; border-top: 1px solid #ddd; margin: 1.4em 0; }
+ul, ol { margin: 0.4em 0; padding-left: 1.5em; }
+li { margin: 0.18em 0; }
+/* 목차 */
+#TOC, nav#TOC { background: #f8f9fb; border: 1px solid #e0e4ea; border-radius: 6px; padding: 10px 18px; font-size: 9.8pt; page-break-after: always; }
+#TOC ul { list-style: none; padding-left: 1em; }
+#TOC > ul { padding-left: 0; }
+#TOC a { color: #333; }
