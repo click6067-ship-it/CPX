@@ -6,6 +6,8 @@ module.exports = async (req, res) => {
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body || '{}'); } catch (e) { body = {}; } }
   if (!body || body.pw !== PW) return res.status(403).json({ error: '인증 실패' });
+  if (!Array.isArray(body.cases) || !body.cases.length || body.cases.some(c => !c || !c.case_id))
+    return res.status(400).json({ error: '제출 형식 오류(cases/case_id 누락)' });
   const safe = (body.judge || 'anon').replace(/[^0-9A-Za-z가-힣]/g, '_').slice(0, 40) || 'anon';
   const { pw: _pw, ...rec } = body;   // pw만 제외하고 전부 저장(cases/verdicts 등 스키마 무관)
   try {

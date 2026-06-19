@@ -69,10 +69,12 @@ def get_case(k, sym, yr):
 sp = json.load(open("data/working/splits.json", encoding="utf-8"))
 cand = [(k, v) for k, v in sorted(sp["families"].items())
         if v["split"] == "dev_tune" and v["has_draft"] and v["has_final"] and v["year"] in FB_YEARS]
+EXCLUDE = {"고혈압"}   # 블라인드 길이격차 극단(교수 26자 vs AI 2040자=78x) → 제외(Codex 지적)
 seen, pairs = set(), []
 for k, v in cand:
-    if v["symptom"] not in seen:
-        pairs.append((k, v)); seen.add(v["symptom"])
+    if v["symptom"] in EXCLUDE or v["symptom"] in seen:
+        continue
+    pairs.append((k, v)); seen.add(v["symptom"])
     if len(pairs) >= N:
         break
 

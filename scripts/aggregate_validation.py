@@ -109,6 +109,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--items"); ap.add_argument("--results"); ap.add_argument("--url"); ap.add_argument("--pw", default="cpx-demo")
     ap.add_argument("--demo", action="store_true"); ap.add_argument("--boot", type=int, default=3000)
+    ap.add_argument("--mode", default="full", choices=["full", "blind", "recall"])  # 코호트 분리(혼용 오염 방지)
     a = ap.parse_args()
     if a.demo:
         meta, subs = demo(); print("⚠️  데모 모드 — 가상 데이터(수식 검증용)\n")
@@ -122,6 +123,10 @@ def main():
         if key[0] and (key not in _b or s.get("ts", 0) >= _b[key].get("ts", 0)):
             _b[key] = s
     subs = sorted(_b.values(), key=lambda s: (s.get("judge", ""), s.get("mode", "")))
+    other = [s for s in subs if s.get("mode", "full") != a.mode]
+    if other:
+        print(f"⚠️ --mode '{a.mode}' 외 제출 {len(other)}건 제외 (모드: {sorted(set(s.get('mode','full') for s in other))})")
+    subs = [s for s in subs if s.get("mode", "full") == a.mode]
     Mm = {m["case_id"]: m for m in meta}
     judges = [s["judge"] for s in subs]
     print("=" * 66)
@@ -132,12 +137,19 @@ def main():
     perCJ = defaultdict(dict)
     for s in subs:
         for cc in s.get("cases", []):
-            bl = cc.get("blind") or (Mm.get(cc["case_id"], {}) or {}).get("blind")
+            bl = (Mm.get(cc["case_id"], {}) or {}).get("blind") or cc.get("blind")  # meta 신뢰(client 조작 방지)
             if not bl or not cc.get("bA") or not cc.get("bB"):
                 continue
             aiR = cc["bA"] if bl.get("A") == "ai" else cc["bB"]
             exR = cc["bB"] if bl.get("A") == "ai" else cc["bA"]
             perCJ[cc["case_id"]][s["judge"]] = {"ai": aiR, "ex": exR, "guess": cc.get("guess"), "conf": cc.get("conf"), "aiSide": ("A" if bl.get("A") == "ai" else "B")}
+
+    # ── 결측 점검 (조용한 오염 방지) ──
+    nb = sum(1 for cj in perCJ.values() for r in cj.values()
+             if r.get("ai") and r.get("ex") and all(d in r["ai"] for d in DIMS) and all(d in r["ex"] for d in DIMS))
+    expb = len(meta) * len(judges)
+    if a.mode in ("full", "blind") and expb and nb < expb:
+        print(f"⚠️ 블라인드 결측: 완전 {nb}/{expb}건 (미완 {expb-nb}) — 해석 주의")
 
     # ── 1) PRIMARY blind rubric ──
     print("\n[1] 주분석 — 블라인드 루브릭: AI 리뷰 vs 전문가 피드백 (1~5)")
@@ -170,6 +182,10 @@ def main():
         for cc in s.get("cases", []):
             for pid, v in (cc.get("points") or {}).items():
                 pv[cc["case_id"]][pid].append(v)
+    exp_pts = sum(len(m["points"]) for m in meta) * len(judges)
+    got_pts = sum(len(vs) for pm in pv.values() for vs in pm.values())
+    if a.mode in ("full", "recall") and exp_pts and got_pts < exp_pts:
+        print(f"  ⚠️ per-point 결측: {got_pts}/{exp_pts} 판정 (미완 {exp_pts-got_pts})")
     pcat = {(m["case_id"], p["id"]): p["category"] for m in meta for p in m["points"]}
     cons, counts, agree, full = {}, [], 0, 0
     for cid, pm in pv.items():

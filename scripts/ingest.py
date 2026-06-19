@@ -36,7 +36,7 @@ def deid(text: str) -> str:
     # 워크시트 머리말의 개발자 정보 블록 제거 (마스킹된 placeholder를 끝점으로). 이름이 여기 들어있어 함께 제거됨.
     for end in (r"\[이메일\](?:\s*\[전화\])?", r"\[전화\](?:\s*\[이메일\])?"):
         text = re.sub(r"(개발자?|작성자|성명|이름|휴대폰|연락처|e-?mail|메일)[\s\S]{0,200}?" + end,
-                      " [개발자 정보 비공개] ", text, flags=re.IGNORECASE)
+                      " ", text, flags=re.IGNORECASE)
     return text
 
 
