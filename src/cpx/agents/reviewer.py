@@ -78,7 +78,7 @@ def review_clinical(case: CpxCase, model: str | None = None) -> ClinicalReview:
 각 비평: category(CLINICAL_CONTENT/INTERNAL_LOGIC/SP_FEASIBILITY/SAFETY_OVERCLAIM/EDUCATIONAL_ALIGNMENT) · issue · evidence(사례 근거) · suggested_edit · severity(must_fix/optional). 구조/형식 지적은 하지 말 것(②A 담당).
 
 [사례(JSON)]
-{case.model_dump_json(indent=2)[:9000]}"""
+{case.model_dump_json(indent=2)[:30000]}"""
     return llm.complete_json(prompt, ClinicalReview, model=model)
 
 
@@ -95,6 +95,6 @@ def review(case: CpxCase, model: str | None = None) -> ReviewOut:
 {rubric}
 
 [사례(JSON)]
-{case.model_dump_json(indent=2, exclude={'demographics'})[:9000]}
+{case.model_dump_json(indent=2, exclude={'demographics'})[:30000]}
 """
     return llm.complete_json(prompt, ReviewOut, model=model)
