@@ -16,6 +16,15 @@
 .toc a{display:inline-block;background:#eef2f7;color:#2c7be5;border-radius:6px;padding:3px 9px;margin:2px 4px 2px 0;cursor:pointer}
 .toc a:hover{background:#dbe7fb}
 .sech{font-weight:700;color:#1a56a8;background:#eef6ff;border-radius:4px;padding:0 4px;scroll-margin-top:6px}
+.split{display:flex;gap:14px;align-items:flex-start}
+.pane-left{flex:1;min-width:0;position:sticky;top:8px;max-height:88vh;overflow:auto;background:#fff;border:1px solid #e3e8ef;border-left:4px solid #34c759;border-radius:10px;padding:10px 12px}
+.pane-left.full{max-height:none}
+.pane-right{flex:1;min-width:0}
+.draft{white-space:pre-wrap;font-size:14px;line-height:1.6}
+.hl{background:#ffdf6b;border-radius:3px;padding:0 2px;box-shadow:0 0 0 3px #ffdf6b}
+.aifind{padding:8px 2px;border-bottom:1px solid #f0f0f5;font-size:14.5px;white-space:pre-wrap;line-height:1.6}
+.aiq{cursor:pointer;color:#7c4dff;font-weight:700;background:#f3eeff;border-radius:5px;padding:1px 6px;font-size:12px}.aiq:hover{background:#e6dbff}
+@media(max-width:760px){.split{flex-direction:column}.pane-left{position:static;max-height:52vh}}
 .lab{font-size:13px;font-weight:700;color:#46566c;margin:14px 0 2px}
 .sub{font-size:13px;color:#7a8aa0;margin:2px 0 6px}
 .phase{border-top:2px dashed #dbe2ec;margin-top:20px;padding-top:6px}
@@ -114,7 +123,7 @@ const DIMS=[["완전성","놓친 결함 없이 다 짚었나","1 대부분 놓�
   ["안전성","위험·잘못된 수정 유도는 없나","1 위험한 지적 있음 · 3 모호 · 5 전적 안전"]];
 const PV=[["caught","✅ 잡음"],["partial","🟡 부분"],["missed","❌ 못잡음"],["excluded","⊘ 해당없음"]];
 const FV=[["valid_major","타당·중요"],["valid_minor","타당·경미"],["redundant","전문가와 중복"],["wrong","✖ 틀림"],["harmful","⚠ 위험/유해"]];
-let PW="",judge="",CASES=[],ci=0,V={},DEMO=false;
+let PW="",judge="",CASES=[],ci=0,V={},DEMO=false,HL="";
 function K(){return "cpxval_"+judge+"_"+MODE}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function fmtDraft(s){ // 한 줄로 뭉친 추출본을 섹션/항목별 줄바꿈·들여쓰기로 구조화
@@ -127,8 +136,9 @@ function fmtDraft(s){ // 한 줄로 뭉친 추출본을 섹션/항목별 줄바�
   return s.replace(/\n{3,}/g,'\n\n').trim();
 }
 const SECNAMES=[["상황지침","상\\s?황\\s?지\\s?침"],["수험생지침","수험생\\s?지침"],["표준화환자","표준화환자"],["활력징후","활력징후"],["현병력","현\\s?병력"],["과거력","과거력"],["약물력","약물력"],["가족력","가족력"],["사회력","사회력"],["산부인과력","산부인과력"],["신체진찰","신체\\s?진찰"],["환자교육","환자\\s?교육"],["채점표","채점표"],["병력청취","병력\\s?청취"],["환자의사관계","환자[·\\-\\s]?의사\\s?관계"],["감별진단","감별\\s?진단"]];
-function buildDraft(raw,cid){ // 초안 포맷 + 섹션 앵커 + 목차 생성
+function buildDraft(raw,cid,hl){ // 초안 포맷 + 섹션 앵커 + 목차 + 근거 하이라이트
   let html=esc(fmtDraft(raw)); const toc=[];
+  if(hl){const pat=esc(hl).trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'[\\s•·○●■□☐☑▷◦\\-–—]*');try{html=html.replace(new RegExp(pat),'<mark class=hl>$&</mark>')}catch(e){}}
   SECNAMES.forEach(([label,pat],i)=>{
     const re=new RegExp('(^|\\n)('+pat+')');
     if(re.test(html)){const id=cid+'_s'+i;html=html.replace(re,'$1<span class=sech id="'+id+'">$2</span>');toc.push({id,label});}
@@ -184,47 +194,39 @@ function rubric(side,locked){const s=st(CASES[ci]);const b=side==='A'?s.bA:s.bB;
   return DIMS.map(([k,desc,an])=>`<div class=dim><div class=dl>${k} <small style="font-weight:400">(${desc})</small></div><div class=an>${an}</div><div class=lk><span class=ends>낮음</span>`+
     [1,2,3,4,5].map(n=>`<button class="${b[k]==n?'sel':''}" ${locked?'disabled':''} onclick="setR('${side}','${k}',${n})">${n}</button>`).join('')+`<span class=ends>높음</span></div></div>`).join('')}
 function renderCase(){const c=CASES[ci],s=st(c);
-  let h=`<div class=card><div><span class=tag>사례 ${ci+1}/${CASES.length}</span><span class=tag>${esc(c.symptom)}</span>${MODE!=='full'?'<span class=tag>'+MODE+'</span>':''}</div>`;
-  const dd=buildDraft(c.draft,c.case_id);
-  h+=`<div class=lab>📄 사례 초안 전문 <button class=ib style="float:right;padding:2px 8px" onclick="toggleFull(this)">⤢ 전체보기</button></div>`;
-  if(dd.toc.length) h+=`<div class=toc><span class=tl>목차(클릭=이동):</span>`+dd.toc.map(t=>`<a onclick="jumpSec('${t.id}')">${esc(t.label)}</a>`).join('')+`</div>`;
-  h+=`<div class="box case">${dd.html}</div>`;
+  const dd=buildDraft(c.draft,c.case_id,HL);
+  const _de=esc(fmtDraft(c.draft)),hlSet=new Set(c.ai_findings.filter(f=>f.quote&&testHL(_de,f.quote)).map(f=>f.id));
+  let L=`<div class=lab>📄 사례 초안 전문 <button class=ib style="float:right;padding:2px 8px" onclick="toggleFull(this)">⤢ 펼치기</button></div>`;
+  if(dd.toc.length) L+=`<div class=toc><span class=tl>목차:</span>`+dd.toc.map(t=>`<a onclick="jumpSec('${t.id}')">${esc(t.label)}</a>`).join('')+`</div>`;
+  L+=`<div class=draft id=draftbox>${dd.html}</div>`;
+  let R='';
   if(MODE!=='recall'){
-    h+=`<div class=phase><h3>1단계 · 블라인드 비교</h3><div class=sub>두 검토 의견 중 하나는 실제 교수 피드백, 하나는 AI 리뷰입니다(어느 쪽인지 비공개·사례마다 균형 배치). <b>⚠️ 문체·길이로 AI를 추측하지 마시고 내용의 질만</b> 1~5로 평가해 주세요.</div>`;
+    R+=`<div class=phase><h3>1단계 · 블라인드 비교</h3><div class=sub>두 검토 의견 중 하나는 교수 피드백, 하나는 AI입니다(비공개·균형 배치). <b>⚠️ 문체·길이 말고 내용의 질만</b> 1~5로 평가.</div>`;
     const lock=s.ph>1;
-    h+=`<div class=lab>📝 검토 의견 A</div><div class="box rev">${esc(revText(c,'A'))}</div>${rubric('A',lock)}`;
-    h+=`<div class=lab>📝 검토 의견 B</div><div class="box rev">${esc(revText(c,'B'))}</div>${rubric('B',lock)}`;
-    h+=`<div class=lab>🕵 어느 쪽이 AI가 쓴 것 같나요? <small style="font-weight:400">(블라인드 점검용)</small></div><div class=opts>`+
-       [["A","A 같음"],["B","B 같음"],["?","모르겠음"]].map(o=>`<button class="${s.guess===o[0]?'sel':''}" ${lock?'disabled':''} onclick="setG('${o[0]}')">${o[1]}</button>`).join('')+`</div>`;
-    h+=`<div class=sub style="margin-top:6px">확신도</div><div class=opts>`+
-       [["low","낮음"],["mid","보통"],["high","높음"]].map(o=>`<button class="${s.conf===o[0]?'sel':''}" ${lock?'disabled':''} onclick="setC('${o[0]}')">${o[1]}</button>`).join('')+`</div>`;
-    if(s.ph===1){
-      h+=`<label class=chk><input type=checkbox ${s.read?'checked':''} onclick="setRead(this.checked)"> 사례 초안과 두 검토 의견 <b>전문을 모두 읽었습니다.</b></label>`;
-      const last=ci===CASES.length-1;
-      h+= MODE==='blind'
-        ? `<button class=go ${p1Done(s)?'':'disabled'} onclick=${last?'finishAll()':'nextCase()'}>${last?'완료 · 제출 ✓':'이 사례 완료, 다음 →'}</button>`
-        : `<button class=go ${p1Done(s)?'':'disabled'} onclick=adv2()>블라인드 평가 확정, 공개하기 →</button>`;
-    }
-    h+=`</div>`;
+    R+=`<div class=lab>📝 검토 의견 A</div><div class="box rev">${esc(revText(c,'A'))}</div>${rubric('A',lock)}`;
+    R+=`<div class=lab>📝 검토 의견 B</div><div class="box rev">${esc(revText(c,'B'))}</div>${rubric('B',lock)}`;
+    R+=`<div class=lab>🕵 어느 쪽이 AI 같나요? <small style="font-weight:400">(블라인드 점검)</small></div><div class=opts>`+[["A","A 같음"],["B","B 같음"],["?","모르겠음"]].map(o=>`<button class="${s.guess===o[0]?'sel':''}" ${lock?'disabled':''} onclick="setG('${o[0]}')">${o[1]}</button>`).join('')+`</div>`;
+    R+=`<div class=sub style="margin-top:6px">확신도</div><div class=opts>`+[["low","낮음"],["mid","보통"],["high","높음"]].map(o=>`<button class="${s.conf===o[0]?'sel':''}" ${lock?'disabled':''} onclick="setC('${o[0]}')">${o[1]}</button>`).join('')+`</div>`;
+    if(s.ph===1){const last=ci===CASES.length-1;
+      R+=`<label class=chk><input type=checkbox ${s.read?'checked':''} onclick="setRead(this.checked)"> 사례·두 의견 <b>전문을 모두 읽었습니다.</b></label>`;
+      R+= MODE==='blind'?`<button class=go ${p1Done(s)?'':'disabled'} onclick=${last?'finishAll()':'nextCase()'}>${last?'완료·제출 ✓':'다음 →'}</button>`:`<button class=go ${p1Done(s)?'':'disabled'} onclick=adv2()>블라인드 확정, 공개 →</button>`;}
+    R+=`</div>`;
   }
   if(MODE!=='blind'&&s.ph>=2){const aiSide=c.blind.A==='ai'?'A':'B';
-    if(MODE==='full')h+=`<div class=phase><div class=reveal>🔓 공개: <b>검토 의견 ${aiSide}</b>가 AI였습니다. (의견 ${aiSide==='A'?'B':'A'} = 실제 교수 피드백)</div>`;
-    else h+=`<div class=phase>`;
-    h+=`<h3>2단계 · 교수 지적을 AI가 잡았나</h3>`;
-    h+=`<div class=lab>👩‍🏫 실제 교수 피드백 전문</div><div class="box exp">${esc(fmtReview(c.expert_review))}</div>`;
-    h+=`<div class=lab>🤖 AI 리뷰 전체</div><div class="box ai">${esc(aiText(c))}</div>`;
-    h+=`<div class=sub>아래 각 '교수 지적'을, 위 AI 리뷰가 잡아냈는지 표시하세요.</div>`;
-    c.expert_points.forEach((p,n)=>{h+=`<div class=qrow><div class=qt>${n+1}. ${esc(p.text)} <span class=tag>${esc(p.category)}</span></div><div class=opts>`+
-      PV.map(o=>`<button class="${s.pts[p.id]===o[0]?'sel':''}" onclick="setP('${p.id}','${o[0]}')">${o[1]}</button>`).join('')+`</div></div>`});
-    if(s.ph===2)h+=`<button class=go ${ptsDone(s,c)?'':'disabled'} onclick=adv3()>다음 →</button>`;
-    h+=`</div>`;}
-  if(MODE!=='blind'&&s.ph>=3){h+=`<div class=phase><h3>3단계 · AI가 낸 지적은 타당한가</h3><div class=sub>AI 지적 각각이 타당/틀림/위험한지 표시하세요.</div>`;
-    c.ai_findings.forEach((f,n)=>{h+=`<div class=qrow><div class=qt>${n+1}. ${esc(f.text)}</div><div class=opts>`+
-      FV.map(o=>`<button class="${s.fnd[f.id]===o[0]?'sel':''}" onclick="setF('${f.id}','${o[0]}')">${o[1]}</button>`).join('')+`</div></div>`});
+    R+=(MODE==='full')?`<div class=phase><div class=reveal>🔓 공개: <b>의견 ${aiSide}</b>=AI (의견 ${aiSide==='A'?'B':'A'}=교수)</div>`:`<div class=phase>`;
+    R+=`<h3>2단계 · 교수 지적을 AI가 잡았나</h3>`;
+    R+=`<div class=lab>👩‍🏫 교수 피드백 전문</div><div class="box exp">${esc(fmtReview(c.expert_review))}</div>`;
+    R+=`<div class=lab>🤖 AI 리뷰 <small style="font-weight:400">(🔍=왼쪽 사례에 근거 하이라이트)</small></div>`+aiList(c,hlSet);
+    R+=`<div class=sub>각 '교수 지적'을 위 AI 리뷰가 잡았는지 표시.</div>`;
+    c.expert_points.forEach((p,n)=>{R+=`<div class=qrow><div class=qt>${n+1}. ${esc(p.text)} <span class=tag>${esc(p.category)}</span></div><div class=opts>`+PV.map(o=>`<button class="${s.pts[p.id]===o[0]?'sel':''}" onclick="setP('${p.id}','${o[0]}')">${o[1]}</button>`).join('')+`</div></div>`});
+    if(s.ph===2)R+=`<button class=go ${ptsDone(s,c)?'':'disabled'} onclick=adv3()>다음 →</button>`;
+    R+=`</div>`;}
+  if(MODE!=='blind'&&s.ph>=3){R+=`<div class=phase><h3>3단계 · AI 지적은 타당한가</h3><div class=sub>🔍=왼쪽 사례에 근거 하이라이트. 각 지적이 타당/틀림/위험한지.</div>`;
+    c.ai_findings.forEach((f,n)=>{R+=`<div class=qrow><div class=qt>${hlSet.has(f.id)?`<span class=aiq onclick="setHLById('${f.id}')">🔍</span> `:''}${n+1}. ${esc(f.text)}</div><div class=opts>`+FV.map(o=>`<button class="${s.fnd[f.id]===o[0]?'sel':''}" onclick="setF('${f.id}','${o[0]}')">${o[1]}</button>`).join('')+`</div></div>`});
     const last=ci===CASES.length-1;
-    h+=`<button class=go ${fndDone(s,c)?'':'disabled'} onclick=${last?'finishAll()':'nextCase()'}>${last?'완료 · 제출 ✓':'이 사례 완료, 다음 →'}</button></div>`;}
-  h+=`<div class=lab style="margin-top:16px">✏️ 이 사례 메모 (선택)</div><textarea class=note rows=2 placeholder="자유 의견·애매했던 점 등" oninput="setMemo(this.value)">${esc(s.memo||'')}</textarea>`;
-  h+=`</div>`;
+    R+=`<button class=go ${fndDone(s,c)?'':'disabled'} onclick=${last?'finishAll()':'nextCase()'}>${last?'완료·제출 ✓':'다음 사례 →'}</button></div>`;}
+  R+=`<div class=lab style="margin-top:16px">✏️ 이 사례 메모 (선택)</div><textarea class=note rows=2 placeholder="자유 의견·애매한 점" oninput="setMemo(this.value)">${esc(s.memo||'')}</textarea>`;
+  let h=`<div class=card><div><span class=tag>사례 ${ci+1}/${CASES.length}</span><span class=tag>${esc(c.symptom)}</span>${MODE!=='full'?'<span class=tag>'+MODE+'</span>':''}</div><div class=split><div class=pane-left>${L}</div><div class=pane-right>${R}</div></div></div>`;
   document.getElementById('casebox').innerHTML=h;
   const done=CASES.filter(caseDone).length;document.getElementById('fill').style.width=(done/CASES.length*100)+'%';
   document.getElementById('pct').textContent=`(사례 ${ci+1}/${CASES.length} · 완료 ${done})`;
@@ -236,12 +238,15 @@ function setRead(b){st(CASES[ci]).read=b;save();renderCase()}
 function setP(id,v){st(CASES[ci]).pts[id]=v;save();renderCase()}
 function setF(id,v){st(CASES[ci]).fnd[id]=v;save();renderCase()}
 function setMemo(v){st(CASES[ci]).memo=v;save()}
-function toggleFull(btn){const box=btn.closest('.lab').nextElementSibling;box.classList.toggle('full');btn.textContent=box.classList.contains('full')?'▲ 접기':'⤢ 전체보기'}
+function toggleFull(btn){const p=btn.closest('.pane-left');p.classList.toggle('full');btn.textContent=p.classList.contains('full')?'▲ 접기':'⤢ 펼치기'}
+function setHLById(fid){const f=CASES[ci].ai_findings.find(x=>x.id===fid);HL=(f&&f.quote)||'';renderCase();setTimeout(()=>{const m=document.querySelector('.hl');if(m)m.scrollIntoView({block:'center',behavior:'smooth'})},80)}
+function testHL(de,q){const pat=esc(q).trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'[\\s•·○●■□☐☑▷◦\\-–—]*');try{return new RegExp(pat).test(de)}catch(e){return false}}
+function aiList(c,hs){return `<div class="box ai">`+c.ai_findings.map(f=>`<div class=aifind>${hs.has(f.id)?`<span class=aiq onclick="setHLById('${f.id}')" title="사례 근거 보기">🔍 근거</span> `:''}${esc(f.text)}</div>`).join('')+`</div>`}
 function adv2(){st(CASES[ci]).ph=2;save();renderCase();window.scrollTo(0,document.body.scrollHeight*0.45)}
 function adv3(){st(CASES[ci]).ph=3;save();renderCase();window.scrollTo(0,document.body.scrollHeight*0.6)}
 function save(){try{localStorage.setItem(K(),JSON.stringify(V))}catch(e){}}
-function nextCase(){if(ci<CASES.length-1){ci++;renderCase();window.scrollTo(0,0)}else finishAll()}
-function prevCase(){if(ci>0){ci--;renderCase();window.scrollTo(0,0)}}
+function nextCase(){HL='';if(ci<CASES.length-1){ci++;renderCase();window.scrollTo(0,0)}else finishAll()}
+function prevCase(){HL='';if(ci>0){ci--;renderCase();window.scrollTo(0,0)}}
 function finishAll(){document.getElementById('app').style.display='none';document.getElementById('fin').style.display='block';document.getElementById('helpbtn').style.display='none';submitAll()}
 function payload(){return {pw:PW,judge,mode:MODE,ts:Date.now(),cases:CASES.map(c=>{const s=st(c);return {case_id:c.case_id,blind:c.blind,bA:s.bA,bB:s.bB,guess:s.guess,conf:s.conf,read:s.read,points:s.pts,findings:s.fnd,memo:s.memo||''}})}}
 async function submitAll(){const fm=document.getElementById('finmsg');fm.textContent='제출 중…';

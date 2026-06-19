@@ -48,6 +48,10 @@ class FB(BaseModel):
     feedback: str
 
 
+class Quotes(BaseModel):
+    quotes: list[str]   # ai_findings 순서대로, 근거 사례본문 verbatim(≤2줄) 또는 ""(누락 지적=본문 근거 없음)
+
+
 def clean(t: str) -> str:
     t = t.replace("\r", "")
     t = re.sub(r"[ \t]+\n", "\n", t)
@@ -107,6 +111,17 @@ for idx, (k, v) in enumerate(pairs):
             if s and s not in sig:
                 sig.add(s); uniq.append(f)
         ai_findings = [{"id": f"F{i}", "text": t} for i, t in enumerate(uniq)]
+        # 각 AI 지적의 근거 원문(verbatim) — 사례 본문 하이라이트용. 누락 지적은 "".
+        try:
+            qs = llm.complete_json(
+                "각 AI 지적의 근거가 되는 '사례 본문 부분'을 **그대로(verbatim) ≤2줄** 발췌. 지적이 '누락/없음'에 관한 것이면 본문에 근거가 없으니 \"\". findings 순서대로 quotes.\n[사례 본문]\n"
+                + draft[:18000] + "\n[AI 지적]\n" + "\n".join(f"{i}. {f['text']}" for i, f in enumerate(ai_findings)),
+                Quotes, model=MODEL).quotes
+            for i, f in enumerate(ai_findings):
+                f["quote"] = qs[i].strip() if i < len(qs) else ""
+        except Exception:
+            for f in ai_findings:
+                f["quote"] = ""
         # 전문가 피드백 전문
         if yr not in fbc:
             fs = glob.glob(f"{BASE}/**/*피드백*{yr}*.hwp", recursive=True)
