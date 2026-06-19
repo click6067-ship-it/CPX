@@ -1,14 +1,15 @@
 """
-H2 검증 집계 v2 (Codex 재설계) — case 중심.
+H2 검증 집계 v2 (Codex 1·2라운드 반영) — case 중심.
 실행(실제): PYTHONPATH=src .venv/bin/python scripts/aggregate_validation.py \
             --items data/working/validation_build/cases_meta.json --url <U> --pw <ADMIN_PW>
 실행(데모): PYTHONPATH=src .venv/bin/python scripts/aggregate_validation.py --demo
 
 산출:
-  1) [PRIMARY] case-level blind 루브릭 — AI 리뷰 vs 전문가 피드백 (차원별 평균, AI−전문가 차이 + case-cluster 부트스트랩 CI)
-  2) [SECONDARY] per-point recall — 다수결 합의 + Fleiss kappa + 카테고리별 + case-cluster CI
-  3) precision — AI 지적의 타당/중복/틀림/유해 비율
-⚠️ 파일럿·dev_tune. CI는 case 클러스터(항목 아닌). 과대주장 금지.
+  1) [PRIMARY] 블라인드 루브릭 — AI vs 전문가(차원별 평균·AI−전문가 차이 + case-cluster CI), 비열등성 해석(δ는 교수합의),
+     루브릭 신뢰도 ICC(2,k), **블라인드 성공률**(교수가 AI를 못 맞힐수록 블라인드 양호)
+  2) [SECONDARY] per-point recall — 다수결 + Fleiss + 카테고리별 + case-cluster CI + LOO
+  3) precision/safety — AI 지적 타당성 + **harmful = 안전 게이트**
+⚠️ 파일럿(클러스터<30)·dev_tune. CI·카테고리·precision은 exploratory. 비열등성·사전등록은 본검증.
 """
 import json, sys, argparse, urllib.request
 from collections import Counter, defaultdict
@@ -20,9 +21,8 @@ FV = ["valid_major", "valid_minor", "redundant", "wrong", "harmful"]
 RNG = np.random.default_rng(0)
 
 
-def kappa_label(k):
-    return ("almost perfect" if k > .8 else "substantial" if k > .6 else "moderate" if k > .4
-            else "fair" if k > .2 else "slight" if k > 0 else "poor")
+def kap_lab(k):
+    return ("almost perfect" if k > .8 else "substantial" if k > .6 else "moderate" if k > .4 else "fair" if k > .2 else "slight" if k > 0 else "poor")
 
 
 def fleiss(counts):
@@ -38,12 +38,26 @@ def fleiss(counts):
     return 1.0 if Pe >= 1 else float((Pi.mean() - Pe) / (1 - Pe))
 
 
+def icc2k(mat):
+    """ICC(2,k) 절대일치 — rows=사례, cols=판정자 (결측 사례 제외)."""
+    M = np.array([r for r in mat if len(r) == len(mat[0])], float)
+    if M.shape[0] < 2 or M.shape[1] < 2:
+        return None
+    n, k = M.shape; gm = M.mean()
+    MSR = k * ((M.mean(1) - gm) ** 2).sum() / (n - 1)
+    MSC = n * ((M.mean(0) - gm) ** 2).sum() / (k - 1)
+    SSE = ((M - gm) ** 2).sum() - k * ((M.mean(1) - gm) ** 2).sum() - n * ((M.mean(0) - gm) ** 2).sum()
+    MSE = SSE / ((n - 1) * (k - 1))
+    den = MSR + (MSC - MSE) / n
+    return None if den <= 0 else float((MSR - MSE) / den)
+
+
 def consensus(vs):
     c = Counter(v for v in vs if v)
     if not c:
-        return None, False
+        return None
     t = c.most_common()
-    return t[0][0], (len(t) > 1 and t[0][1] == t[1][1])
+    return t[0][0]
 
 
 def mean(a):
@@ -58,38 +72,37 @@ def load_subs(a):
     return d.get("submissions", d) if isinstance(d, dict) else d
 
 
-def demo():
-    meta = [{"case_id": f"c{i}", "symptom": s, "year": "2023",
-             "blind": ({"A": "expert", "B": "ai"} if i % 2 == 0 else {"A": "ai", "B": "expert"}),
-             "points": [{"id": f"P{j}", "category": cat} for j, cat in enumerate(["CLINICAL_CONTENT", "CLINICAL_CONTENT", "INTERNAL_LOGIC", "STRUCTURAL"])],
-             "finding_ids": [f"F{j}" for j in range(4)]}
-            for i, s in enumerate(["흉통", "두통", "복통", "발열"])]
-    subs = []
-    for ji, jn in enumerate(["김교수", "이교수", "박교수"]):
-        cs = []
-        for i, m in enumerate(meta):
-            ai_hi = {d: 4 + ((i + ji) % 2) for d in DIMS}      # AI 약간 낮게~비슷
-            ex_hi = {d: 4 + ((i + 1) % 2) for d in DIMS}
-            bA, bB = (ex_hi, ai_hi) if m["blind"]["A"] == "expert" else (ai_hi, ex_hi)
-            pts = {f"P{j}": ["caught", "caught", "missed", "partial"][j] if (j + ji) % 4 else "caught" for j in range(4)}
-            fnd = {f"F{j}": ["valid_major", "valid_minor", "redundant", "wrong"][j] for j in range(4)}
-            cs.append({"case_id": m["case_id"], "blind": m["blind"], "bA": bA, "bB": bB, "points": pts, "findings": fnd})
-        subs.append({"judge": jn, "cases": cs})
-    return meta, subs
-
-
-def boot_cluster(case_vals, stat, B=3000):
-    """case_vals: {case_id: [per-judge value]} → 클러스터(case) 부트스트랩 95% CI of stat(flatten)."""
+def boot_cluster(case_vals, B=3000):
     cids = list(case_vals)
     if not cids:
         return (float("nan"), float("nan"))
     bs = []
     for _ in range(B):
-        samp = RNG.choice(len(cids), len(cids), replace=True)
-        vals = [v for si in samp for v in case_vals[cids[si]]]
+        s = RNG.choice(len(cids), len(cids), replace=True)
+        vals = [v for si in s for v in case_vals[cids[si]]]
         if vals:
-            bs.append(stat(vals))
+            bs.append(mean(vals))
     return tuple(np.percentile(bs, [2.5, 97.5])) if bs else (float("nan"), float("nan"))
+
+
+def demo():
+    meta = [{"case_id": f"c{i}", "symptom": s, "year": "2023",
+             "blind": ({"A": "expert", "B": "ai"} if i % 2 == 0 else {"A": "ai", "B": "expert"}),
+             "points": [{"id": f"P{j}", "category": cat} for j, cat in enumerate(["CLINICAL_CONTENT", "CLINICAL_CONTENT", "INTERNAL_LOGIC", "STRUCTURAL"])],
+             "finding_ids": [f"F{j}" for j in range(4)]} for i, s in enumerate(["흉통", "두통", "복통", "발열", "기침"])]
+    subs = []
+    for ji, jn in enumerate(["김교수", "이교수", "박교수"]):
+        cs = []
+        for i, m in enumerate(meta):
+            ai = {d: 4 - (i % 2) + (ji % 2) for d in DIMS}
+            ex = {d: 4 + ((i + 1) % 2) for d in DIMS}
+            bA, bB = (ex, ai) if m["blind"]["A"] == "expert" else (ai, ex)
+            cs.append({"case_id": m["case_id"], "blind": m["blind"], "bA": bA, "bB": bB,
+                       "guess": ["A", "B", "?"][(i + ji) % 3], "conf": ["low", "mid", "high"][i % 3], "read": True,
+                       "points": {f"P{j}": ["caught", "caught", "missed", "partial"][j] for j in range(4)},
+                       "findings": {f"F{j}": ["valid_major", "valid_minor", "redundant", "wrong"][j] for j in range(4)}})
+        subs.append({"judge": jn, "cases": cs})
+    return meta, subs
 
 
 def main():
@@ -103,37 +116,56 @@ def main():
         if not a.items or not (a.results or a.url):
             ap.error("--items 와 (--results 또는 --url) 필요 (또는 --demo)")
         meta = json.loads(open(a.items, encoding="utf-8").read()); subs = load_subs(a)
+    _b = {}                                   # 재제출 대비: judge별 최신 ts만
+    for s in subs:
+        j = s.get("judge")
+        if j and (j not in _b or s.get("ts", 0) >= _b[j].get("ts", 0)):
+            _b[j] = s
+    subs = sorted(_b.values(), key=lambda s: s.get("judge", ""))
     Mm = {m["case_id"]: m for m in meta}
     judges = [s["judge"] for s in subs]
-    print("=" * 64)
+    print("=" * 66)
     print(f"판정자 {len(judges)}명: {', '.join(judges)} · 사례 {len(meta)}")
-    print("=" * 64)
+    print("=" * 66)
 
-    # ── 1) PRIMARY: blind 루브릭 (AI vs 전문가) ──
-    by = defaultdict(list)  # case_id -> [(aiR, exR)]
+    # perCJ[case][judge] = {'ai','ex','guess','conf'}
+    perCJ = defaultdict(dict)
     for s in subs:
         for cc in s.get("cases", []):
             bl = cc.get("blind") or (Mm.get(cc["case_id"], {}) or {}).get("blind")
-            if not bl:
+            if not bl or not cc.get("bA") or not cc.get("bB"):
                 continue
-            aiR = cc.get("bA") if bl.get("A") == "ai" else cc.get("bB")
-            exR = cc.get("bB") if bl.get("A") == "ai" else cc.get("bA")
-            if aiR and exR:
-                by[cc["case_id"]].append((aiR, exR))
-    print("\n[1] 주 분석 — 블라인드 루브릭: AI 리뷰 vs 전문가 피드백 (1~5, 높을수록 우수)")
-    print("    (교수가 어느 쪽이 AI인지 모르고 평가. AI−전문가 차이의 95% CI가 0 부근/이상이면 'AI가 전문가에 필적')")
+            aiR = cc["bA"] if bl.get("A") == "ai" else cc["bB"]
+            exR = cc["bB"] if bl.get("A") == "ai" else cc["bA"]
+            perCJ[cc["case_id"]][s["judge"]] = {"ai": aiR, "ex": exR, "guess": cc.get("guess"), "conf": cc.get("conf"), "aiSide": ("A" if bl.get("A") == "ai" else "B")}
+
+    # ── 1) PRIMARY blind rubric ──
+    print("\n[1] 주분석 — 블라인드 루브릭: AI 리뷰 vs 전문가 피드백 (1~5)")
+    print("    비열등성: AI−전문가 차이 하한CI > −δ 이면 '필적'(δ=교수합의 최소실질차, 본검증서 사전지정)")
     for d in DIMS:
-        cv_ai = {c: [a[d] for a, e in l if d in a] for c, l in by.items()}
-        cv_ex = {c: [e[d] for a, e in l if d in e] for c, l in by.items()}
-        cv_diff = {c: [a[d] - e[d] for a, e in l if d in a and d in e] for c, l in by.items()}
-        ai = [v for l in cv_ai.values() for v in l]; ex = [v for l in cv_ex.values() for v in l]
+        ai = [r["ai"][d] for c in perCJ.values() for r in c.values() if d in r["ai"]]
+        ex = [r["ex"][d] for c in perCJ.values() for r in c.values() if d in r["ex"]]
         if not ai:
             continue
-        lo, hi = boot_cluster({c: v for c, v in cv_diff.items() if v}, mean, a.boot)
-        print(f"  {d:5s}  AI {mean(ai):.2f}  vs  전문가 {mean(ex):.2f}   차이 {mean(ai)-mean(ex):+.2f}  [95%CI {lo:+.2f}~{hi:+.2f}]")
+        cv = {c: [r["ai"][d] - r["ex"][d] for r in cj.values() if d in r["ai"] and d in r["ex"]] for c, cj in perCJ.items()}
+        lo, hi = boot_cluster({c: v for c, v in cv.items() if v}, a.boot)
+        print(f"  {d:5s}  AI {mean(ai):.2f} vs 전문가 {mean(ex):.2f}  차이 {mean(ai)-mean(ex):+.2f} [95%CI {lo:+.2f}~{hi:+.2f}]")
+    # ICC(2,k) — 종합(4차원 평균) 판정자 신뢰도
+    cids_full = [c for c, cj in perCJ.items() if len(cj) == len(judges)]
+    if len(cids_full) >= 2 and len(judges) >= 2:
+        ai_mat = [[mean([cj[j]["ai"][d] for d in DIMS if d in cj[j]["ai"]]) for j in judges] for c in cids_full for cj in [perCJ[c]]]
+        ex_mat = [[mean([cj[j]["ex"][d] for d in DIMS if d in cj[j]["ex"]]) for j in judges] for c in cids_full for cj in [perCJ[c]]]
+        ia, ie = icc2k(ai_mat), icc2k(ex_mat)
+        print(f"    판정자 신뢰도 ICC(2,k): AI리뷰 {ia:.2f}" + (f" · 전문가 {ie:.2f}" if ie is not None else "") + f"  (완전판정 {len(cids_full)}사례)" if ia is not None else "")
+    # 블라인드 성공률
+    g = [(r["guess"], r["conf"], r["aiSide"]) for cj in perCJ.values() for r in cj.values() if r.get("guess")]
+    decided = [(gu, co, sd) for gu, co, sd in g if gu in ("A", "B")]
+    if decided:
+        corr = sum(gu == sd for gu, co, sd in decided)
+        print(f"    🕵 블라인드 성공: 교수가 AI를 맞힌 비율 {corr}/{len(decided)} = {corr/len(decided):.0%} (모름 {len(g)-len(decided)})  · 50%근접=블라인드 양호, 높으면 문체 노출")
 
-    # ── 2) SECONDARY: per-point recall ──
-    pv = defaultdict(lambda: defaultdict(list))  # case -> pid -> [verdict]
+    # ── 2) SECONDARY recall ──
+    pv = defaultdict(lambda: defaultdict(list))
     for s in subs:
         for cc in s.get("cases", []):
             for pid, v in (cc.get("points") or {}).items():
@@ -142,7 +174,7 @@ def main():
     cons, counts, agree, full = {}, [], 0, 0
     for cid, pm in pv.items():
         for pid, vs in pm.items():
-            lab, _ = consensus(vs); cons[(cid, pid)] = lab
+            cons[(cid, pid)] = consensus(vs)
             vv = [x for x in vs if x]
             if len(vv) >= 2:
                 full += 1; counts.append([sum(1 for x in vv if x == o) for o in PV]); agree += len(set(vv)) == 1
@@ -152,33 +184,35 @@ def main():
     for (c, p) in scored:
         cv_rec[c].append(1.0 if cons[(c, p)] == "caught" else 0.0)
     allrec = [v for l in cv_rec.values() for v in l]
-    print("\n[2] 보조 분석 — per-point recall (전문가 지적을 AI가 잡았나, 다수결 합의)")
+    print("\n[2] 보조분석 — per-point recall (다수결 합의)")
     if k is not None:
-        print(f"    판정자 일치도 Fleiss kappa = {k:.3f} ({kappa_label(k)}) · 전원일치 {agree}/{full}")
+        print(f"    일치도(순서형 근사) Fleiss kappa={k:.3f} ({kap_lab(k)}) · 전원일치 {agree}/{full}  [본검증: weighted/Gwet 권장]")
     if allrec:
-        lo, hi = boot_cluster(cv_rec, mean, a.boot)
-        print(f"    strict recall = {mean(allrec):.0%}  [95%CI {lo:.0%}~{hi:.0%}, case-cluster]  (분석 {len(scored)} · excluded {sum(l=='excluded' for l in cons.values())})")
+        lo, hi = boot_cluster(cv_rec, a.boot)
+        loo = [mean([v for cc, l in cv_rec.items() if cc != cx for v in l]) for cx in cv_rec] if len(cv_rec) > 1 else []
+        print(f"    strict recall={mean(allrec):.0%} [95%CI {lo:.0%}~{hi:.0%}, case-cluster]" + (f" · LOO {min(loo):.0%}~{max(loo):.0%}" if loo else "") + f"  (분석 {len(scored)} · excluded {sum(l=='excluded' for l in cons.values())})")
     bycat = defaultdict(list)
     for (c, p) in scored:
         bycat[pcat.get((c, p), "?")].append(1.0 if cons[(c, p)] == "caught" else 0.0)
     for cat, l in sorted(bycat.items(), key=lambda x: -len(x[1])):
         print(f"      {cat:22s} {int(sum(l))}/{len(l)} = {mean(l):.0%}" + ("  (n작음)" if len(l) < 5 else ""))
 
-    # ── 3) precision: AI 지적 타당성 ──
+    # ── 3) precision + safety gate ──
     fv = defaultdict(list)
     for s in subs:
         for cc in s.get("cases", []):
             for fid, v in (cc.get("findings") or {}).items():
                 fv[(cc["case_id"], fid)].append(v)
-    fc = {k2: consensus(v)[0] for k2, v in fv.items()}
-    tot = [x for x in fc.values() if x]
+    fc = [consensus(v) for v in fv.values()]
+    tot = [x for x in fc if x]
     if tot:
         cnt = Counter(tot)
         valid = cnt["valid_major"] + cnt["valid_minor"] + cnt["redundant"]
-        print("\n[3] precision — AI가 낸 지적의 타당성 (다수결, " + str(len(tot)) + "개)")
-        print(f"    타당(중복포함) {valid}/{len(tot)} = {valid/len(tot):.0%}  · 중요한 타당 {cnt['valid_major']} · 경미 {cnt['valid_minor']} · 중복 {cnt['redundant']}")
-        print(f"    ⚠ 틀림 {cnt['wrong']} ({cnt['wrong']/len(tot):.0%}) · 유해 {cnt['harmful']} ({cnt['harmful']/len(tot):.0%})")
-    print("\n⚠️ 파일럿·dev_tune·다수결. case-cluster CI. 표본 작음 → 카테고리·precision은 exploratory.")
+        print("\n[3] precision/safety — AI 지적 타당성 (다수결, " + str(len(tot)) + "개)")
+        print(f"    타당(중복포함) {valid}/{len(tot)} = {valid/len(tot):.0%} · 중요 {cnt['valid_major']} · 경미 {cnt['valid_minor']} · 중복 {cnt['redundant']} · 틀림 {cnt['wrong']}")
+        h = cnt["harmful"]
+        print(f"    🚨 안전 게이트 — harmful(위험/유해) {h}건 ({h/len(tot):.0%})  " + ("✅ 0건" if h == 0 else "❌ >0 → 본검증 차단/원인분석 필요"))
+    print("\n⚠️ 파일럿·dev_tune·다수결. 표본<30클러스터 → CI·카테고리·precision exploratory. 비열등성 δ·사전등록·코호트분리·BARS훈련은 본검증.")
 
 
 if __name__ == "__main__":

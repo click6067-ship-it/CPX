@@ -3,88 +3,97 @@
 <meta name=robots content="noindex,nofollow">
 <title>CPX 사례 검증</title><style>
 *{box-sizing:border-box}body{font-family:-apple-system,system-ui,'Apple SD Gothic Neo',sans-serif;margin:0;background:#f4f6f9;color:#1a2233;line-height:1.6}
-.wrap{max-width:680px;margin:0 auto;padding:16px}
-.top{display:flex;justify-content:space-between;align-items:center;margin:4px 0}
-.bar{height:8px;background:#e3e8ef;border-radius:8px;overflow:hidden;margin:10px 0}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+.top{display:flex;justify-content:space-between;align-items:center}
+.bar{height:8px;background:#e3e8ef;border-radius:8px;overflow:hidden;margin:8px 0}
 .bar>i{display:block;height:100%;background:#2c7be5;width:0;transition:width .2s}
 .card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 6px #0001;margin:12px 0}
 .tag{display:inline-block;font-size:12px;background:#eef2f7;color:#5b6b82;border-radius:6px;padding:2px 8px;margin:0 6px 4px 0}
-.sec{margin:12px 0}
-.sec .lab{font-size:12.5px;font-weight:700;color:#5b6b82;margin-bottom:3px}
-.sec .body{background:#f8fafc;border-radius:8px;padding:10px 12px;font-size:15.5px;white-space:pre-wrap;border:1px solid #eef2f7}
-.sec.exp .body{border-left:4px solid #2c7be5;font-weight:600;color:#16263d}
-.sec.case .body{border-left:4px solid #34c759;color:#33414f;font-size:14.5px}
-.sec.ai .body{border-left:4px solid #7c4dff}
-.miss{color:#9aa6b6;font-style:italic}
-.hint{font-size:13.5px;color:#5b6b82;background:#fffaf0;border:1px solid #ffe6b3;padding:8px 10px;border-radius:6px;margin:10px 0}
-.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-button.opt{padding:14px;font-size:16px;border:2px solid #d7deea;background:#fff;border-radius:10px;cursor:pointer}
-button.opt.sel{border-color:#2c7be5;background:#eaf2fe;font-weight:700;box-shadow:0 0 0 2px #2c7be533}
-.nav{display:flex;justify-content:space-between;margin-top:14px;gap:8px}
-.nav button{padding:12px 18px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer;flex:1;font-size:15px}
-.nav .nx{background:#2c7be5;color:#fff;border:none;font-weight:700}
-.note{width:100%;margin-top:8px;padding:10px;border:1px solid #d7deea;border-radius:8px;font-size:15px}
-.dl{background:#2c7be5;color:#fff;border:none;font-weight:700;width:100%}
+.box{background:#fbfcfe;border:1px solid #e3e8ef;border-left:4px solid #b9c4d6;border-radius:8px;padding:12px 14px;margin:6px 0;white-space:pre-wrap;font-size:14.5px;max-height:46vh;overflow:auto}
+.box.case{border-left-color:#34c759}.box.rev{border-left-color:#2c7be5}.box.ai{border-left-color:#7c4dff}.box.exp{border-left-color:#e8883a}
+.lab{font-size:13px;font-weight:700;color:#46566c;margin:14px 0 2px}
+.sub{font-size:13px;color:#7a8aa0;margin:2px 0 6px}
+.phase{border-top:2px dashed #dbe2ec;margin-top:20px;padding-top:6px}
+.phase h3{font-size:16px;margin:10px 0 4px;color:#12243d}
+.dim{margin:8px 0}
+.dim .dl{font-size:13.5px;font-weight:600}
+.dim .an{font-size:12px;color:#9aa6b6}
+.lk{display:flex;gap:5px;margin-top:3px}
+.lk button{width:40px;height:40px;border:2px solid #d7deea;background:#fff;border-radius:8px;cursor:pointer;font-size:14px}
+.lk button.sel{border-color:#2c7be5;background:#2c7be5;color:#fff;font-weight:700}
+.lk .ends{font-size:11px;color:#9aa6b6;align-self:center}
+.qrow{border:1px solid #eef2f7;border-radius:8px;padding:10px;margin:8px 0;background:#fff}
+.qrow .qt{font-size:14.5px;font-weight:600;margin-bottom:6px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opts button{padding:8px 12px;font-size:13.5px;border:2px solid #d7deea;background:#fff;border-radius:8px;cursor:pointer}
+.opts button.sel{border-color:#2c7be5;background:#eaf2fe;font-weight:700}
+.go{background:#2c7be5;color:#fff;border:none;font-weight:700;width:100%;padding:14px;border-radius:10px;cursor:pointer;font-size:16px;margin-top:14px}
+.go:disabled{background:#b8c6db;cursor:not-allowed}
+.chk{display:flex;align-items:flex-start;gap:8px;margin:12px 0;font-size:14px}
+.chk input{margin-top:4px;width:18px;height:18px}
+.note{width:100%;padding:10px;border:1px solid #d7deea;border-radius:8px;font-size:15px}
+.reveal{background:#eafaf0;border:1px solid #99e0b5;color:#1c7a44;padding:10px 12px;border-radius:8px;font-weight:600;margin:8px 0}
 small{color:#7a8aa0}.done{text-align:center;padding:30px}
 .demo{background:#fff7e6;border:1px solid #ffd591;color:#ad6800;font-size:13px;padding:8px 10px;border-radius:8px;margin:8px 0}
 .intro h3{font-size:17px;margin:18px 0 6px;color:#12243d}
 .intro h3 .n{display:inline-block;background:#2c7be5;color:#fff;border-radius:50%;width:24px;height:24px;text-align:center;font-size:14px;line-height:24px;margin-right:8px}
-.intro p{margin:6px 0;font-size:15px}
 .flow{background:#f1f6fe;border-radius:10px;padding:12px 14px;font-size:14.5px;margin:8px 0}.flow b{color:#1a56a8}
-.legend{font-size:13.5px;background:#fafbfc;border:1px solid #eee;border-radius:8px;padding:10px 12px;margin:8px 0}
-.muted{font-size:13px;color:#7a8aa0;margin-top:10px}
 .ib{background:none;border:1px solid #cdd6e4;border-radius:8px;padding:4px 10px;font-size:13px;cursor:pointer;color:#5b6b82}
+.muted{font-size:13px;color:#7a8aa0}
 </style></head><body><div class=wrap>
 <div class=top><h2 style="margin:8px 0">CPX 사례 검증 <small id=pct></small></h2><button id=helpbtn class=ib style="display:none" onclick=showIntro()>ℹ️ 설명</button></div>
 
 <div id=gate class=card>
-  <p><b>CPX 사례 검증 설문</b>입니다. AI가 만든 의학교육 사례를 교수님들이 검증하는 연구예요.</p>
-  <p style="font-size:14px;color:#5b6b82">안내받으신 <b>접속 암호</b>와 <b>성함</b>을 입력하시면 자세한 설명이 나옵니다.</p>
-  <input class=note id=pw type=password placeholder="접속 암호" autocomplete=off>
+  <p><b>CPX 사례 검증 연구</b>입니다. AI가 만든 의학교육 사례를 교수님들이 검증합니다.</p>
+  <input class=note id=pw type=password placeholder="접속 암호" autocomplete=off style="margin-bottom:8px">
   <input class=note id=jname placeholder="성함 (예: 홍길동)" autocomplete=off>
-  <button class="opt dl" style="margin-top:12px" onclick=enter()>들어가기</button>
+  <button class=go onclick=enter()>들어가기</button>
   <p id=gerr style="color:#c0392b;font-size:14px;min-height:18px"></p>
 </div>
 
 <div id=intro class="card intro" style="display:none">
-  <p style="font-size:16px">안녕하세요, 교수님 🙏<br>CPX 사례를 더 좋게 만들기 위한 <b>AI 검증 연구</b>에 참여해 주셔서 감사합니다. 시작 전 <b>1분만</b> 읽어 주세요.</p>
+  <p style="font-size:16px">안녕하세요, 교수님 🙏 <b>AI 검증 연구</b>에 참여해 주셔서 감사합니다. 시작 전 <b>2분만</b> 읽어 주세요.</p>
   <h3><span class=n>1</span>이 연구가 뭔가요?</h3>
-  <p>학생들이 실제 진료를 연습하는 <b>CPX(임상수행평가)</b> 시험이 있죠. 그 <b>사례(환자 시나리오)를 AI가 자동으로 만들어</b> 교수님들의 출제 부담을 줄이고 학생 연습 기회를 늘리려는 <b>부산대 의대 학술 연구</b>입니다. <small>(비영리 · 오픈소스 · 학생 무료)</small></p>
-  <h3><span class=n>2</span>AI는 어떻게 일하나요?</h3>
-  <div class=flow>① 사례 생성 → ② <b>사례 검토(문제점 점검)</b> → ③ 가상 환자(학생과 대화) → ④ 자동 채점<br><small>오늘은 이 중 <b>②번 'AI 검토자'</b>가 제대로 작동하는지 확인합니다.</small></div>
-  <h3><span class=n>3</span>무엇을 확인하나요?</h3>
-  <p>예전에 교수님들이 사례 <b>초안</b>에 남기신 <b>실제 수정 피드백</b>이 있습니다. 똑같은 초안을 <b>AI에게도 검토</b>시켰어요.<br>→ <b>"교수님이 지적하신 것을, AI도 잡아냈는가?"</b> 를 항목 하나하나 비교합니다.</p>
-  <h3><span class=n>4</span>왜 교수님이 직접 하나요?</h3>
-  <p>이 비교를 컴퓨터가 자동으로 하면 믿기 어렵습니다. 그래서 <b>여러 교수님이 각자 독립적으로, 사람의 눈으로 판정</b>(교차검증)하고, 그 판정이 <b>서로 얼마나 일치하는지(신뢰도)</b>도 함께 측정합니다.</p>
-  <h3><span class=n>5</span>무엇을 하시면 되나요?</h3>
-  <p>화면마다 <b>① 교수가 지적한 것</b>, <b>② 그 부분의 실제 사례 내용(발췌)</b>, <b>③ AI가 한 지적</b>이 함께 나옵니다. 파일을 따로 열 필요 없어요. 셋을 보고 <b>"AI가 교수 지적을 잡았는지"</b> 판정하시면 됩니다.</p>
-  <div class=legend>✅ <b>잡음</b> = AI가 제대로 지적함 &nbsp;·&nbsp; 🟡 <b>부분</b> = 일부만 &nbsp;·&nbsp; ❌ <b>못잡음</b> = 놓침<br>⊘ <b>해당없음</b> = 이건 사례 품질 문제가 아님(SP 섭외·일정 등 운영사항)</div>
-  <p>버튼으로 <b>선택(체크)</b>한 뒤 <b>'다음 →'</b>을 누르면 넘어갑니다. <b>AI의 잠정 판정이 미리 선택</b>돼 있으니, 동의하시면 그대로 '다음', 아니면 바꾸고 '다음'.</p>
-  <p><b>약 <span id=icount>—</span>문항 (대략 <span id=imin>—</span>분)</b>. 중간에 닫아도 이어서 하실 수 있어요. <b>다른 분과 상의 없이 혼자</b> 판단해 주세요. (그게 이 검증의 핵심이에요.)</p>
-  <p class=muted>※ 정답을 맞히는 시험이 아니라 <b>AI를 평가</b>하는 자리입니다. 편하게 솔직히 봐 주세요. 아직 <b>개발·검증(파일럿) 단계</b>이며, 모든 자료는 <b>비공개</b>로 안전하게 보관되어 연구 목적으로만 사용됩니다.</p>
-  <button class="opt dl" style="margin-top:6px" onclick=startApp()>이해했어요, 시작하기 →</button>
+  <p>학생들이 진료를 연습하는 <b>CPX(임상수행평가)</b> 사례(환자 시나리오)를 <b>AI가 자동 생성</b>해 교수님 출제 부담을 줄이고 학생 연습을 늘리려는 <b>부산대 의대 학술 연구</b>입니다. <small>(비영리·오픈소스·무료)</small></p>
+  <h3><span class=n>2</span>오늘 검증할 것</h3>
+  <div class=flow>AI는 ①생성 → <b>②검토(문제점 점검)</b> → ③가상환자 → ④채점 단계로 일합니다.<br>오늘은 <b>②'AI 검토자'가 교수님만큼 사례 결함을 잡아내는지</b> 봅니다.</div>
+  <h3><span class=n>3</span>사례마다 이렇게 평가</h3>
+  <p><b>1단계 (블라인드 비교):</b> 같은 사례에 대한 <b>두 검토 의견(A·B)</b>이 같은 형식으로 나옵니다. 하나는 <b>실제 교수 피드백</b>, 하나는 <b>AI 리뷰</b>인데 <b>어느 쪽인지 숨겨</b> 둡니다. 선입견 없이 각 의견의 질을 <b>완전성·정확성·유용성·안전성(1~5)</b>로 평가하고, 마지막에 "어느 쪽이 AI 같은지" 추측해 주세요.</p>
+  <p id=p23><b>2단계 (공개 후):</b> 어느 쪽이 AI였는지 공개합니다. <b>교수 피드백의 각 지적을 AI가 잡았는지</b> 표시.<br><b>3단계:</b> AI가 낸 지적이 <b>타당/틀림/위험</b>한지 표시.</p>
+  <p class=muted>※ 사례 초안 전문·두 의견 전문·AI 리뷰 전체가 <b>모두 화면에 그대로</b> 표시됩니다(파일 열 필요 없음). 정답 시험이 아니라 <b>AI 평가</b>이니 솔직히. <b>다른 분과 상의 없이 독립</b> 판단. 중간에 닫아도 이어집니다. 비공개·연구용입니다.</p>
+  <button class=go onclick=startApp()>이해했어요, 시작하기 →</button>
 </div>
 
 <div id=app style=display:none>
   <div id=demobar></div>
   <div class=bar><i id=fill></i></div>
-  <div class=card id=card></div>
-  <div class=nav><button onclick=prev()>← 이전</button><button class=nx onclick=next()>다음 →</button></div>
-  <p><small>선택 후 '다음' · 자동 저장됨 · 마지막 문항에서 자동 제출 · ℹ️ 설명 위에서 다시 보기</small></p>
+  <div id=casebox></div>
+  <div style="display:flex;gap:8px;margin-top:10px"><button class=ib onclick=prevCase()>← 이전 사례</button></div>
+  <p><small>선택 후 단계별 버튼으로 진행 · 자동 저장 · ℹ️ 설명 위에서 다시 보기</small></p>
 </div>
 
 <div id=fin class=done style=display:none>
   <h2>완료! 🎉</h2><p id=finmsg>제출 중…</p>
-  <button class="opt dl" onclick=submitAll()>다시 제출</button>
-  <button class=opt style="margin-top:8px;width:100%" onclick=download()>결과 파일 내려받기(백업)</button>
+  <button class=go onclick=submitAll()>다시 제출</button>
+  <button class=ib style="margin-top:8px" onclick=download()>결과 파일 내려받기(백업)</button>
 </div>
 </div><script>
-const OPT={EXPERT:[["caught","✅ 잡음"],["partial","🟡 부분"],["missed","❌ 못잡음"],["excluded","⊘ 해당없음"]],
-  AI:[["in_expert","전문가에도 있음"],["valid_extra","✔ 타당한 추가지적"],["invalid","✖ 틀림/환각"]]};
-let PW="",judge="",ITEMS=[],i=0,V={},DEMO=false;
-function K(){return "cpxadj_"+judge}
-function sec(c,lab,body){return `<div class="sec ${c}"><div class=lab>${lab}</div><div class=body>${body}</div></div>`}
+const MODE=(new URLSearchParams(location.search).get('mode')||'full');  // 'full' | 'blind'(1단계만) | 'recall'(2·3단계만)
+const DIMS=[["완전성","놓친 결함 없이 다 짚었나","1 대부분 놓침 · 3 절반 · 5 빠짐없이"],
+  ["정확성","틀리거나 부적절한 지적은 없나","1 틀린 게 많음 · 3 일부 · 5 모두 타당"],
+  ["유용성","구체적·실행가능·교육적인가","1 막연·무용 · 3 보통 · 5 바로 적용가능"],
+  ["안전성","위험·잘못된 수정 유도는 없나","1 위험한 지적 있음 · 3 모호 · 5 전적 안전"]];
+const PV=[["caught","✅ 잡음"],["partial","🟡 부분"],["missed","❌ 못잡음"],["excluded","⊘ 해당없음"]];
+const FV=[["valid_major","타당·중요"],["valid_minor","타당·경미"],["redundant","전문가와 중복"],["wrong","✖ 틀림"],["harmful","⚠ 위험/유해"]];
+let PW="",judge="",CASES=[],ci=0,V={},DEMO=false;
+function K(){return "cpxval_"+judge+"_"+MODE}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function gerr(m){document.getElementById('gerr').textContent=m}
+function bullets(arr){return arr.map(t=>'• '+t).join('\n')}
+function aiText(c){return bullets(c.ai_findings.map(f=>f.text))}
+function expText(c){return bullets(c.expert_points.map(p=>p.text))}     // 블라인드용 정규화(같은 형식)
+function revText(c,side){return c.blind[side]==='expert'?expText(c):aiText(c)}
+function st(c){return V[c.case_id]||(V[c.case_id]={bA:{},bB:{},guess:'',conf:'',read:false,pts:{},fnd:{},ph:(MODE==='recall'?2:1)})}
 async function enter(){
   PW=document.getElementById('pw').value.trim();judge=document.getElementById('jname').value.trim();
   if(!PW||!judge){gerr('암호와 성함을 모두 입력하세요');return}
@@ -92,56 +101,91 @@ async function enter(){
   try{const r=await fetch('/api/items?pw='+encodeURIComponent(PW));
     if(r.status===403){gerr('암호가 올바르지 않습니다');return}
     if(!r.ok){gerr('오류('+r.status+')');return}
-    const d=await r.json();ITEMS=d.items;DEMO=d.demo;
-  }catch(e){gerr('네트워크 오류 — 다시 시도해 주세요');return}
+    const d=await r.json();CASES=d.cases||[];DEMO=d.demo;
+    if(!CASES.length){gerr('표시할 사례가 없습니다(데이터 준비중)');return}
+  }catch(e){gerr('네트워크 오류');return}
   V=JSON.parse(localStorage.getItem(K())||'{}');
-  document.getElementById('icount').textContent=ITEMS.length;
-  document.getElementById('imin').textContent=Math.max(5,Math.round(ITEMS.length*0.3));
   document.getElementById('gate').style.display='none';showIntro();
 }
-function gerr(m){document.getElementById('gerr').textContent=m}
-function showIntro(){document.getElementById('app').style.display='none';document.getElementById('intro').style.display='block';document.getElementById('helpbtn').style.display='none';window.scrollTo(0,0)}
+function showIntro(){document.getElementById('app').style.display='none';document.getElementById('intro').style.display='block';document.getElementById('helpbtn').style.display='none';
+  if(MODE!=='full'){var e=document.getElementById('p23');if(e)e.style.display='none'}window.scrollTo(0,0)}
 function startApp(){
   document.getElementById('intro').style.display='none';document.getElementById('app').style.display='block';
   document.getElementById('helpbtn').style.display='inline-block';
-  if(DEMO)document.getElementById('demobar').innerHTML='<div class=demo>⚠️ 데모(가상 데이터) — 실제 사례 아님. 흐름 확인용입니다.</div>';
-  i=Object.keys(V).length?Math.min(ITEMS.findIndex(x=>!V[x.id])<0?ITEMS.length-1:ITEMS.findIndex(x=>!V[x.id]),ITEMS.length-1):0;
-  render();window.scrollTo(0,0);
+  if(DEMO)document.getElementById('demobar').innerHTML='<div class=demo>⚠️ 데모(가상 데이터) — 흐름 확인용</div>';
+  ci=CASES.findIndex(c=>!caseDone(c));if(ci<0)ci=CASES.length-1;renderCase();window.scrollTo(0,0);
 }
-function render(){const x=ITEMS[i];if(!x)return fin();
-  const opts=OPT[x.type];const cur=V[x.id]?V[x.id].v:(x.type==='EXPERT'?x.tent:'');
-  let h=`<div><span class=tag>${esc(x.pair)}</span>${x.cat?'<span class=tag>'+esc(x.cat)+'</span>':''}<span class=tag>${i+1}/${ITEMS.length}</span></div>`;
-  if(x.type==='EXPERT'){
-    h+=sec('exp','① 교수(전문가)가 지적한 것',esc(x.item));
-    if(x.excerpt && x.excerpt.indexOf('일반 개선의견')<0) h+=sec('case','② 그 부분의 실제 사례 내용 (발췌)',esc(x.excerpt));
-    h+=sec('ai','③ AI가 한 지적', x.cand?esc(x.cand):'<span class=miss>이 부분에 대한 AI의 지적이 없습니다</span>');
-    h+=`<div class=hint>위 <b>③AI 지적</b>이 <b>①교수 지적</b>을 잡아냈나요? <b>선택 후 '다음 →'</b>. (AI 잠정판정: <b>${x.tent}</b> — 동의하면 그대로 다음)</div>`;
-  }else{
-    h+=sec('ai','AI가 든 지적',esc(x.item));
-    h+=`<div class=hint>이 AI 지적이 <b>타당</b>한가요? 선택 후 '다음 →'.</div>`;
+function blindDone(s){return Object.keys(s.bA).length>=DIMS.length&&Object.keys(s.bB).length>=DIMS.length}
+function p1Done(s){return blindDone(s)&&s.read&&s.guess&&s.conf}
+function ptsDone(s,c){return c.expert_points.every(p=>s.pts[p.id])}
+function fndDone(s,c){return c.ai_findings.every(f=>s.fnd[f.id])}
+function caseDone(c){const s=V[c.case_id];if(!s)return false;
+  if(MODE==='blind')return p1Done(s);
+  if(MODE==='recall')return ptsDone(s,c)&&fndDone(s,c);
+  return s.ph>=3&&p1Done(s)&&ptsDone(s,c)&&fndDone(s,c)}
+function rubric(side,locked){const s=st(CASES[ci]);const b=side==='A'?s.bA:s.bB;
+  return DIMS.map(([k,desc,an])=>`<div class=dim><div class=dl>${k} <small style="font-weight:400">(${desc})</small></div><div class=an>${an}</div><div class=lk><span class=ends>낮음</span>`+
+    [1,2,3,4,5].map(n=>`<button class="${b[k]==n?'sel':''}" ${locked?'disabled':''} onclick="setR('${side}','${k}',${n})">${n}</button>`).join('')+`<span class=ends>높음</span></div></div>`).join('')}
+function renderCase(){const c=CASES[ci],s=st(c);
+  let h=`<div class=card><div><span class=tag>사례 ${ci+1}/${CASES.length}</span><span class=tag>${esc(c.symptom)}</span>${MODE!=='full'?'<span class=tag>'+MODE+'</span>':''}</div>`;
+  h+=`<div class=lab>📄 사례 초안 전문</div><div class="box case">${esc(c.draft)}</div>`;
+  if(MODE!=='recall'){
+    h+=`<div class=phase><h3>1단계 · 블라인드 비교</h3><div class=sub>두 검토 의견 중 하나는 실제 교수 피드백, 하나는 AI 리뷰입니다(같은 형식·순서 무작위·비공개). 각 의견을 1~5로 평가하세요.</div>`;
+    const lock=s.ph>1;
+    h+=`<div class=lab>📝 검토 의견 A</div><div class="box rev">${esc(revText(c,'A'))}</div>${rubric('A',lock)}`;
+    h+=`<div class=lab>📝 검토 의견 B</div><div class="box rev">${esc(revText(c,'B'))}</div>${rubric('B',lock)}`;
+    h+=`<div class=lab>🕵 어느 쪽이 AI가 쓴 것 같나요? <small style="font-weight:400">(블라인드 점검용)</small></div><div class=opts>`+
+       [["A","A 같음"],["B","B 같음"],["?","모르겠음"]].map(o=>`<button class="${s.guess===o[0]?'sel':''}" ${lock?'disabled':''} onclick="setG('${o[0]}')">${o[1]}</button>`).join('')+`</div>`;
+    h+=`<div class=sub style="margin-top:6px">확신도</div><div class=opts>`+
+       [["low","낮음"],["mid","보통"],["high","높음"]].map(o=>`<button class="${s.conf===o[0]?'sel':''}" ${lock?'disabled':''} onclick="setC('${o[0]}')">${o[1]}</button>`).join('')+`</div>`;
+    if(s.ph===1){
+      h+=`<label class=chk><input type=checkbox ${s.read?'checked':''} onclick="setRead(this.checked)"> 사례 초안과 두 검토 의견 <b>전문을 모두 읽었습니다.</b></label>`;
+      const last=ci===CASES.length-1;
+      h+= MODE==='blind'
+        ? `<button class=go ${p1Done(s)?'':'disabled'} onclick=${last?'finishAll()':'nextCase()'}>${last?'완료 · 제출 ✓':'이 사례 완료, 다음 →'}</button>`
+        : `<button class=go ${p1Done(s)?'':'disabled'} onclick=adv2()>블라인드 평가 확정, 공개하기 →</button>`;
+    }
+    h+=`</div>`;
   }
-  h+=`<div class=btns>`+opts.map(o=>`<button class="opt ${cur===o[0]?'sel':''}" onclick="pick('${o[0]}')">${o[1]}</button>`).join('')+`</div>`;
-  h+=`<input class=note id=nt placeholder="메모(선택)" value="${V[x.id]?esc(V[x.id].n||''):''}" oninput="setNote(this.value)">`;
-  document.getElementById('card').innerHTML=h;
-  const done=Object.keys(V).length;document.getElementById('fill').style.width=(done/ITEMS.length*100)+'%';
-  document.getElementById('pct').textContent=`(완료 ${done}/${ITEMS.length})`;
+  if(MODE!=='blind'&&s.ph>=2){const aiSide=c.blind.A==='ai'?'A':'B';
+    if(MODE==='full')h+=`<div class=phase><div class=reveal>🔓 공개: <b>검토 의견 ${aiSide}</b>가 AI였습니다. (의견 ${aiSide==='A'?'B':'A'} = 실제 교수 피드백)</div>`;
+    else h+=`<div class=phase>`;
+    h+=`<h3>2단계 · 교수 지적을 AI가 잡았나</h3>`;
+    h+=`<div class=lab>👩‍🏫 실제 교수 피드백 전문</div><div class="box exp">${esc(c.expert_review)}</div>`;
+    h+=`<div class=lab>🤖 AI 리뷰 전체</div><div class="box ai">${esc(aiText(c))}</div>`;
+    h+=`<div class=sub>아래 각 '교수 지적'을, 위 AI 리뷰가 잡아냈는지 표시하세요.</div>`;
+    c.expert_points.forEach((p,n)=>{h+=`<div class=qrow><div class=qt>${n+1}. ${esc(p.text)} <span class=tag>${esc(p.category)}</span></div><div class=opts>`+
+      PV.map(o=>`<button class="${s.pts[p.id]===o[0]?'sel':''}" onclick="setP('${p.id}','${o[0]}')">${o[1]}</button>`).join('')+`</div></div>`});
+    if(s.ph===2)h+=`<button class=go ${ptsDone(s,c)?'':'disabled'} onclick=adv3()>다음 →</button>`;
+    h+=`</div>`;}
+  if(MODE!=='blind'&&s.ph>=3){h+=`<div class=phase><h3>3단계 · AI가 낸 지적은 타당한가</h3><div class=sub>AI 지적 각각이 타당/틀림/위험한지 표시하세요.</div>`;
+    c.ai_findings.forEach((f,n)=>{h+=`<div class=qrow><div class=qt>${n+1}. ${esc(f.text)}</div><div class=opts>`+
+      FV.map(o=>`<button class="${s.fnd[f.id]===o[0]?'sel':''}" onclick="setF('${f.id}','${o[0]}')">${o[1]}</button>`).join('')+`</div></div>`});
+    const last=ci===CASES.length-1;
+    h+=`<button class=go ${fndDone(s,c)?'':'disabled'} onclick=${last?'finishAll()':'nextCase()'}>${last?'완료 · 제출 ✓':'이 사례 완료, 다음 →'}</button></div>`;}
+  h+=`</div>`;
+  document.getElementById('casebox').innerHTML=h;
+  const done=CASES.filter(caseDone).length;document.getElementById('fill').style.width=(done/CASES.length*100)+'%';
+  document.getElementById('pct').textContent=`(사례 ${ci+1}/${CASES.length} · 완료 ${done})`;
 }
-function pick(v){const x=ITEMS[i];const n=(V[x.id]&&V[x.id].n)||(document.getElementById('nt')?document.getElementById('nt').value:'');V[x.id]={v,n};save();render()}
-function setNote(t){const x=ITEMS[i];if(!V[x.id])V[x.id]={v:(x.type==='EXPERT'?x.tent:''),n:''};V[x.id].n=t;save()}
-function commit(){const x=ITEMS[i];if(x&&!V[x.id]){const def=(x.type==='EXPERT')?x.tent:'';if(def){const n=document.getElementById('nt')?document.getElementById('nt').value:'';V[x.id]={v:def,n};save()}}}
+function setR(side,k,n){(side==='A'?st(CASES[ci]).bA:st(CASES[ci]).bB)[k]=n;save();renderCase()}
+function setG(v){st(CASES[ci]).guess=v;save();renderCase()}
+function setC(v){st(CASES[ci]).conf=v;save();renderCase()}
+function setRead(b){st(CASES[ci]).read=b;save();renderCase()}
+function setP(id,v){st(CASES[ci]).pts[id]=v;save();renderCase()}
+function setF(id,v){st(CASES[ci]).fnd[id]=v;save();renderCase()}
+function adv2(){st(CASES[ci]).ph=2;save();renderCase();window.scrollTo(0,document.body.scrollHeight*0.45)}
+function adv3(){st(CASES[ci]).ph=3;save();renderCase();window.scrollTo(0,document.body.scrollHeight*0.6)}
 function save(){localStorage.setItem(K(),JSON.stringify(V))}
-function next(){commit();if(i<ITEMS.length-1){i++;render();window.scrollTo(0,0)}else fin()}
-function prev(){commit();if(i>0){i--;render();window.scrollTo(0,0)}}
-function fin(){commit();document.getElementById('app').style.display='none';document.getElementById('fin').style.display='block';document.getElementById('helpbtn').style.display='none';document.getElementById('fill').style.width='100%';submitAll()}
+function nextCase(){if(ci<CASES.length-1){ci++;renderCase();window.scrollTo(0,0)}else finishAll()}
+function prevCase(){if(ci>0){ci--;renderCase();window.scrollTo(0,0)}}
+function finishAll(){document.getElementById('app').style.display='none';document.getElementById('fin').style.display='block';document.getElementById('helpbtn').style.display='none';submitAll()}
+function payload(){return {pw:PW,judge,mode:MODE,ts:Date.now(),cases:CASES.map(c=>{const s=st(c);return {case_id:c.case_id,blind:c.blind,bA:s.bA,bB:s.bB,guess:s.guess,conf:s.conf,read:s.read,points:s.pts,findings:s.fnd}})}}
 async function submitAll(){const fm=document.getElementById('finmsg');fm.textContent='제출 중…';
-  const payload={pw:PW,judge,ts:Date.now(),verdicts:ITEMS.map(x=>({id:x.id,pair:x.pair,type:x.type,verdict:(V[x.id]||{}).v||'',note:(V[x.id]||{}).n||''}))};
-  try{const r=await fetch('/api/submit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+  try{const r=await fetch('/api/submit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload())});
     const j=await r.json().catch(()=>({}));
     if(r.ok)fm.innerHTML='✅ <b>제출 완료. 감사합니다!</b>'+(j.stored==='none'?'<br><small>(데모: 서버 저장 비활성)</small>':'');
     else fm.innerHTML='⚠️ 제출 실패: '+esc(j.error||'')+'<br>아래 백업 버튼으로 파일을 내려받아 회신해 주세요.';
-  }catch(e){fm.innerHTML='⚠️ 제출 실패(네트워크).<br>아래 백업 버튼으로 파일을 내려받아 회신해 주세요.'}
-}
-function download(){const out={judge,ts:Date.now(),verdicts:ITEMS.map(x=>({id:x.id,pair:x.pair,type:x.type,item:x.item,verdict:(V[x.id]||{}).v||'',note:(V[x.id]||{}).n||''}))};
-  const b=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});const a=document.createElement('a');
-  a.href=URL.createObjectURL(b);a.download='adjudication_'+judge+'.json';a.click()}
+  }catch(e){fm.innerHTML='⚠️ 제출 실패(네트워크).<br>아래 백업 버튼으로 파일을 내려받아 회신해 주세요.'}}
+function download(){const b=new Blob([JSON.stringify(payload(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='validation_'+judge+'_'+MODE+'.json';a.click()}
 </script></body></html>

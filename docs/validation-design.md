@@ -29,5 +29,17 @@
 - gold 분해가 아직 LLM 보조 → 향후 인간 codebook 고정 권장.
 - 사전등록(OSF)·success threshold·locked_eval(15) 최종검증은 본검증 단계에서.
 
+## Codex 2라운드 (v2 재검수) → v3 보강
+v2도 **REVISE**. 단 "앵커링 **해소**, 정보부족 **해소**, 방향 맞음" 인정. 남은 핵심 + v3 반영:
+- **블라인드 깨질 위험(가장 먼저 무너질 곳)**: 전문가 원문 vs AI 문체·길이 차이 → "AI 탐지 후 선호" 측정 위험. → v3: **두 의견을 같은 형식(불릿)으로 정규화** + 순서 무작위 + **"어느 쪽이 AI 같나+확신도" 블라인드 성공 점검**(50%근접=양호).
+- **루브릭이 측정도구 미달**: → v3: 각 1~5에 **BARS 앵커**(1/3/5 기준) + 전문 **읽음 확인** 체크. 본검증선 rater training/calibration.
+- **단계 오염**(같은 평가자 1단계→2단계 carryover): → v3: **모드 분리**(`?mode=blind` 1단계만 / `?mode=recall` 2·3단계만 / `full`) → 코호트 분리 가능. 본검증선 washout.
+- **IRR 지표**: 명목 Fleiss는 루브릭에 부적합 → v3 집계: **ICC(2,k)**(루브릭)+ recall은 weighted/Gwet 권장 표기.
+- **"필적"=비열등성**: 차이 CI만으론 해석 불가 → **비열등성 margin δ(교수 합의)** 사전지정 필요(본검증). 집계는 차이 CI + δ 안내.
+- **9 클러스터 CI 과신**: → 집계에 **LOO** 병기 + "exploratory" 명기. 본검증 사례↑.
+- **harmful**: exploratory가 아니라 **안전 게이트**(0건/상한CI 이하) → 집계에 게이트 표시.
+
+**본검증 전 freeze/preregister(OSF):** primary estimand · 비열등성 δ · model/version/prompt · 정규화 표시 프로토콜 · rater training/BARS · 블라인드 성공 기준 · 평가자 코호트 분리/washout · gold 분해 SOP(2인 독립→합의) · 표본수 · 다중비교 보정 · IRR 지표 · harmful 정지규칙 · locked_eval 해시. → **현 단계 = feasibility/pilot**(논문도 "프로토콜 파일럿" 수준, confirmatory 주장 금지).
+
 ## 산출물
-`scripts/build_validation_data.py`(case 데이터) · `web/adjudication/`(배포 설문) · `scripts/aggregate_validation.py`(집계). Codex 원문: 세션 로그.
+`scripts/build_validation_data.py`(case 데이터) · `web/adjudication/`(배포 설문 v3) · `scripts/aggregate_validation.py`(집계 v2: blind+ICC+blind성공+recall+precision+safety게이트). Codex 1·2라운드 원문: 세션 로그.

@@ -1,15 +1,22 @@
-// CPX adjudication 설문 데이터.
-// ⚠️ 현재 = 토이(가상) 데이터. 실제 부산대 사례 아님. PI(교수) 동의 후 실데이터로 교체.
-// 실데이터 교체 = 이 파일만 재생성(CSV→items) 후 재배포. 암호는 SURVEY_PW 환경변수.
-const items = [
-  {id:'E1',type:'EXPERT',pair:'흉통_가상',item:'현병력에 흡연력(갑년)을 정량적으로 기술해야 함',cat:'CLINICAL_CONTENT',cand:'흡연력 정량화 누락',tent:'caught'},
-  {id:'E2',type:'EXPERT',pair:'흉통_가상',item:'감별진단에 급성관상동맥증후군 외 대동맥박리 추가 필요',cat:'CLINICAL_CONTENT',cand:'',tent:'missed'},
-  {id:'E3',type:'EXPERT',pair:'흉통_가상',item:'활력징후가 상황지침과 신체진찰에 중복 기재됨',cat:'INTERNAL_LOGIC',cand:'활력징후 중복 측정',tent:'caught'},
-  {id:'E4',type:'EXPERT',pair:'두통_가상',item:'병력청취에 두통의 발생 양상(돌발 여부) 질문 추가',cat:'CLINICAL_CONTENT',cand:'돌발성 두통 확인 항목 누락',tent:'caught'},
-  {id:'E5',type:'EXPERT',pair:'두통_가상',item:'표준화환자 답변이 현병력과 상충(발열 유무 불일치)',cat:'STRUCTURAL',cand:'',tent:'missed'},
-  {id:'E6',type:'EXPERT',pair:'두통_가상',item:'채점표 배점 합이 100점이 되도록 조정 필요',cat:'SCORING_VALIDITY',cand:'배점 합 불일치',tent:'caught'},
-  {id:'E7',type:'EXPERT',pair:'복통_가상',item:'신체진찰에 반발통/근성방어(복막자극징후) 항목 추가',cat:'CLINICAL_CONTENT',cand:'복막자극징후 항목 누락',tent:'caught'},
-  {id:'E8',type:'EXPERT',pair:'복통_가상',item:'환자교육에서 진통제 자가복용 권고는 부적절(과잉)',cat:'SAFETY_OVERCLAIM',cand:'',tent:'missed'},
-  {id:'E9',type:'EXPERT',pair:'복통_가상',item:'가임기 여성의 임신 가능성 확인 질문 추가',cat:'CLINICAL_CONTENT',cand:'임신력 확인 누락',tent:'caught'},
-];
-module.exports = { items, PW: process.env.SURVEY_PW || 'cpx-demo', ADMIN_PW: process.env.ADMIN_PW || process.env.SURVEY_PW || 'cpx-demo', IS_DEMO: !process.env.SURVEY_PW };
+// 토이(가상) 데이터 — 실제 부산대 사례 아님. 구조 예시 + 데모 배포용.
+// 실데이터는 build_validation_data.py로 생성해 /tmp 배포폴더에만 두고 git 커밋 금지(학교자산).
+const cases = [{
+  case_id: "흉통_가상", symptom: "흉통", dx: "가상(시연용)", year: "0000",
+  draft: "[가상 사례 — 실제 아님]\n■ 상황지침: 52세 남성이 2시간 전 시작된 가슴 통증으로 응급실에 왔다.\n■ 현병력(환자 말투): \"가슴 가운데가 짓누르듯 아파요. 식은땀도 나고요. 담배는 좀 핍니다.\"\n■ 과거력: 고혈압. ■ 활력징후: 150/95, 맥 92, 호흡 20, 체온 36.7 (상황지침과 신체진찰에 중복 기재)\n■ 신체진찰 / 체크리스트(병력청취·신체진찰·환자교육·환자의사관계) 항목들…",
+  expert_review: "현병력에 흡연력을 갑년(pack-year)으로 정량화해야 함. 감별진단에 급성관상동맥증후군 외 대동맥박리를 추가할 것. 활력징후가 상황지침과 신체진찰에 중복 기재되어 있어 정리 필요.",
+  ai_findings: [
+    { id: "F0", text: "흡연력이 정량적으로 기술되지 않음(갑년 명시 권장)" },
+    { id: "F1", text: "활력징후가 두 곳에 중복 기재됨" }],
+  expert_points: [
+    { id: "P0", text: "흡연력을 갑년으로 정량화", category: "CLINICAL_CONTENT" },
+    { id: "P1", text: "감별진단에 대동맥박리 추가", category: "CLINICAL_CONTENT" },
+    { id: "P2", text: "활력징후 중복 기재 정리", category: "INTERNAL_LOGIC" }],
+  blind: { A: "expert", B: "ai" }
+}];
+module.exports = {
+  cases,
+  PW: process.env.SURVEY_PW || 'cpx-demo',
+  ADMIN_PW: process.env.ADMIN_PW || process.env.SURVEY_PW || 'cpx-demo',
+  IS_DEMO: !process.env.SURVEY_PW,
+  MODEL: process.env.REVIEW_MODEL || 'toy'
+};

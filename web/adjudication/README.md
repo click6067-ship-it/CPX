@@ -1,27 +1,34 @@
-# CPX adjudication 설문 웹앱 (배포형)
+# CPX H2 검증 설문 웹앱 (배포형, v3)
 
-교수(판정자)가 **주소만 받아** 한 문항씩 클릭으로 H2 검증 판정 → **중앙 자동수집**. 3명→N명 확장 OK.
+교수(판정자)가 **주소+암호만** 받아 사례별로 검증 → **중앙 자동수집**. 설계 근거: `docs/validation-design.md`(Codex 1·2라운드 반영).
 
-- **Live:** https://cpx-adj-web.vercel.app  (암호 게이트 + noindex)
-- **스택:** Vercel 정적 페이지 + 서버리스 함수(`/api/*`) + Vercel Blob(수집 저장). 프레임워크 없음.
-- **배포 디렉터리:** 이 폴더(또는 `/tmp/cpx-adj-web`). CPX repo 본체와 분리 배포 → **사례 데이터 절대 안 올라감.**
+- **Live:** https://cpx-adj-web.vercel.app  (암호 게이트 + noindex, CPX repo와 분리 배포=사례데이터 안 올라감)
+- **스택:** Vercel 정적 + 서버리스(`/api/*`) + Blob 수집. ② 모델 = gemini-2.5-flash(모델-agnostic, 교체 가능).
 
-## 구조
+## 사례별 흐름 (전부 화면에 표시, 생략 없음)
+1. **사례 초안 전문**
+2. **1단계 블라인드** — 두 검토 의견(전문가 vs AI, 같은 형식·무작위·익명)을 완전성/정확성/유용성/안전성 1~5로 평가 + "어느 쪽이 AI 같나"(블라인드 점검) + 읽음 확인. *(주분석)*
+3. **2단계** — 공개 후, 교수 피드백 전문 + AI 리뷰 전체 보며 각 지적 caught/partial/missed/excluded.
+4. **3단계** — AI 지적 각각 타당/중복/틀림/유해.
+
+**모드 분리(코호트):** `?mode=blind`(1단계만) · `?mode=recall`(2·3단계) · 기본 `full`.
+
+## 파일
 | 파일 | 역할 |
 |---|---|
-| `index.html` | 설문 UI(암호+이름 → 한 문항씩 → 자동제출). AI 잠정판정 미리선택, localStorage 재개, 폰 OK |
-| `api/items.js` | 암호 맞으면 문항 반환(게이트). 틀리면 403 → 문항 노출 0 |
-| `api/submit.js` | 판정 제출 → Blob 저장(random suffix=URL 추측불가) |
-| `api/results.js` | 관리자(같은 암호) → 전 제출 취합 JSON (집계 스크립트 입력) |
-| `lib/data.js` | 문항 + 암호. **현재 토이(가상). 실데이터는 PI 동의 후 교체** |
+| `index.html` | v3 UI(블라인드+공개+precision, BARS 앵커, 모드분리, 라디오, 재개) |
+| `api/items.js` | 암호 맞으면 `cases` 전체 반환(게이트) |
+| `api/submit.js` | 제출 전부 저장(pw 제외) → Blob |
+| `api/results.js` | **ADMIN_PW**(판정자 암호와 분리) → 전 제출 취합 |
+| `lib/data.js` | **토이(가상)**. 실데이터는 `build_validation_data.py`→ /tmp만 |
 
-## 🔒 실데이터로 전환 (PI 동의 후)
-1. **암호 설정:** `vercel env add SURVEY_PW production` (강한 암호) → 데모배너 사라지고 게이트 활성.
-2. **문항 교체:** 실제 adjudication CSV → `lib/data.js` 재생성 (사례데이터라 **git 커밋 금지**, /tmp에서만).
-3. **수집 초기화:** `vercel blob empty-store cpx-adj --yes`.
-4. **재배포:** `vercel --prod --yes`.
+## 실데이터 전환 / 집계
+```
+PYTHONPATH=src .venv/bin/python scripts/build_validation_data.py --n=6 --model=gemini-2.5-flash
+cp data/working/validation_build/data.js /tmp/cpx-adj-web/lib/data.js
+(cd /tmp/cpx-adj-web && vercel env add SURVEY_PW production; vercel env add ADMIN_PW production; vercel --prod --yes)
+# 집계: scripts/aggregate_validation.py --items data/working/validation_build/cases_meta.json --url <U> --pw <ADMIN_PW>
+```
+산출: blind 루브릭(AI vs 전문가·CI)+ICC+블라인드성공 / per-point recall+Fleiss+카테고리 / precision+harmful 게이트.
 
-## 집계
-`/api/results?pw=<암호>` → JSON → 집계 스크립트가 **Fleiss kappa(일치도) + 다수결 합의 + 카테고리별 recall/F1 + CI** 산출.
-
-⚠️ 토이 데이터 외 실제 사례 피드백은 학교자산 — 게이트 없이 배포 금지, git 커밋 금지.
+⚠️ 학교자산: 실데이터 git 커밋 금지. 현 단계 = feasibility/pilot(과대주장 금지).
