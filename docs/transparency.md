@@ -10,7 +10,7 @@
 | **② 사례 심사**(검증 대상) | **gpt-5.5** | OpenAI | API | **검증 진행** | 최상위. ②A 구조+②B 임상 |
 | **③ 가상환자 대화** | GPT-4o | OpenAI | API(음성 STT/TTS) | **미구현** | 계획서대로 |
 | **④ 자동채점** | GPT-4o / gpt-5.5 | OpenAI | API | **미구현(나=다음)** | 계획서=GPT-4o |
-| **RAG 임베딩(dense)** | **gemini-embedding-001** | Google | API | 사용중 | 다국어(한↔영). Claude=임베딩 없음, OpenAI도 가능하나 다국어로 Gemini 택 |
+| **RAG 임베딩(dense)** | **gemini-embedding-001** | Google | API | 사용중 | **임베딩 전용 모델(글→벡터, 생성 LLM 아님)**. 다국어(한↔영). Claude=임베딩 없음, OpenAI도 가능하나 다국어로 Gemini 택. cf. EmbeddingGemma=같은 계열 오픈웨이트 |
 | **RAG 검색(sparse)** | **BM25** (rank_bm25) | — | **로컬(모델·API 없음)** | 사용중 | 정확 용어 매칭. dense와 RRF 병합 |
 | **보조**(피드백 분해·근거 추출·발췌) | gemini-2.5-flash | Google | API | 사용중 | 빠름·저렴. ②리뷰와 분리 |
 | **사례 변환(ingest)** | gemini-2.5-flash | Google | API | 사용중 | hwp→CpxCase. flash-lite는 과소추출이라 flash |

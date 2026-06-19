@@ -76,6 +76,7 @@ def review_clinical(case: CpxCase, model: str | None = None) -> ClinicalReview:
 - (해당 시) 안전·과대 표현, 교육 정렬
 {gb}
 각 비평: category(CLINICAL_CONTENT/INTERNAL_LOGIC/SP_FEASIBILITY/SAFETY_OVERCLAIM/EDUCATIONAL_ALIGNMENT) · issue · evidence(사례 근거) · suggested_edit · severity(must_fix/optional). 구조/형식 지적은 하지 말 것(②A 담당).
+**중요: 가장 핵심적인 임상 결함만 우선순위로 — 6~10개 이내로 간결히. 사소하거나 중복되는 지적은 내지 말 것. issue·suggested_edit는 각각 한 문장으로.**
 
 [사례(JSON)]
 {case.model_dump_json(indent=2)[:30000]}"""
@@ -88,8 +89,8 @@ def review(case: CpxCase, model: str | None = None) -> ReviewOut:
     prompt = f"""당신은 한국 의대 CPX 사례 심사위원이다. 아래 [사례]를 [점검표] 각 항목으로 평가하라.
 - 각 항목: passed(true/false) + comment(근거 한 줄, 한국어).
 - verdict: Accept(그대로 사용 가능) / Minor(경미한 수정) / Major(중대한 수정) / Reject(부적합).
-- summary: 2~3문장 총평. fixes: 우선 수정 제안(있을 때).
-임상적 정확성·맥락 일관성을 특히 본다. 과한 칭찬 금지, 문제를 정확히.
+- summary: 2~3문장 총평. fixes: **가장 중요한 우선 수정 제안 3~5개만**(간결히).
+임상적 정확성·맥락 일관성을 특히 본다. 과한 칭찬 금지, 문제를 정확히. **사소·중복 지적은 빼고 핵심 must-fix 위주로.**
 
 [점검표]
 {rubric}

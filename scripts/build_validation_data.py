@@ -111,7 +111,7 @@ for idx, (k, v) in enumerate(pairs):
             s = re.sub(r"\s+", "", f)[:60]
             if s and s not in sig:
                 sig.add(s); uniq.append(f)
-        ai_findings = [{"id": f"F{i}", "text": t} for i, t in enumerate(uniq)]
+        ai_findings = [{"id": f"F{i}", "text": t} for i, t in enumerate(uniq[:16])]   # 과생성 백스톱(부담·블라인드 길이 상한)
         # 각 AI 지적의 근거 원문(verbatim) — 사례 본문 하이라이트용. 누락 지적은 "".
         try:
             qs = llm.complete_json(
