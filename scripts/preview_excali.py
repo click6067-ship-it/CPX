@@ -43,5 +43,5 @@ _ys = [e["y"] for e in els] + [e["y"] + e["height"] for e in els]
 ax.set_xlim(min(_xs) - 25, max(_xs) + 25); ax.set_ylim(min(_ys) - 25, max(_ys) + 25)
 ax.invert_yaxis(); ax.set_aspect("equal"); ax.axis("off")
 plt.tight_layout()
-plt.savefig(out, dpi=110, bbox_inches="tight", facecolor="white")
+plt.savefig(out, dpi=150, bbox_inches="tight", facecolor="white")
 print("PNG:", out)

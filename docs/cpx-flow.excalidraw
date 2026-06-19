@@ -333,7 +333,7 @@
       "type": "rectangle",
       "x": 500,
       "y": 110,
-      "width": 170,
+      "width": 188,
       "height": 64,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -361,9 +361,9 @@
       "id": "t1238",
       "type": "text",
       "x": 500,
-      "y": 122.0,
-      "width": 170,
-      "height": 40.0,
+      "y": 123.25,
+      "width": 188,
+      "height": 37.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -383,15 +383,15 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 16,
+      "fontSize": 15,
       "fontFamily": 2,
       "textAlign": "center",
       "verticalAlign": "top",
-      "text": "② 검토\ngpt-5.5 · 구조+임상",
-      "originalText": "② 검토\ngpt-5.5 · 구조+임상",
+      "text": "② 검토\ngpt-5.5·구조+임상",
+      "originalText": "② 검토\ngpt-5.5·구조+임상",
       "containerId": null,
       "lineHeight": 1.25,
-      "baseline": 14
+      "baseline": 13
     },
     {
       "id": "d1259",
@@ -677,9 +677,9 @@
     {
       "id": "a1427",
       "type": "arrow",
-      "x": 670,
+      "x": 688,
       "y": 142,
-      "width": 60,
+      "width": 42,
       "height": 0,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -708,7 +708,7 @@
           0
         ],
         [
-          60,
+          42,
           0
         ]
       ],
