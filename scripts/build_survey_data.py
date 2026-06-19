@@ -39,7 +39,9 @@ if INCLUDE_AI:
 
 data_js = ("// 자동생성(build_survey_data.py) — 실제 사례 피드백=학교자산. git 커밋 금지.\n"
            "const items = " + json.dumps(items, ensure_ascii=False) + ";\n"
-           "module.exports = { items, PW: process.env.SURVEY_PW || 'cpx-demo', IS_DEMO: !process.env.SURVEY_PW };\n")
+           "module.exports = { items, PW: process.env.SURVEY_PW || 'cpx-demo',"
+           " ADMIN_PW: process.env.ADMIN_PW || process.env.SURVEY_PW || 'cpx-demo',"
+           " IS_DEMO: !process.env.SURVEY_PW };\n")
 (OUT / "data.js").write_text(data_js, encoding="utf-8")
 (OUT / "items_meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
 

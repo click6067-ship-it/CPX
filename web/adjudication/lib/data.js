@@ -12,4 +12,4 @@ const items = [
   {id:'E8',type:'EXPERT',pair:'복통_가상',item:'환자교육에서 진통제 자가복용 권고는 부적절(과잉)',cat:'SAFETY_OVERCLAIM',cand:'',tent:'missed'},
   {id:'E9',type:'EXPERT',pair:'복통_가상',item:'가임기 여성의 임신 가능성 확인 질문 추가',cat:'CLINICAL_CONTENT',cand:'임신력 확인 누락',tent:'caught'},
 ];
-module.exports = { items, PW: process.env.SURVEY_PW || 'cpx-demo', IS_DEMO: !process.env.SURVEY_PW };
+module.exports = { items, PW: process.env.SURVEY_PW || 'cpx-demo', ADMIN_PW: process.env.ADMIN_PW || process.env.SURVEY_PW || 'cpx-demo', IS_DEMO: !process.env.SURVEY_PW };

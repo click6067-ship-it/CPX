@@ -1,9 +1,10 @@
 <!doctype html><html lang=ko><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
 <meta name=robots content="noindex,nofollow">
-<title>CPX 사례 심사 검증</title><style>
-*{box-sizing:border-box}body{font-family:-apple-system,system-ui,'Apple SD Gothic Neo',sans-serif;margin:0;background:#f4f6f9;color:#1a2233}
+<title>CPX 사례 검증</title><style>
+*{box-sizing:border-box}body{font-family:-apple-system,system-ui,'Apple SD Gothic Neo',sans-serif;margin:0;background:#f4f6f9;color:#1a2233;line-height:1.6}
 .wrap{max-width:680px;margin:0 auto;padding:16px}
+.top{display:flex;justify-content:space-between;align-items:center;margin:4px 0}
 .bar{height:8px;background:#e3e8ef;border-radius:8px;overflow:hidden;margin:10px 0}
 .bar>i{display:block;height:100%;background:#2c7be5;width:0;transition:width .2s}
 .card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 6px #0001;margin:12px 0}
@@ -19,26 +20,63 @@ button.opt.sel{border-color:#2c7be5;background:#eaf2fe;font-weight:700}
 .dl{background:#2c7be5;color:#fff;border:none;font-weight:700;width:100%}
 small{color:#7a8aa0}.done{text-align:center;padding:30px}
 .demo{background:#fff7e6;border:1px solid #ffd591;color:#ad6800;font-size:13px;padding:8px 10px;border-radius:8px;margin:8px 0}
+.intro h3{font-size:17px;margin:18px 0 6px;color:#12243d}
+.intro h3 .n{display:inline-block;background:#2c7be5;color:#fff;border-radius:50%;width:24px;height:24px;text-align:center;font-size:14px;line-height:24px;margin-right:8px}
+.intro p{margin:6px 0;font-size:15px}
+.flow{background:#f1f6fe;border-radius:10px;padding:12px 14px;font-size:14.5px;margin:8px 0}
+.flow b{color:#1a56a8}
+.legend{font-size:13.5px;background:#fafbfc;border:1px solid #eee;border-radius:8px;padding:10px 12px;margin:8px 0}
+.muted{font-size:13px;color:#7a8aa0;margin-top:10px}
+.ib{background:none;border:1px solid #cdd6e4;border-radius:8px;padding:4px 10px;font-size:13px;cursor:pointer;color:#5b6b82}
 </style></head><body><div class=wrap>
-<h2>CPX 사례 심사 검증 <small id=pct></small></h2>
+<div class=top><h2 style="margin:8px 0">CPX 사례 검증 <small id=pct></small></h2><button id=helpbtn class=ib style="display:none" onclick=showIntro()>ℹ️ 설명</button></div>
 
+<!-- 1) 게이트 -->
 <div id=gate class=card>
-  <p>이 설문은 <b>비공개</b>입니다. 안내받은 <b>접속 암호</b>와 <b>성함</b>을 입력하세요.</p>
+  <p><b>CPX 사례 검증 설문</b>입니다. AI가 만든 의학교육 사례를 교수님들이 검증하는 연구예요.</p>
+  <p style="font-size:14px;color:#5b6b82">안내받으신 <b>접속 암호</b>와 <b>성함</b>을 입력하시면 자세한 설명이 나옵니다.</p>
   <input class=note id=pw type=password placeholder="접속 암호" autocomplete=off>
   <input class=note id=jname placeholder="성함 (예: 홍길동)" autocomplete=off>
-  <button class="opt dl" style="margin-top:12px" onclick=enter()>시작</button>
+  <button class="opt dl" style="margin-top:12px" onclick=enter()>들어가기</button>
   <p id=gerr style="color:#c0392b;font-size:14px;min-height:18px"></p>
-  <p style="font-size:13px;color:#7a8aa0">전문가가 단 지적을 <b>②AI가 잡았는지</b> 판정합니다. AI 잠정판정이 미리 선택돼 있으니 <b>동의하면 '다음', 아니면 고쳐</b> 주세요. 다른 분과 상의 없이 독립적으로. 중간에 닫아도 이어집니다.</p>
 </div>
 
+<!-- 2) 설명 -->
+<div id=intro class="card intro" style="display:none">
+  <p style="font-size:16px">안녕하세요, 교수님 🙏<br>CPX 사례를 더 좋게 만들기 위한 <b>AI 검증 연구</b>에 참여해 주셔서 감사합니다. 시작 전 <b>1분만</b> 읽어 주세요.</p>
+
+  <h3><span class=n>1</span>이 연구가 뭔가요?</h3>
+  <p>학생들이 실제 진료를 연습하는 <b>CPX(임상수행평가)</b> 시험이 있죠. 그 <b>사례(환자 시나리오)를 AI가 자동으로 만들어</b> 교수님들의 출제 부담을 줄이고 학생 연습 기회를 늘리려는 <b>부산대 의대 학술 연구</b>입니다. <small>(비영리 · 오픈소스 · 학생 무료)</small></p>
+
+  <h3><span class=n>2</span>AI는 어떻게 일하나요?</h3>
+  <div class=flow>① 사례 생성 → ② <b>사례 검토(문제점 점검)</b> → ③ 가상 환자(학생과 대화) → ④ 자동 채점<br><small>오늘은 이 중 <b>②번 'AI 검토자'</b>가 제대로 작동하는지 확인합니다.</small></div>
+
+  <h3><span class=n>3</span>무엇을 확인하나요?</h3>
+  <p>예전에 교수님들이 사례 <b>초안</b>에 남기신 <b>실제 수정 피드백</b>이 있습니다. 똑같은 초안을 <b>AI에게도 검토</b>시켰어요.<br>→ <b>"교수님이 지적하신 것을, AI도 잡아냈는가?"</b> 를 항목 하나하나 비교합니다.</p>
+
+  <h3><span class=n>4</span>왜 교수님이 직접 하나요?</h3>
+  <p>이 비교를 컴퓨터가 자동으로 하면 믿기 어렵습니다. 그래서 <b>여러 교수님이 각자 독립적으로, 사람의 눈으로 판정</b>(교차검증)하고, 그 판정이 <b>서로 얼마나 일치하는지(신뢰도)</b>도 함께 측정합니다.</p>
+
+  <h3><span class=n>5</span>무엇을 하시면 되나요?</h3>
+  <p>화면에 <b>'전문가(교수)가 지적한 내용' 한 개</b>가 뜹니다. 그 아래 <b>'AI가 잡은 듯한 내용'</b>과 <b>AI의 잠정 판정</b>이 미리 표시돼 있어요.</p>
+  <p>• 동의하시면 → 그냥 <b>'다음'</b><br>• 아니면 → 아래 버튼으로 고쳐 주세요</p>
+  <div class=legend>✅ <b>잡음</b> = AI가 제대로 지적함 &nbsp;·&nbsp; 🟡 <b>부분</b> = 일부만 &nbsp;·&nbsp; ❌ <b>못잡음</b> = 놓침<br>⊘ <b>해당없음</b> = 이건 사례 품질 문제가 아님(SP 섭외·일정 등 운영사항)</div>
+  <p><b>약 <span id=icount>—</span>문항 (대략 <span id=imin>—</span>분)</b>. 중간에 닫아도 이어서 하실 수 있어요. <b>다른 분과 상의 없이 혼자</b> 판단해 주세요. (그게 이 검증의 핵심이에요.)</p>
+
+  <p class=muted>※ 정답을 맞히는 시험이 아니라 <b>AI를 평가</b>하는 자리입니다. 편하게 솔직히 봐 주세요. 아직 <b>개발·검증(파일럿) 단계</b>이며, 모든 자료는 <b>비공개</b>로 안전하게 보관되어 연구 목적으로만 사용됩니다.</p>
+  <button class="opt dl" style="margin-top:6px" onclick=startApp()>이해했어요, 시작하기 →</button>
+</div>
+
+<!-- 3) 문항 -->
 <div id=app style=display:none>
   <div id=demobar></div>
   <div class=bar><i id=fill></i></div>
   <div class=card id=card></div>
   <div class=nav><button onclick=prev()>← 이전</button><button onclick=next()>다음 →</button></div>
-  <p><small>자동 저장됨 · 마지막 문항에서 자동 제출</small></p>
+  <p><small>자동 저장됨 · 마지막 문항에서 자동 제출 · ℹ️ 설명은 위에서 다시 볼 수 있어요</small></p>
 </div>
 
+<!-- 4) 완료 -->
 <div id=fin class=done style=display:none>
   <h2>완료! 🎉</h2>
   <p id=finmsg>제출 중…</p>
@@ -46,7 +84,7 @@ small{color:#7a8aa0}.done{text-align:center;padding:30px}
   <button class=opt style="margin-top:8px;width:100%" onclick=download()>결과 파일 내려받기(백업)</button>
 </div>
 </div><script>
-const OPT={EXPERT:[["caught","✅ 잡음"],["partial","🟡 부분"],["missed","❌ 못잡음"]],
+const OPT={EXPERT:[["caught","✅ 잡음"],["partial","🟡 부분"],["missed","❌ 못잡음"],["excluded","⊘ 해당없음"]],
   AI:[["in_expert","전문가에도 있음"],["valid_extra","✔ 타당한 추가지적"],["invalid","✖ 틀림/환각"]]};
 let PW="",judge="",ITEMS=[],i=0,V={},DEMO=false;
 function K(){return "cpxadj_"+judge}
@@ -60,18 +98,27 @@ async function enter(){
     const d=await r.json();ITEMS=d.items;DEMO=d.demo;
   }catch(e){gerr('네트워크 오류 — 다시 시도해 주세요');return}
   V=JSON.parse(localStorage.getItem(K())||'{}');
+  document.getElementById('icount').textContent=ITEMS.length;
+  document.getElementById('imin').textContent=Math.max(5,Math.round(ITEMS.length*0.3));
   document.getElementById('gate').style.display='none';
-  document.getElementById('app').style.display='block';
-  if(DEMO)document.getElementById('demobar').innerHTML='<div class=demo>⚠️ 데모(가상 데이터) — 실제 사례 아님. 흐름 확인용입니다.</div>';
-  i=ITEMS.findIndex(x=>!V[x.id]);if(i<0)i=0;render();
+  showIntro();
 }
 function gerr(m){document.getElementById('gerr').textContent=m}
+function showIntro(){document.getElementById('app').style.display='none';document.getElementById('intro').style.display='block';document.getElementById('helpbtn').style.display='none';window.scrollTo(0,0)}
+function startApp(){
+  document.getElementById('intro').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('helpbtn').style.display='inline-block';
+  if(DEMO)document.getElementById('demobar').innerHTML='<div class=demo>⚠️ 데모(가상 데이터) — 실제 사례 아님. 흐름 확인용입니다.</div>';
+  if(!Object.keys(V).length)i=0; else {i=ITEMS.findIndex(x=>!V[x.id]);if(i<0)i=0}
+  render();window.scrollTo(0,0);
+}
 function render(){const x=ITEMS[i];if(!x)return fin();
   const opts=OPT[x.type];const cur=V[x.id]?V[x.id].v:(x.type==='EXPERT'?x.tent:'');
   let h=`<div><span class=tag>${esc(x.pair)}</span><span class=tag>${x.type==='EXPERT'?'전문가 지적':'②AI 지적'}</span>${x.cat?'<span class=tag>'+esc(x.cat)+'</span>':''}</div><div class=q>${esc(x.item)}</div>`;
-  if(x.type==='EXPERT'&&x.cand)h+=`<div class=hint>②가 잡은 것(AI 잠정): <b>${esc(x.cand)}</b><br><small>AI 잠정판정: ${x.tent} — 동의하면 그대로 '다음'</small></div>`;
-  if(x.type==='EXPERT'&&!x.cand)h+=`<div class=hint><small>②가 대응 지적을 못 냈습니다(AI 잠정: 못잡음). 동의하면 '다음'.</small></div>`;
-  if(x.type==='AI')h+=`<div class=hint><small>②가 든 이 지적이 타당한가요?</small></div>`;
+  if(x.type==='EXPERT'&&x.cand)h+=`<div class=hint>②AI가 잡은 것으로 보이는 내용: <b>${esc(x.cand)}</b><br><small>AI 잠정판정: ${x.tent} — 동의하시면 그대로 '다음'</small></div>`;
+  if(x.type==='EXPERT'&&!x.cand)h+=`<div class=hint><small>②AI가 대응되는 지적을 내지 못했습니다(AI 잠정: 못잡음). 동의하시면 '다음'.</small></div>`;
+  if(x.type==='AI')h+=`<div class=hint><small>②AI가 든 이 지적이 타당한가요?</small></div>`;
   h+=`<div class=btns>`+opts.map(o=>`<button class="opt ${cur===o[0]?'sel':''}" onclick="pick('${o[0]}')">${o[1]}</button>`).join('')+`</div>`;
   h+=`<input class=note id=nt placeholder="메모(선택)" value="${V[x.id]?esc(V[x.id].n||''):''}" oninput="V['${x.id}']&&(V['${x.id}'].n=this.value,save())">`;
   document.getElementById('card').innerHTML=h;
@@ -80,9 +127,9 @@ function render(){const x=ITEMS[i];if(!x)return fin();
 }
 function pick(v){const x=ITEMS[i];V[x.id]={v,n:(V[x.id]&&V[x.id].n)||(document.getElementById('nt')?document.getElementById('nt').value:'')};save();setTimeout(next,140)}
 function save(){localStorage.setItem(K(),JSON.stringify(V))}
-function next(){if(i<ITEMS.length-1){i++;render()}else fin()}
-function prev(){if(i>0){i--;render()}}
-function fin(){document.getElementById('app').style.display='none';document.getElementById('fin').style.display='block';document.getElementById('fill').style.width='100%';submitAll()}
+function next(){if(i<ITEMS.length-1){i++;render();window.scrollTo(0,0)}else fin()}
+function prev(){if(i>0){i--;render();window.scrollTo(0,0)}}
+function fin(){document.getElementById('app').style.display='none';document.getElementById('fin').style.display='block';document.getElementById('helpbtn').style.display='none';document.getElementById('fill').style.width='100%';submitAll()}
 async function submitAll(){const fm=document.getElementById('finmsg');fm.textContent='제출 중…';
   const payload={pw:PW,judge,ts:Date.now(),verdicts:ITEMS.map(x=>({id:x.id,pair:x.pair,type:x.type,verdict:(V[x.id]||{}).v||'',note:(V[x.id]||{}).n||''}))};
   try{const r=await fetch('/api/submit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
