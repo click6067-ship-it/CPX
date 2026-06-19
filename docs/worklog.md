@@ -172,3 +172,21 @@
 - **RAG 하이브리드** 구현: dense(Gemini 임베딩)+sparse(BM25, 로컬)+RRF. 코퍼스=MedQA 교과서(Harrison 샘플 1200청크). 사례는 ②입력이라 임베딩X(①생성 때 비식별 임베딩 예정).
 - 문서: `docs/transparency.md`(모델·데이터·RAG 정본)·`docs/validation-design.md`(Codex 5R)·`docs/handoff.md`(교수 전달).
 - **교수 파일럿 준비완료**: 6사례 gpt-5.5 라이브, PII0, 수집함 클린. 다음 = 교수 응답 → `aggregate_validation` 집계(첫 실결과).
+
+### 설문 A1~A6 + 하이브리드 모드 + 다이어그램 + README/문서 정리 — 2026-06-19~20 (용하 지시)
+- **설문 A1~A6**(조호영 피드백): A1 생성/채점 경계 안내(상단 고정), A2 영어약자 `abbr`(Hx/PE/Edu/PPI 자동·중복방지), A3 의견 A/B별 주관식, A4 `?mode=browse` 자유열람(블라인드·판정 없음), A5 browse 사례별 자유메모, A6 검증데이터 오분류 스캔(clean). 배포·검증.
+- **하이브리드 모드**(`?mode=hybrid`): 교수가 사례별 "블라인드 평가(eval)" 또는 "열람만(browse)" 선택 → eval만 정량·browse 정성. 블라인드 무결성 유지+부담↓. 집계에 hybrid 추가(pick=eval 필터·선택편향 진단). Codex review 반영.
+- **작동방식 다이어그램**: mermaid(README·`cpx-flow.md` 자동렌더) + excalidraw 2버전(Claude 직접좌표 vs Codex 병렬생성, 둘 다 겹침0) → **용하 Claude 버전 확정** = `docs/cpx-flow.excalidraw` 정본 + 온라인편집 링크. `scripts/build_excali.py`(좌표 그리드)·`preview_excali.py`(PNG 검증). README 이미지화. Napkin용 텍스트(`diagram-text-for-napkin.md`).
+- **README 전면 개편**: 데이터·코퍼스·모델 표 명확화 + 작동방식 이미지. **"MedQA처럼/식" 비유 전부 삭제**(README·roadmap·AGENTS — 추후 분쟁 방지, 데이터 출처 인용만 유지).
+- **암호 진단**: 설문 진입=응시암호(`cpx-pnu-2026`), 결과취합=관리자암호(`cpx-adm-2026-x7k`, `/api/results` 전용). 혼동 해소(설문에 관리자암호 넣어 403났던 것).
+
+### 기술보고서 PDF (교수 디펜스용) — Codex 2라운드 적대검수 — 2026-06-20 (용하 지시)
+- **`docs/techreport-cpx.md`/.pdf** (14p, 바탕화면): 배경·전체구조·작동방식·아키텍처·데이터/코퍼스·모델·H2검증설계·RAG·SOTA근거·한계·로드맵 + **예상질문 디펜스 Q&A 11개**. 일반인 이해 목표. pandoc+weasyprint(한글 Malgun), 다이어그램 이미지 임베드.
+- **Codex 적대검수 2R**(REVISE→REVISE 둘 다 반영): 과대주장 톤다운("필적"→재현정도 측정·"학원"→연구용 시뮬레이터·"교수 대행"→보조·"오류3.3%"→외부문헌수치 우리 미측정), 사실정확화(임베딩=색인+질의+생성·RAG=Harrison샘플·FSM=설계안), 모델ID 일관화(설문 README gemini→gpt-5.5), IRB 상태 분리.
+
+### 남은작업 안전순서 (Codex 적대 계획) + A1·C1·거버넌스 — 2026-06-20 (용하: "전부 다 세심하게")
+- **Codex 적대 계획검수**(REVISE): "전부 동시"는 순환검증(H2 전 생성강화)·저작권(seed변형)·가짜지표 위험 → **안전순서 확정**: H2(교수대기)→C1→A1→거버넌스→B2. A2·A3·B1·B3 연기. (용하 결정: 비식별·로컬전용이면 B2/A2 가능)
+- **A1** ②B 임상리뷰어를 ①생성 루프 연결(`generator`/`graph`): ②A 구조+②B 임상(RAG), 종료조건 ②A∈{Accept,Minor} AND ②B must_fix=0. Codex review 2R: 재심사 루프 통일·종료상태 플래그·optional 보존·②B 스위치. ⚠️ H2 안전성 확인 후 프로덕션(현재 프로토타입).
+- **C1** 근사 pseudo-F1 + `docs/f1-codebook.md`: 교수point↔AI finding 매칭규칙·TP/FP/FN·완전 adjudication SOP(데이터 오면 적용). Codex review 2R: "진짜 F1"→"근사 pseudo-F1"(매칭 미adjudication·1:1가정 명시)·동률=ambiguous 제외·finding 결측검사. ⚠️ 코드+demo만, 수치주장 없음.
+- **거버넌스** `src/cpx/governance.py`: near-copy(char-ngram containment+sliding window, 부분복제 탐지)·provenance(generator 연결)·버전freeze·단가(gpt-5.5 $5/$30). `data-governance §7` provider data-use 표(Google free-quota=학습→유료tier 필수·feedback제출금지·의료제한). Codex review 1R 반영(4gram자카드→containment, 단가 웹확인).
+- **다음 = B2**: 가용 한국자료(점검표·양식) 색인 + RAG 평가셋 + `build_validation_data` near-copy 통합 + 진료수행지침 PI 요청. (연기: A2·A3·B1·B3 / 대기: 교수 파일럿 응답·README excalidraw export)
