@@ -58,7 +58,7 @@ small{color:#7a8aa0}.done{text-align:center;padding:30px}
   <h3><span class=n>2</span>오늘 검증할 것</h3>
   <div class=flow>AI는 ①생성 → <b>②검토(문제점 점검)</b> → ③가상환자 → ④채점 단계로 일합니다.<br>오늘은 <b>②'AI 검토자'가 교수님만큼 사례 결함을 잡아내는지</b> 봅니다.</div>
   <h3><span class=n>3</span>사례마다 이렇게 평가</h3>
-  <p><b>1단계 (블라인드 비교):</b> 같은 사례에 대한 <b>두 검토 의견(A·B)</b>이 같은 형식으로 나옵니다. 하나는 <b>실제 교수 피드백</b>, 하나는 <b>AI 리뷰</b>인데 <b>어느 쪽인지 숨겨</b> 둡니다. 선입견 없이 각 의견의 질을 <b>완전성·정확성·유용성·안전성(1~5)</b>로 평가하고, 마지막에 "어느 쪽이 AI 같은지" 추측해 주세요.</p>
+  <p><b>1단계 (블라인드 비교):</b> 같은 사례에 대한 <b>두 검토 의견(A·B)</b>이 나옵니다. 하나는 <b>실제 교수 피드백</b>, 하나는 <b>AI 리뷰</b>인데 <b>어느 쪽인지 숨겨</b> 둡니다. <b>문체·길이가 아니라 내용의 질</b>만 보고 각 의견을 <b>완전성·정확성·유용성·안전성(1~5)</b>로 평가하고, 마지막에 "어느 쪽이 AI 같은지" 추측해 주세요.</p>
   <p id=p23><b>2단계 (공개 후):</b> 어느 쪽이 AI였는지 공개합니다. <b>교수 피드백의 각 지적을 AI가 잡았는지</b> 표시.<br><b>3단계:</b> AI가 낸 지적이 <b>타당/틀림/위험</b>한지 표시.</p>
   <p class=muted>※ 사례 초안 전문·두 의견 전문·AI 리뷰 전체가 <b>모두 화면에 그대로</b> 표시됩니다(파일 열 필요 없음). 정답 시험이 아니라 <b>AI 평가</b>이니 솔직히. <b>다른 분과 상의 없이 독립</b> 판단. 중간에 닫아도 이어집니다. 비공개·연구용입니다.</p>
   <button class=go onclick=startApp()>이해했어요, 시작하기 →</button>
@@ -91,8 +91,8 @@ function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>'
 function gerr(m){document.getElementById('gerr').textContent=m}
 function bullets(arr){return arr.map(t=>'• '+t).join('\n')}
 function aiText(c){return bullets(c.ai_findings.map(f=>f.text))}
-function expText(c){return bullets(c.expert_points.map(p=>p.text))}     // 블라인드용 정규화(같은 형식)
-function revText(c,side){return c.blind[side]==='expert'?expText(c):aiText(c)}
+function expBlind(c){return c.expert_review.replace(/([.!?。])\s+/g,'$1\n').split(/\n+/).map(s=>s.trim()).filter(Boolean).map(s=>'• '+s).join('\n')}  // 원문 그대로(손실0) 불릿화
+function revText(c,side){return c.blind[side]==='expert'?expBlind(c):aiText(c)}
 function st(c){return V[c.case_id]||(V[c.case_id]={bA:{},bB:{},guess:'',conf:'',read:false,pts:{},fnd:{},ph:(MODE==='recall'?2:1)})}
 async function enter(){
   PW=document.getElementById('pw').value.trim();judge=document.getElementById('jname').value.trim();
@@ -130,7 +130,7 @@ function renderCase(){const c=CASES[ci],s=st(c);
   let h=`<div class=card><div><span class=tag>사례 ${ci+1}/${CASES.length}</span><span class=tag>${esc(c.symptom)}</span>${MODE!=='full'?'<span class=tag>'+MODE+'</span>':''}</div>`;
   h+=`<div class=lab>📄 사례 초안 전문</div><div class="box case">${esc(c.draft)}</div>`;
   if(MODE!=='recall'){
-    h+=`<div class=phase><h3>1단계 · 블라인드 비교</h3><div class=sub>두 검토 의견 중 하나는 실제 교수 피드백, 하나는 AI 리뷰입니다(같은 형식·순서 무작위·비공개). 각 의견을 1~5로 평가하세요.</div>`;
+    h+=`<div class=phase><h3>1단계 · 블라인드 비교</h3><div class=sub>두 검토 의견 중 하나는 실제 교수 피드백, 하나는 AI 리뷰입니다(어느 쪽인지 비공개·사례마다 균형 배치). <b>⚠️ 문체·길이로 AI를 추측하지 마시고 내용의 질만</b> 1~5로 평가해 주세요.</div>`;
     const lock=s.ph>1;
     h+=`<div class=lab>📝 검토 의견 A</div><div class="box rev">${esc(revText(c,'A'))}</div>${rubric('A',lock)}`;
     h+=`<div class=lab>📝 검토 의견 B</div><div class="box rev">${esc(revText(c,'B'))}</div>${rubric('B',lock)}`;

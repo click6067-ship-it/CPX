@@ -116,12 +116,12 @@ def main():
         if not a.items or not (a.results or a.url):
             ap.error("--items 와 (--results 또는 --url) 필요 (또는 --demo)")
         meta = json.loads(open(a.items, encoding="utf-8").read()); subs = load_subs(a)
-    _b = {}                                   # 재제출 대비: judge별 최신 ts만
+    _b = {}                                   # 재제출 대비: (judge,mode)별 최신 ts만 (blind/recall 코호트 덮어쓰기 방지)
     for s in subs:
-        j = s.get("judge")
-        if j and (j not in _b or s.get("ts", 0) >= _b[j].get("ts", 0)):
-            _b[j] = s
-    subs = sorted(_b.values(), key=lambda s: s.get("judge", ""))
+        key = (s.get("judge"), s.get("mode", "full"))
+        if key[0] and (key not in _b or s.get("ts", 0) >= _b[key].get("ts", 0)):
+            _b[key] = s
+    subs = sorted(_b.values(), key=lambda s: (s.get("judge", ""), s.get("mode", "")))
     Mm = {m["case_id"]: m for m in meta}
     judges = [s["judge"] for s in subs]
     print("=" * 66)

@@ -149,3 +149,12 @@
 - 스크립트: `build_adjudication_sheets.py`(CSV 생성, 배치1=9페어·전문가지적84·②지적76) · `build_adjudication_html.py`(오프라인 단일HTML 대안) · `build_survey_data.py`(CSV→data.js+items_meta.json, 실데이터 검증: 73지적/카테고리분포) · `aggregate_adjudication.py`(**Fleiss kappa+다수결 합의+카테고리별 recall/precision/F1+페어부트스트랩 CI**, `--demo`/`--url` 지원, 데모+live e2e 검증 완료).
 - excluded(사례품질 아님) 다수결은 분모 제외 = Codex 지적 구성불일치를 사람판정으로 교정. tie는 재검토 플래그.
 - 다음: PI 동의 → 실데이터 전환 → 교수 판정 → 집계(첫 진짜 H2 결과). 배치2~3로 30페어 확대. locked15 봉인 유지.
+
+### H2 검증 v3 — Codex 3라운드 적대검수 후 전면 재설계·재배포 — 2026-06-19 (용하 지시: "codex랑 끝까지 완벽하게")
+- **Codex 적대검수 3회**(메타만): R1(v1 설계)·R2(v2 설계) **둘 다 REVISE** → R3(v3 구현) **PILOT-OK**. 상세 `docs/validation-design.md`.
+- v1(per-point 분해→LLM매칭→인간 caught) 결함: 순환측정·앵커링·정보부족·약한주지표·precision누락·pseudoreplication. → **v3 전면 재설계**.
+- **v3 = case 중심·전체맥락(생략0)·블라인드 비교**: 사례별 [초안 전문 + 교수 피드백 vs AI 리뷰 블라인드 루브릭(완전성/정확성/유용성/안전성 1~5, BARS앵커, 블라인드성공 점검) + 공개후 per-point recall + AI지적 precision]. 라디오·모드분리(blind/recall 코호트)·읽음확인.
+- ② 모델 **flash-lite→gemini-2.5-flash 격상**(harness 모델-agnostic, pro/Claude는 본검증 freeze). 사례 전체 심사(truncation 30k).
+- 집계 `aggregate_validation.py`: blind 차이+**case-cluster CI**·**ICC(2,k)**·**블라인드 성공률**·recall+Fleiss+LOO·precision+**harmful 안전게이트**·(judge,mode) dedup. e2e(제출→--url) 검증 완료.
+- Live 6사례(객혈·고혈압·관절통증·구토·기분변화·기억력저하) 배포. 판정자/관리자 암호 분리.
+- ⚠️ Codex 강조 = **feasibility/파일럿**(확정주장 금지: "AI가 전문가에 필적/대체" ❌). 본검증엔 사전등록·δ·코호트분리·표본확대 필요. 스크립트: `build_validation_data.py`·`aggregate_validation.py`·`web/adjudication/`.
