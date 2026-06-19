@@ -26,10 +26,11 @@ items, meta = [], []   # items=앱용(최소), meta=분석용(전체)
 for i, r in enumerate(rows):
     if r["row_type"] == "EXPERT_POINT" and r["case_quality"] == "Y":
         items.append({"id": f"E{i}", "type": "EXPERT", "pair": r["pair"], "item": r["item"],
-                      "cat": r["category"], "cand": r["ai_candidate"], "tent": r["ai_tentative"]})
+                      "cat": r["category"], "excerpt": r.get("case_excerpt", ""),
+                      "cand": r["ai_candidate"], "tent": r["ai_tentative"]})
         meta.append({"id": f"E{i}", "type": "EXPERT", "pair": r["pair"], "category": r["category"],
-                     "case_quality": "Y", "item": r["item"], "ai_candidate": r["ai_candidate"],
-                     "ai_tentative": r["ai_tentative"]})
+                     "case_quality": "Y", "item": r["item"], "case_excerpt": r.get("case_excerpt", ""),
+                     "ai_candidate": r["ai_candidate"], "ai_tentative": r["ai_tentative"]})
 if INCLUDE_AI:
     for i, r in enumerate(rows):
         if r["row_type"] == "AI_FINDING":
