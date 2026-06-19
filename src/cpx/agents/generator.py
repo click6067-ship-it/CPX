@@ -31,11 +31,14 @@ def _draft(symptom: str, diagnosis: str, model: str | None = None) -> CpxCase:
     return llm.complete_json(prompt, CpxCase, model=model)
 
 
-def _revise(case: CpxCase, rv: reviewer.ReviewOut, model: str | None = None) -> CpxCase:
-    fixes = "\n".join(f"- {f}" for f in rv.fixes) or "- (구체 수정안 없음: 전반적 보강)"
+def _revise(case: CpxCase, rv: reviewer.ReviewOut, clinical_must=None, model: str | None = None) -> CpxCase:
+    lines = [f"- {f}" for f in rv.fixes]
+    for c in (clinical_must or []):
+        lines.append(f"- [임상·{c.category}] {c.issue} → {c.suggested_edit} (근거: {c.evidence})")
+    fixes = "\n".join(lines) or "- (구체 수정안 없음: 전반적 보강)"
     prompt = f"""다음 CPX 사례를 심사 의견대로 수정해 **완성된 CpxCase**로 반환하라.
-[심사 판정] {rv.verdict}
-[수정 요청]
+[②A 구조 판정] {rv.verdict}
+[수정 요청 — 구조(②A) + 임상(②B must_fix)]
 {fixes}
 [현재 사례(JSON)]
 {case.model_dump_json(indent=2)[:8000]}
@@ -43,14 +46,26 @@ def _revise(case: CpxCase, rv: reviewer.ReviewOut, model: str | None = None) -> 
     return llm.complete_json(prompt, CpxCase, model=model)
 
 
-def generate(symptom: str, diagnosis: str, model: str | None = None, rounds: int = 1):
-    """생성→(②심사→수정) rounds회. 반환: (case, [라운드별 verdict])."""
+def generate(symptom: str, diagnosis: str, model: str | None = None, rounds: int = 1, clinical: bool = True):
+    """생성→(②A 구조심사 + ②B 임상심사)→수정 루프. rounds = **최대 수정 횟수**(심사는 rounds+1회).
+    각 수정 후 반드시 재심사하며, 종료조건 = ②A verdict∈{Accept,Minor} AND ②B must_fix=0.
+    반환: (case, log). log 끝에 종료상태(accepted/budget_exhausted) 기록. optional 임상지적도 log 보존(감사·재현성).
+    ⚠️ ②B 연결은 프로토타입 — H2 검증에서 ②B harmful/안전성 확인 후에만 프로덕션(과대주장 금지)."""
     case = _draft(symptom, diagnosis, model)
     log = ["draft"]
-    for i in range(rounds):
-        rv = reviewer.review(case, model)
-        log.append(f"R{i+1}:{rv.verdict}")
-        if rv.verdict == "Accept":
+    accepted = False
+    for i in range(rounds + 1):                                             # 심사 rounds+1회 · 수정 최대 rounds회
+        rv = reviewer.review(case, model)                                   # ②A 구조
+        cr = reviewer.review_clinical(case, model) if clinical else None    # ②B 임상(RAG 근거)
+        must_fix = [c for c in cr.critiques if c.severity == "must_fix"] if cr else []
+        optional = [c for c in cr.critiques if c.severity == "optional"] if cr else []
+        accepted = rv.verdict in ("Accept", "Minor") and not must_fix
+        log.append(f"심사{i}: ②A={rv.verdict} · ②B must_fix={len(must_fix)} · optional={len(optional)}")
+        for c in optional:                                                  # optional 보존(blocking은 아니나 기록)
+            log.append(f"  [optional·{c.category}] {c.issue}")
+        if accepted or i == rounds:
             break
-        case = _revise(case, rv, model)
+        case = _revise(case, rv, must_fix, model)
+        log.append(f"✏️ 수정 R{i+1}")
+    log.append("종료: " + ("✅ accepted (②A Accept/Minor · ②B must_fix=0)" if accepted else "⚠️ budget_exhausted — 수정예산 소진·미충족본 반환"))
     return case.model_copy(update={"case_id": f"gen_{symptom}_{diagnosis}"[:40]}), log

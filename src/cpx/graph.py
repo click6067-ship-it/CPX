@@ -22,7 +22,9 @@ class CaseState(TypedDict):
     symptom: str
     diagnosis: str
     case: Optional[CpxCase]
-    review: Optional[reviewer.ReviewOut]
+    review: Optional[reviewer.ReviewOut]            # ②A 구조
+    clinical: Optional[reviewer.ClinicalReview]     # ②B 임상
+    use_clinical: bool                              # ②B 켜기/끄기 스위치
     rounds: int
     max_rounds: int
     log: list[str]
@@ -34,18 +36,23 @@ def n_generate(s: CaseState) -> dict:
 
 
 def n_review(s: CaseState) -> dict:
-    rv = reviewer.review(s["case"])                          # ②
-    return {"review": rv, "log": s["log"] + [f"② 심사:{rv.verdict}"]}
+    rv = reviewer.review(s["case"])                                                      # ②A 구조
+    cr = reviewer.review_clinical(s["case"]) if s.get("use_clinical", True) else None    # ②B 임상(스위치)
+    mf = sum(1 for c in cr.critiques if c.severity == "must_fix") if cr else 0
+    opt = sum(1 for c in cr.critiques if c.severity == "optional") if cr else 0
+    return {"review": rv, "clinical": cr, "log": s["log"] + [f"② 심사: ②A={rv.verdict}·②B must_fix={mf}·optional={opt}"]}
 
 
 def n_revise(s: CaseState) -> dict:
-    case = generator._revise(s["case"], s["review"])         # ① 수정
+    must = [c for c in s["clinical"].critiques if c.severity == "must_fix"] if s.get("clinical") else []
+    case = generator._revise(s["case"], s["review"], must)   # ① 수정(②A fixes + ②B must_fix)
     return {"case": case, "rounds": s["rounds"] + 1, "log": s["log"] + [f"✏️ 수정 R{s['rounds']+1}"]}
 
 
 def route(s: CaseState) -> str:
-    """② 심사 후 분기: Accept거나 라운드 소진 → 종료, 아니면 수정 루프."""
-    if s["review"].verdict == "Accept" or s["rounds"] >= s["max_rounds"]:
+    """② 후 분기: (②A Accept/Minor AND ②B must_fix=0) 또는 라운드 소진 → 종료, 아니면 수정 루프."""
+    mf = sum(1 for c in s["clinical"].critiques if c.severity == "must_fix") if s.get("clinical") else 0
+    if (s["review"].verdict in ("Accept", "Minor") and mf == 0) or s["rounds"] >= s["max_rounds"]:
         return "end"
     return "revise"
 
@@ -62,9 +69,14 @@ def build():
     return g.compile()
 
 
-def develop_case(symptom: str, diagnosis: str, max_rounds: int = 2) -> CaseState:
-    """그래프 실행: 사례를 Accept 또는 max_rounds까지 개발."""
+def develop_case(symptom: str, diagnosis: str, max_rounds: int = 2, use_clinical: bool = True) -> CaseState:
+    """그래프 실행: (②A Accept/Minor AND ②B must_fix=0) 또는 max_rounds(최대 수정 횟수)까지 개발.
+    종료 후 log에 상태(accepted/미충족) 기록."""
     app = build()
-    return app.invoke({"symptom": symptom, "diagnosis": diagnosis,
-                       "case": None, "review": None, "rounds": 0,
-                       "max_rounds": max_rounds, "log": []})
+    out = app.invoke({"symptom": symptom, "diagnosis": diagnosis,
+                      "case": None, "review": None, "clinical": None, "use_clinical": use_clinical,
+                      "rounds": 0, "max_rounds": max_rounds, "log": []})
+    mf = sum(1 for c in out["clinical"].critiques if c.severity == "must_fix") if out.get("clinical") else 0
+    acc = out["review"].verdict in ("Accept", "Minor") and mf == 0
+    out["log"].append("종료: " + ("✅ accepted" if acc else f"⚠️ 미충족 (max_rounds {max_rounds} 소진)"))
+    return out
