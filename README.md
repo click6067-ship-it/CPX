@@ -29,9 +29,14 @@
 
 ### 공개 트레이스 예시 (redaction 적용)
 
-실제 사례개발 그래프를 **1회 라이브 실행**한 추적 로그. 흐름·verdict 같은 비민감 정보는 그대로 두고, **사례·교과서(RAG) 본문은 자동 마스킹**(길이+sha256)했다 — LangSmith 업로드분도 내용이 비어 있음을 확인. 정본(텍스트) = [`docs/sample-trace-redacted.md`](docs/sample-trace-redacted.md) · 재현 = `CPX_TRACE_ACK=1 PYTHONPATH=src .venv/bin/python scripts/sample_trace.py`.
+실제 사례개발 그래프를 **1회 라이브 실행**한 추적. 흐름·노드·소요시간 같은 비민감 정보는 그대로 두고, **사례·교과서(RAG) 본문은 자동 마스킹**(길이+sha256). **셀프호스트 Langfuse**(데이터가 이 머신 밖으로 나가지 않음)에 올린 실제 대시보드에서도 Output의 `case/review/clinical`이 전부 `<… redacted>`로 표시된다.
 
-![공개 샘플 트레이스(redaction 적용)](docs/sample-trace-redacted.png)
+- 정본(텍스트) = [`docs/sample-trace-redacted.md`](docs/sample-trace-redacted.md)
+- 셀프호스트 셋업 = [`docs/langfuse-selfhost.md`](docs/langfuse-selfhost.md)
+- 재현 = `CPX_TRACE_ACK=1 PYTHONPATH=src .venv/bin/python scripts/sample_trace.py`
+
+셀프호스트 Langfuse 대시보드 (Output 본문이 모두 마스킹 + 하단에 그래프 흐름):
+![Langfuse 대시보드 — 마스킹된 라이브 트레이스](docs/langfuse-trace-detail.png)
 
 ## 데이터·코퍼스
 
