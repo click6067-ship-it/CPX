@@ -12,3 +12,5 @@ data/working/
 *.zip
 *.hwp
 *.pdf
+# Flowise 로컬 세션 토큰(JWT) — 절대 커밋 금지
+flowise/.cookies

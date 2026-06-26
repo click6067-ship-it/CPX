@@ -16,6 +16,7 @@ from langgraph.graph import StateGraph, START, END
 
 from cpx.models import CpxCase
 from cpx.agents import generator, reviewer
+from cpx import tracing
 
 
 class CaseState(TypedDict):
@@ -73,9 +74,16 @@ def develop_case(symptom: str, diagnosis: str, max_rounds: int = 2, use_clinical
     """그래프 실행: (②A Accept/Minor AND ②B must_fix=0) 또는 max_rounds(최대 수정 횟수)까지 개발.
     종료 후 log에 상태(accepted/미충족) 기록."""
     app = build()
-    out = app.invoke({"symptom": symptom, "diagnosis": diagnosis,
-                      "case": None, "review": None, "clinical": None, "use_clinical": use_clinical,
-                      "rounds": 0, "max_rounds": max_rounds, "log": []})
+    cfg = tracing.run_config(                                    # LangSmith/Langfuse 추적(키 없으면 {} = 무영향)
+        run_name=f"develop_case:{symptom}/{diagnosis}",
+        metadata={"symptom": symptom, "diagnosis": diagnosis,
+                  "max_rounds": max_rounds, "use_clinical": use_clinical})
+    try:
+        out = app.invoke({"symptom": symptom, "diagnosis": diagnosis,
+                          "case": None, "review": None, "clinical": None, "use_clinical": use_clinical,
+                          "rounds": 0, "max_rounds": max_rounds, "log": []}, config=cfg)
+    finally:
+        tracing.flush()                                          # 스크립트 종료 전 트레이스 전송 보장
     mf = sum(1 for c in out["clinical"].critiques if c.severity == "must_fix") if out.get("clinical") else 0
     acc = out["review"].verdict in ("Accept", "Minor") and mf == 0
     out["log"].append("종료: " + ("✅ accepted" if acc else f"⚠️ 미충족 (max_rounds {max_rounds} 소진)"))

@@ -9,4 +9,6 @@ pydantic>=2.0           # 데이터 계약 + 구조화 출력 (models.py)
 # streamlit             # 데모 UI (후반)
 numpy
 langgraph
-langsmith
+langsmith                 # 추적(observability) — LangGraph 노드 자동계측 + @traceable LLM span
+langfuse                  # 추적(observability) — graph.invoke 콜백 + @observe LLM generation
+langchain                 # langfuse.langchain.CallbackHandler 가 요구(이 레포 LLM은 raw SDK)

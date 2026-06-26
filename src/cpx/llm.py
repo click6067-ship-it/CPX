@@ -16,6 +16,8 @@ from functools import lru_cache
 
 from dotenv import load_dotenv
 
+from cpx import tracing
+
 
 def _retry(fn, tries: int = 5, base: float = 4.0):
     """일시적 과부하/레이트리밋 지수 백오프 (3사 공통)."""
@@ -73,6 +75,7 @@ def _openai():
     return openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 
+@tracing.traced(name="llm.complete", run_type="llm")
 def complete(prompt: str, *, model: str | None = None, temperature: float = 0.0) -> str:
     """자유 텍스트 생성."""
     model = model or DEFAULT_MODEL
@@ -90,6 +93,7 @@ def complete(prompt: str, *, model: str | None = None, temperature: float = 0.0)
     return r.choices[0].message.content
 
 
+@tracing.traced(name="llm.complete_json", run_type="llm")
 def complete_json(prompt: str, schema, *, model: str | None = None, temperature: float = 0.0):
     """구조화 출력 — Pydantic schema 강제. 반환 = 검증된 객체."""
     model = model or DEFAULT_MODEL
