@@ -1,0 +1,75 @@
+{
+  "what": "CPX 사례개발 graph(LangGraph) 1회 실행의 redaction 적용 트레이스",
+  "input": {
+    "symptom": "어지러움",
+    "diagnosis": "양성돌발두위현훈(BPPV)",
+    "max_rounds": 1,
+    "use_clinical": true
+  },
+  "model_default": "gemini-flash-lite-latest",
+  "total_ms": 44542,
+  "redaction": "tracing._mask — 사례·교과서(RAG) 본문 → <redacted:Nc sha256:..>, 도메인모델 → <Type redacted>",
+  "pipeline_log": [
+    "① 생성",
+    "② 심사: ②A=Minor·②B must_fix=3·optional=1",
+    "✏️ 수정 R1",
+    "② 심사: ②A=Minor·②B must_fix=1·optional=2",
+    "종료: ⚠️ 미충족 (max_rounds 1 소진)"
+  ],
+  "llm_calls_redacted": [
+    {
+      "step": 1,
+      "fn": "complete_json",
+      "model": "gemini-flash-lite-latest",
+      "ms": 5850,
+      "input_redacted": "<redacted:2309c sha256:b1df50096a07>",
+      "output_redacted": "<CpxCase redacted>",
+      "output_chars": 3891
+    },
+    {
+      "step": 2,
+      "fn": "complete_json",
+      "model": "gemini-flash-lite-latest",
+      "ms": 12907,
+      "input_redacted": "<redacted:6365c sha256:d9c03bbb77db>",
+      "output_redacted": "<ReviewOut redacted>",
+      "output_chars": 1688
+    },
+    {
+      "step": 3,
+      "fn": "complete_json",
+      "model": "gemini-flash-lite-latest",
+      "ms": 3363,
+      "input_redacted": "<redacted:8078c sha256:4de016ed7bac>",
+      "output_redacted": "<ClinicalReview redacted>",
+      "output_chars": 1169
+    },
+    {
+      "step": 4,
+      "fn": "complete_json",
+      "model": "gemini-flash-lite-latest",
+      "ms": 8947,
+      "input_redacted": "<redacted:6575c sha256:881e2f49be2b>",
+      "output_redacted": "<CpxCase redacted>",
+      "output_chars": 5434
+    },
+    {
+      "step": 5,
+      "fn": "complete_json",
+      "model": "gemini-flash-lite-latest",
+      "ms": 3777,
+      "input_redacted": "<redacted:8645c sha256:d48450a17231>",
+      "output_redacted": "<ReviewOut redacted>",
+      "output_chars": 1683
+    },
+    {
+      "step": 6,
+      "fn": "complete_json",
+      "model": "gemini-flash-lite-latest",
+      "ms": 6090,
+      "input_redacted": "<redacted:10370c sha256:0b68872cd67b>",
+      "output_redacted": "<ClinicalReview redacted>",
+      "output_chars": 976
+    }
+  ]
+}

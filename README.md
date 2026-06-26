@@ -27,6 +27,12 @@
 
 > ⚠️ 실제 엔진 = **LangGraph**([`src/cpx/graph.py`](src/cpx/graph.py)). **Flowise는 작동 원리를 설명하기 위한 재구성**이며 시스템을 구동하지 않는다(혼동 방지).
 
+### 공개 트레이스 예시 (redaction 적용)
+
+실제 사례개발 그래프를 **1회 라이브 실행**한 추적 로그. 흐름·verdict 같은 비민감 정보는 그대로 두고, **사례·교과서(RAG) 본문은 자동 마스킹**(길이+sha256)했다 — LangSmith 업로드분도 내용이 비어 있음을 확인. 정본(텍스트) = [`docs/sample-trace-redacted.md`](docs/sample-trace-redacted.md) · 재현 = `CPX_TRACE_ACK=1 PYTHONPATH=src .venv/bin/python scripts/sample_trace.py`.
+
+![공개 샘플 트레이스(redaction 적용)](docs/sample-trace-redacted.png)
+
 ## 데이터·코퍼스
 
 | 용도 | 내용 | 출처 | 공개 |
