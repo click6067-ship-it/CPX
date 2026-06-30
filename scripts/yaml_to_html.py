@@ -44,11 +44,13 @@ _TEMPLATE = """<!DOCTYPE html>
   const nodes = new vis.DataSet(__NODES__);
   const edges = new vis.DataSet(__EDGES__);
   new vis.Network(document.getElementById('net'), {nodes, edges}, {
-    nodes:{shape:'dot', size:15, font:{size:14, face:'Malgun Gothic'}},
-    edges:{arrows:'to', font:{size:9, color:'#888', strokeWidth:3, strokeColor:'#fff'},
-           color:{color:'#bbb', highlight:'#555'}, smooth:{type:'continuous'}},
-    physics:{barnesHut:{gravitationalConstant:-9000, springLength:130, avoidOverlap:0.3},
-             stabilization:{iterations:250}},
+    nodes:{shape:'dot', size:15,
+           font:{size:15, face:'Malgun Gothic', background:'rgba(255,255,255,0.78)', strokeWidth:0}},
+    edges:{arrows:'to', length:210, font:{size:8, color:'#9aa', strokeWidth:4, strokeColor:'#fff'},
+           color:{color:'#d0d0d0', highlight:'#555'}, smooth:{type:'continuous', roundness:0.2}},
+    physics:{barnesHut:{gravitationalConstant:-28000, centralGravity:0.12, springLength:205,
+                        springConstant:0.02, avoidOverlap:0.75, damping:0.5},
+             stabilization:{iterations:600}},
     interaction:{hover:true, tooltipDelay:120}
   });
 </script>
