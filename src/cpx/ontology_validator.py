@@ -16,6 +16,10 @@ Pydantic은 *구조*만 보장한다. 이 모듈은 생성 사례(CpxCase / dict
 - 과대주장 차단: review_status / professor_approved / disclaimer 를 리포트 표면에 강제 노출.
   overall=="pass" 의 의미는 "draft 카드와 **구조적으로 정합 / 어휘 커버리지 충족**"일 뿐,
   "임상 타당"이 아니다(프로젝트 규칙).
+- coverage 2-렌즈 분리(Codex 적대검수 2R, 2026-06-30): **positive**(환자가 *가짐* — 사실 채널 spontaneous/asked/history,
+  부정문 제외) vs **asked**(학생이 *선별* — probe 채널). `_negated`(한국어 후치부정 "실신은 없었어요")로 부정을 positive 에서 제외.
+  ⚠ negation 은 *제한적 휴리스틱*(이중부정·복합문 불완전)이고, 검사별 임상정책(required=제시 필수·red_flags=다뤄짐 등)은
+  교수 검증 전 draft 다. "임상 타당" 주장 아님.
 """
 from __future__ import annotations
 
@@ -156,7 +160,6 @@ class ValidatorConfig:
         default_factory=lambda: frozenset({"묻기", "확인", "측정", "진찰", "설명", "배제"})
     )
     token_match_ratio: float = 0.5     # 코어토큰 AND 판정 임계(precision 핀)
-    flag_threshold: float = 0.5        # 검사-레벨 부분커버리지 flag 임계
     strict_diagnosis_match: bool = True  # 진단 역매칭 실패 시 에러(추측 금지). False면 primary+warning
     strict_discriminators: bool = False  # 감별단서 전수 HIGH 요구 여부
     r4_systolic_normal_min: int = 130    # 이 이상 수축기면 "저혈압 강단언"과 수치모순(R4, 휴리스틱)
@@ -180,6 +183,7 @@ class Hit:
     evidence: str = ""                        # 실제 매칭 표면형 예) "synonym:식은땀"
     matched_by: str = "absent"                # label_phrase|synonym|keyword|label_tokens_AND|label_tokens_partial|field_rule|absent
     note: str = ""                            # "label_missing" | "spontaneous_missing" | "leaked_before_asked" ...
+    polarity: str = "affirmed"                # affirmed | negated  — 텍스트 매칭만 의미(부정문 "없음" 검출)
 
     def to_dict(self) -> dict:
         return {
@@ -191,6 +195,7 @@ class Hit:
             "evidence": self.evidence,
             "matched_by": self.matched_by,
             "note": self.note,
+            "polarity": self.polarity,
         }
 
 
@@ -198,22 +203,30 @@ class Hit:
 class CheckResult:
     name: str
     status: str                               # pass | flag | fail | skip
-    coverage: Optional[float] = None          # 매칭/전체(HIGH 기준)
+    coverage: Optional[float] = None          # 주 렌즈 비율(coverage_checks=positive)
     present: list[Hit] = field(default_factory=list)
     missing: list[Hit] = field(default_factory=list)
     flagged: list[Hit] = field(default_factory=list)
     violations: list[Hit] = field(default_factory=list)
+    # 선별/질문은 됐으나 환자 사실로 *제시되지 않음*(asked-only · 물었고 부인=negated). flagged(검토필요)와 구분.
+    screened: list[Hit] = field(default_factory=list)
     notes: str = ""
+    # 2-렌즈 분리(Codex 적대검수 2026-06-30): 환자가 *가졌나* vs 학생이 *선별했나*.
+    positive_coverage: Optional[float] = None  # 환자 사실로 *제시*된 비율(부정문 제외)
+    asked_coverage: Optional[float] = None     # 체크리스트가 *선별/질문*한 비율(polarity 무관)
 
     def to_dict(self) -> dict:
         return {
             "name": self.name,
             "status": self.status,
             "coverage": self.coverage,
+            "positive_coverage": self.positive_coverage,
+            "asked_coverage": self.asked_coverage,
             "present": [h.to_dict() for h in self.present],
             "missing": [h.to_dict() for h in self.missing],
             "flagged": [h.to_dict() for h in self.flagged],
             "violations": [h.to_dict() for h in self.violations],
+            "screened": [h.to_dict() for h in self.screened],
             "notes": self.notes,
         }
 
@@ -276,12 +289,16 @@ class OntologyReport:
             c = self.checks.get(key)
             if c is None:
                 continue
-            cov = "" if c.coverage is None else f" · coverage={c.coverage:.2f}"
+            cov = "" if c.coverage is None else f" · positive={c.coverage:.2f}"
+            if c.asked_coverage is not None:
+                cov += f" · asked={c.asked_coverage:.2f}"
             lines.append(f"### {key} — `{c.status}`{cov}")
             if c.present:
                 lines.append(f"- present: {_ids(c.present)}")
             if c.flagged:
                 lines.append(f"- flagged(검토): {_ids(c.flagged)}")
+            if c.screened:
+                lines.append(f"- screened(선별·환자 미제시): {_ids(c.screened)}")
             if c.missing:
                 lines.append(f"- missing: {_ids(c.missing)}")
             if c.violations:
@@ -362,6 +379,36 @@ def _bidir(a: str, b: str) -> bool:
     return a in b or b in a
 
 
+# 한국어 후치 부정 단서(예: "실신은 없었어요"·"저혈압 아님"·"방사통 부인"·"경험하지 않음"). polarity 판정용.
+# 관계부정("운동과 무관"·"식사와 관련없"): exertional synonym "운동"이 no_exertional 문장에 substring 끼는 충돌 차단(Codex R3).
+_NEG_CUES = ("없", "아니", "부인", "부정", "음성", "않", "못",
+             "무관하", "무관합", "무관한", "관련 없", "관련없", "상관없", "상관 없")
+# 이중부정(="긍정") — 부정으로 오판 방지("실신이 없지는 않았어요" = 있었음).
+_DOUBLE_NEG = ("없지 않", "없지는 않", "없진 않", "아니지 않", "없는 것은 아니", "없는것은 아니")
+
+
+def _negated(text: str, surface: str) -> bool:
+    """text 내 surface 의 *모든* 출현이 부정 문맥이면 True. 한 번이라도 긍정이면 False.
+
+    한국어는 부정이 명사 뒤에 온다("실신은 없었어요") → surface 직후 window(10자)에서 부정어 탐색.
+    이중부정("없지 않")은 긍정으로 처리. ⚠ 제한적 휴리스틱(복합문·간접부정 불완전 — Codex 적대검수 인정).
+    보수적(긍정 우선): 한 출현이라도 긍정이면 "환자가 가짐"으로 본다(positive 과소계산 방지).
+    """
+    if not surface:
+        return False
+    idx = text.find(surface)
+    if idx == -1:
+        return False
+    while idx != -1:
+        after = text[idx + len(surface): idx + len(surface) + 10]
+        if any(dn in after for dn in _DOUBLE_NEG):      # 이중부정 → 긍정
+            return False
+        if not any(cue in after for cue in _NEG_CUES):
+            return False                                # 긍정 출현 발견 → 부정 아님
+        idx = text.find(surface, idx + 1)
+    return True                                         # 모든 출현이 부정 문맥
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 4. 채널(FieldIndex) — 구조 필드를 명명 텍스트채널로 투영(None→"" coerce, 빈텍스트 skip)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -390,26 +437,31 @@ _PATIENT_STR_FIELDS = (
 )
 
 
-def _build_channels(c: Mapping[str, Any]) -> tuple[_Channel, _Channel, _Channel, _Channel, list[str]]:
-    """case dict → (spontaneous, asked, probe, union-extra, 평탄화 keywords).
+def _build_channels(
+    c: Mapping[str, Any],
+) -> tuple[_Channel, _Channel, _Channel, _Channel, _Channel, list[str]]:
+    """case dict → (spontaneous, asked, probe, history, extra, 평탄화 keywords).
 
-    검사4 누설판정의 정본 채널 = spontaneous(탐색노트 정의 그대로). family/social/past_hx·vitals 등은
-    spontaneous 가 아니라 union-extra 로만 둔다(누설 과플래그 방지).
+    채널 의미(2-렌즈 분리 — Codex 적대검수 2026-06-30):
+      - spontaneous = 초기 *자발* 발화(주증상·상황지시·patient 페르소나). disclosure 누설판정 정본.
+      - asked       = checklist[].patient_answer(질문에 답한 환자 발화).
+      - probe       = checklist 질문/scoring_rule/keywords(학생이 *선별*한 것 = asked 렌즈).
+      - history     = 현병력 detail·과거/가족/사회력(환자 *사실*이나 초기 자발 아님 → 누설 과플래그 방지).
+      - extra       = 진단/제목/과제/demo.note(메타 — 환자 사실 아님; 모순·체크리스트 union 보조).
+    positive 렌즈(환자가 가졌나)=[spontaneous,asked,history] · asked 렌즈(선별)=[probe].
     """
     patient = c.get("patient") or {}
     checklist = c.get("checklist") or []
     present_illness = c.get("present_illness") or []
     demo = c.get("demographics") or {}
 
-    # spontaneous(자발) = 주증상 + 상황지시 + patient.* + 현병력 detail
+    # spontaneous(초기 자발) = 주증상 + 상황지시 + patient.*  (현병력은 history 로 분리)
     spont_raw: list[tuple[str, Any]] = [
         ("chief_complaint", c.get("chief_complaint")),
         ("situation_instruction", c.get("situation_instruction")),
     ]
     for k in _PATIENT_STR_FIELDS:
         spont_raw.append((f"patient.{k}", patient.get(k)))
-    for i, hi in enumerate(present_illness):
-        spont_raw.append((f"present_illness[{i}].detail", (hi or {}).get("detail")))
 
     # asked(질문시) = checklist[].patient_answer 만
     asked_raw: list[tuple[str, Any]] = [
@@ -417,7 +469,7 @@ def _build_channels(c: Mapping[str, Any]) -> tuple[_Channel, _Channel, _Channel,
         for i, ci in enumerate(checklist)
     ]
 
-    # probe(검진동작) = checklist[].question_open/closed + scoring_rule + keywords
+    # probe(선별) = checklist[].question_open/closed + scoring_rule + keywords
     probe_raw: list[tuple[str, Any]] = []
     keywords_flat: list[str] = []
     for i, ci in enumerate(checklist):
@@ -432,20 +484,29 @@ def _build_channels(c: Mapping[str, Any]) -> tuple[_Channel, _Channel, _Channel,
             if kn:
                 keywords_flat.append(kn)
 
-    # union-extra = 진단/제목/과제/과거력/가족/사회력/demo.note (검사1·2·3·6 union 에만 포함)
+    # history(환자 사실 · 초기 자발 아님) = 현병력 detail + 과거/가족/사회력
+    history_raw: list[tuple[str, Any]] = [
+        (f"present_illness[{i}].detail", (hi or {}).get("detail"))
+        for i, hi in enumerate(present_illness)
+    ]
+    history_raw += [
+        ("past_hx", c.get("past_hx")),
+        ("family_hx", c.get("family_hx")),
+        ("social_hx", c.get("social_hx")),
+    ]
+
+    # extra(메타 — 환자 사실 아님) = 진단/제목/과제/demo.note
     extra_raw: list[tuple[str, Any]] = [
         ("diagnosis", c.get("diagnosis")),
         ("title", c.get("title")),
         ("examinee_task", c.get("examinee_task")),
-        ("past_hx", c.get("past_hx")),
-        ("family_hx", c.get("family_hx")),
-        ("social_hx", c.get("social_hx")),
         ("demographics.note", demo.get("note")),
     ]
 
     spont = _mk_channel("spontaneous", spont_raw)
     asked = _mk_channel("asked", asked_raw)
     probe = _mk_channel("probe", probe_raw)
+    history = _mk_channel("history", history_raw)
     extra = _mk_channel("union", extra_raw)
     # keyword 중복 제거(결정론·순서보존)
     seen: set[str] = set()
@@ -454,16 +515,27 @@ def _build_channels(c: Mapping[str, Any]) -> tuple[_Channel, _Channel, _Channel,
         if k not in seen:
             seen.add(k)
             kw.append(k)
-    return spont, asked, probe, extra, kw
+    return spont, asked, probe, history, extra, kw
 
 
-def _locate(scope: Sequence[_Channel], surface: str) -> tuple[Optional[str], Optional[str]]:
-    """surface(정규화)가 처음 등장하는 채널·필드 경로를 찾는다(증거 provenance)."""
+def _locate(scope: Sequence[_Channel], surface: str) -> tuple[Optional[str], Optional[str], str]:
+    """surface 가 등장하는 (채널, 필드경로, polarity). **긍정 출현 우선** — 한 필드라도 긍정이면 affirmed.
+
+    "긍정 우선" 원칙(Codex R3): 같은 개념이 한 필드선 부정·다른 필드선 긍정이면 긍정 채택
+    (예: chief "실신 없음" + 현병력 "이후 실신함" → syncope positive). 모든 출현 부정일 때만 negated.
+    """
+    first_negated: Optional[tuple[Optional[str], Optional[str], str]] = None
     for ch in scope:
         for path, t in ch.fields:
             if surface and surface in t:
-                return ch.name, path
-    return None, None
+                if _negated(t, surface):
+                    if first_negated is None:
+                        first_negated = (ch.name, path, "negated")
+                else:
+                    return ch.name, path, "affirmed"     # 긍정 출현 즉시 채택
+    if first_negated is not None:
+        return first_negated                              # 전부 부정 → 첫 부정 증거
+    return None, None, "affirmed"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -494,18 +566,30 @@ def _match(
     combined = " ".join(ch.combined for ch in scope if ch.combined)
 
     def _hit(level, surface, matched_by, evidence, note=""):
-        chn, fld = _locate(scope, surface)
-        return Hit(concept_id, label, level, chn, fld, evidence, matched_by, note)
+        chn, fld, pol = _locate(scope, surface)          # 긍정 우선 polarity(전체 scope)
+        return Hit(concept_id, label, level, chn, fld, evidence, matched_by, note, pol)
 
-    # (a) 정규화 라벨 전체구가 채널 부분문자열 — 영문-only id(label 누락)는 한국어 텍스트와 매칭 불가라 제외
-    if not missing_label and len(label_norm) >= 2 and label_norm in combined:
-        return _hit("HIGH", label_norm, "label_phrase", f"label:{label}")
-
-    # (b) 동의어 표면형(len≥2) 부분문자열 — generic stoplist 영향 안 받음
+    # (a)+(b) HIGH-tier: 라벨 전체구 + 동의어 후보를 모아 *긍정 우선* 선택(Codex R4).
+    #   한 후보(예 라벨 "실신")가 negated 라도 다른 후보(동의어 "기절")가 affirmed 면 affirmed 채택 →
+    #   동의어 간 polarity masking 방지(chief "실신 없음" + 현병력 "기절함" → syncope positive).
+    #   영문-only id(label 누락)는 한국어 텍스트와 매칭 불가라 라벨 후보 제외.
+    high_cands: list[tuple[str, str, str]] = []          # (surface, matched_by, evidence)
+    if not missing_label and len(label_norm) >= 2:
+        high_cands.append((label_norm, "label_phrase", f"label:{label}"))
     for s in config.synonyms.get(concept_id, ()):  # type: ignore[union-attr]
         sn = _norm(s)
-        if len(sn) >= 2 and sn in combined:
-            return _hit("HIGH", sn, "synonym", f"synonym:{s}")
+        if len(sn) >= 2:
+            high_cands.append((sn, "synonym", f"synonym:{s}"))
+    high_fallback: Optional[Hit] = None
+    for surf, mb, ev in high_cands:
+        if surf in combined:
+            h = _hit("HIGH", surf, mb, ev)
+            if h.polarity == "affirmed":
+                return h                                 # 긍정 후보 즉시 채택
+            if high_fallback is None:
+                high_fallback = h                        # 첫 negated 후보 보관(긍정 없을 때)
+    if high_fallback is not None:
+        return high_fallback
 
     # (c) checklist keyword 가 앵커토큰과 양방향매칭(앵커가 generic 이면 승격 금지)
     if anchor is not None:
@@ -539,15 +623,57 @@ def _match(
     return Hit(concept_id, label, "NONE", None, None, "", "absent")
 
 
-def _match_list(ids, scope, kw, labels, config, warnings) -> list[Hit]:
-    return [_match(i, scope, kw, labels=labels, config=config, warnings=warnings) for i in ids]
+def _coverage_rows(ids, fact_scope, probe_scope, kw, labels, config, warnings):
+    """각 concept → (cid, positive_hit, asked_hit). 2-렌즈 분리.
+
+    positive = 환자 사실 채널(fact_scope)에서 매칭(+부정문이면 polarity=negated). keyword 미사용(선별어 아님).
+    asked    = probe 채널(probe_scope)에서 매칭(질문/keyword, polarity 무관).
+    """
+    rows = []
+    for cid in ids:
+        pos = _match(cid, fact_scope, (), labels=labels, config=config, warnings=warnings)
+        ask = _match(cid, probe_scope, kw, labels=labels, config=config, warnings=warnings)
+        rows.append((cid, pos, ask))
+    return rows
 
 
-def _split_present(hits: Sequence[Hit]) -> tuple[list[Hit], list[Hit], list[Hit]]:
-    present = [h for h in hits if h.match_level == "HIGH"]
-    flagged = [h for h in hits if h.match_level == "LOW"]
-    missing = [h for h in hits if h.match_level == "NONE"]
-    return present, flagged, missing
+def _categorize(
+    rows,
+) -> tuple[list[Hit], list[Hit], list[Hit], list[Hit], Optional[float], Optional[float]]:
+    """2-렌즈 rows → (present, weak, screened, missing, positive_coverage, asked_coverage).
+
+    present  = positive HIGH(부정 아님; 환자가 명확히 *가짐*)
+    weak     = positive LOW(부정 아님; 약한 제시 → 검토)
+    screened = 물었으나 환자 부인(negated) | 질문만(asked_only) — *다뤄졌으나 제시 아님*
+    missing  = 어디에도 없음(positive·asked 모두 NONE)
+    """
+    present: list[Hit] = []
+    weak: list[Hit] = []
+    screened: list[Hit] = []
+    missing: list[Hit] = []
+    n_pos_high = n_asked = 0
+    total = len(rows)
+    for _cid, pos, ask in rows:
+        asked_hit = ask.match_level in ("HIGH", "LOW")
+        if asked_hit:
+            n_asked += 1
+        if pos.match_level == "HIGH" and pos.polarity != "negated":
+            n_pos_high += 1
+            present.append(pos)
+        elif pos.match_level in ("HIGH", "LOW") and pos.polarity != "negated":
+            pos.note = (pos.note + ";weak_positive").strip(";")
+            weak.append(pos)
+        elif pos.match_level in ("HIGH", "LOW"):            # positive 매칭됐으나 부정문(물었고 환자 부인)
+            pos.note = (pos.note + ";negated").strip(";")
+            screened.append(pos)
+        elif asked_hit:                                     # 환자 사실 없음, 질문만(선별)
+            ask.note = (ask.note + ";asked_only").strip(";")
+            screened.append(ask)
+        else:                                               # 진짜 누락(선별도 제시도 없음)
+            missing.append(pos)
+    pos_cov = (n_pos_high / total) if total else None
+    ask_cov = (n_asked / total) if total else None
+    return present, weak, screened, missing, pos_cov, ask_cov
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -665,57 +791,58 @@ def _case_to_dict(case: Any) -> tuple[dict, bool]:
 # ─────────────────────────────────────────────────────────────────────────────
 # 8. 6검사
 # ─────────────────────────────────────────────────────────────────────────────
-def _check_required(disease, labels, union, kw, config, warnings) -> CheckResult:
+def _check_required(disease, labels, fact_scope, probe_scope, kw, config, warnings) -> CheckResult:
     ids = disease.get("required_symptoms") or []
-    hits = _match_list(ids, union, kw, labels, config, warnings)
-    present, flagged, missing = _split_present(hits)
-    coverage = (len(present) / len(hits)) if hits else None
-    if missing:
-        status = "fail"          # 하나라도 NONE → 필수증상 누락
-    elif flagged:
-        status = "flag"          # NONE 없고 LOW 있음 → 인간검토
+    rows = _coverage_rows(ids, fact_scope, probe_scope, kw, labels, config, warnings)
+    present, weak, screened, missing, pos_cov, ask_cov = _categorize(rows)
+    # 필수증상은 환자가 *제시*(positive)해야 함 → 미제시(선별만/부정=screened·누락)는 fail(Codex R2).
+    if screened or missing:
+        status = "fail"
+    elif weak:
+        status = "flag"          # 약한 제시만 → 검토
     else:
-        status = "pass"          # 전부 HIGH
+        status = "pass"          # 전부 명확 제시
     return CheckResult(
-        "required_coverage", status, coverage, present, missing, flagged, [],
-        notes="필수증상 어휘 커버리지(union 채널).",
+        "required_coverage", status, pos_cov, present, missing, weak, [], screened,
+        notes="필수증상 = 환자가 *제시*(positive) 필수. screened(선별만/부정)·missing=미제시=fail.",
+        positive_coverage=pos_cov, asked_coverage=ask_cov,
     )
 
 
-def _check_red_flags(disease, labels, union, kw, config, warnings) -> CheckResult:
+def _check_red_flags(disease, labels, fact_scope, probe_scope, kw, config, warnings) -> CheckResult:
     ids = disease.get("red_flags") or []
     if not ids:                  # 빈 리스트(musculoskeletal) → skip
         return CheckResult("red_flags", "skip", None, notes="이 카드는 red_flags 미정의 → 검사 제외.")
-    hits = _match_list(ids, union, kw, labels, config, warnings)
-    present, flagged, missing = _split_present(hits)
-    coverage = len(present) / len(hits)
-    # soft 정책: 전부 HIGH→pass, 하나라도(HIGH/LOW) 신호→flag, 완전 부재(전부 NONE)→fail (거짓fail 방지).
-    if coverage == 1.0:
-        status = "pass"
-    elif present or flagged:
-        status = "flag"
+    rows = _coverage_rows(ids, fact_scope, probe_scope, kw, labels, config, warnings)
+    present, weak, screened, missing, pos_cov, ask_cov = _categorize(rows)
+    # red flag 는 *명확히 다뤄짐*(present∪screened)이 목표 → 전부 명확→pass · 약함(weak)/일부누락→flag · 전무→fail.
+    if not missing and not weak:
+        status = "pass"          # 전부 명확 제시·선별됨
+    elif present or weak or screened:
+        status = "flag"          # 약한 제시 또는 일부 누락 → 검토
     else:
-        status = "fail"
+        status = "fail"          # 전부 누락(선별 0·제시 0)
     return CheckResult(
-        "red_flags", status, coverage, present, missing, flagged, [],
-        notes="red flag 증상 언급/경고증상 묻기 커버리지(soft).",
+        "red_flags", status, pos_cov, present, missing, weak, [], screened,
+        notes="red flag = 다뤄짐(screened 선별 ∪ present 제시) 기준. coverage=positive 제시율 · asked=선별율.",
+        positive_coverage=pos_cov, asked_coverage=ask_cov,
     )
 
 
-def _check_discriminators(disease, labels, union, kw, config, warnings) -> CheckResult:
+def _check_discriminators(disease, labels, fact_scope, probe_scope, kw, config, warnings) -> CheckResult:
     ids = disease.get("discriminators") or []
-    hits = _match_list(ids, union, kw, labels, config, warnings)
-    present, flagged, missing = _split_present(hits)
-    coverage = (len(present) / len(hits)) if hits else None
-    all_high = bool(hits) and not flagged and not missing
+    rows = _coverage_rows(ids, fact_scope, probe_scope, kw, labels, config, warnings)
+    present, weak, screened, missing, pos_cov, ask_cov = _categorize(rows)
+    all_positive = bool(rows) and not weak and not screened and not missing   # 전부 positive HIGH
     if config.strict_discriminators:
-        status = "pass" if all_high else ("fail" if missing else "flag")
+        status = "pass" if all_positive else ("fail" if missing else "flag")
     else:
-        # 감별단서는 부분이 정상 → pass/flag(절대 fail 아님), coverage 는 항상 리포트
-        status = "pass" if all_high else "flag"
+        # 감별단서는 부분이 정상 → pass/flag(절대 fail 아님)
+        status = "pass" if all_positive else "flag"
     return CheckResult(
-        "discriminators", status, coverage, present, missing, flagged, [],
-        notes="감별단서 커버리지(비-strict: 부분 정상).",
+        "discriminators", status, pos_cov, present, missing, weak, [], screened,
+        notes="감별단서 = 제시(positive) 우선. 약함/선별만/부정은 flag. 비-strict.",
+        positive_coverage=pos_cov, asked_coverage=ask_cov,
     )
 
 
@@ -759,7 +886,9 @@ def _check_disclosure(disease, labels, spont, kw, config, warnings) -> CheckResu
 
 
 def _appears_for_contradiction(h: Hit) -> bool:
-    """상호배타 판정에서 '출현'으로 칠지 — HIGH 또는 (특이 증거의) LOW. generic-only/indeterminate 제외."""
+    """상호배타 판정에서 '출현'으로 칠지 — HIGH 또는 (특이 증거의) LOW. negated/generic-only/indeterminate 제외."""
+    if h.polarity == "negated":        # "운동과 관련 없다" 등 부정 출현은 모순 신호 아님(Codex R2)
+        return False
     if h.match_level == "HIGH":
         return True
     if h.match_level == "LOW" and h.matched_by != "absent" and "generic_only" not in h.note:
@@ -772,7 +901,9 @@ def _parse_systolic(bp: Any) -> Optional[int]:
     return int(m.group(1)) if m else None
 
 
-def _check_contradiction(c, disease, labels, union, kw, config, warnings) -> CheckResult:
+def _check_contradiction(c, disease, labels, fact_scope, config, warnings) -> CheckResult:
+    # ⚠ 모순은 *환자 사실*(fact_scope: spontaneous/asked/history)에서만 본다 — probe(질문·keyword)는
+    #    "운동 연관을 물었다"가 exertional×no_exertional 거짓모순을 만들어 제외(Codex 적대검수 R5, 2026-06-30).
     violations: list[Hit] = []
     flagged: list[Hit] = []
     notes: list[str] = []
@@ -784,11 +915,13 @@ def _check_contradiction(c, disease, labels, union, kw, config, warnings) -> Che
         n = _norm(x)
         if not n:
             return None
-        if n in config.male_tokens:
+        # 장식 텍스트("남성(58세)"→"남성 58세")에 강건 — 토큰 단위로 성별어 추출
+        toks = set(n.split())
+        if n in config.male_tokens or toks & config.male_tokens:
             return "M"
-        if n in config.female_tokens:
+        if n in config.female_tokens or toks & config.female_tokens:
             return "F"
-        return n  # 알 수 없는 표기 → 원문 비교
+        return n  # 알 수 없는 표기끼리만 원문 비교
 
     demo_sex_raw, pat_sex_raw = demo.get("sex", ""), patient.get("sex", "")
     g_demo, g_pat = _gender(demo_sex_raw), _gender(pat_sex_raw)
@@ -815,8 +948,8 @@ def _check_contradiction(c, disease, labels, union, kw, config, warnings) -> Che
     # R3 상호배타 라벨쌍(명시표). 둘 다 HIGH→위반 · 한쪽 HIGH+다른쪽(특이)LOW→flag.
     #    둘 다 약한 LOW(특히 generic-only)면 신호 부족 → 무시(거짓모순 방지).
     for a, b in config.mutual_exclusions:
-        ha = _match(a, union, kw, labels=labels, config=config, warnings=warnings)
-        hb = _match(b, union, kw, labels=labels, config=config, warnings=warnings)
+        ha = _match(a, fact_scope, (), labels=labels, config=config, warnings=warnings)
+        hb = _match(b, fact_scope, (), labels=labels, config=config, warnings=warnings)
         if _appears_for_contradiction(ha) and _appears_for_contradiction(hb):
             if ha.match_level == "HIGH" and hb.match_level == "HIGH":
                 for hh in (ha, hb):
@@ -828,11 +961,15 @@ def _check_contradiction(c, disease, labels, union, kw, config, warnings) -> Che
                     flagged.append(hh)
 
     # R4(옵션·휴리스틱) 저혈압 강단언 vs 정상/높은 수축기 → 수치모순(flag). vitals None 이면 skip.
+    # ⚠ 자발(spontaneous) 채널의 *환자 사실 단언*만 본다 — "저혈압을 물었다"(질문/scoring_rule)는
+    #    모순이 아니다(Codex 적대검수 2026-06-30). channel!=spontaneous 면 무시.
     vitals = c.get("vitals")
     if vitals:
         sys = _parse_systolic(vitals.get("bp"))
-        hyp = _match("hypotension", union, kw, labels=labels, config=config, warnings=warnings)
-        if sys is not None and sys >= config.r4_systolic_normal_min and hyp.match_level == "HIGH":
+        hyp = _match("hypotension", fact_scope, (), labels=labels, config=config, warnings=warnings)
+        if (sys is not None and sys >= config.r4_systolic_normal_min
+                and hyp.match_level == "HIGH" and hyp.channel == "spontaneous"
+                and hyp.polarity == "affirmed"):           # "저혈압 없음"(부정)은 모순 아님
             hyp.note = f"hypotension_text_vs_bp(sys={sys})"
             flagged.append(hyp)
 
@@ -843,7 +980,7 @@ def _check_contradiction(c, disease, labels, union, kw, config, warnings) -> Che
     else:
         status = "pass"
     notes.append("순수 결정론 표(R1 남성+산부인과력·R2 성별·R3 상호배타쌍·R4 저혈압-수치).")
-    return CheckResult("contradiction", status, None, [], [], flagged, violations, "; ".join(notes))
+    return CheckResult("contradiction", status, None, [], [], flagged, violations, notes="; ".join(notes))
 
 
 def _expected_domain(card_item_id: str) -> Optional[str]:
@@ -883,11 +1020,15 @@ def _check_checklist(disease, labels, c, config, warnings) -> CheckResult:
         best: Optional[Hit] = None
         best_j: Optional[int] = None
         best_item: Optional[dict] = None
+        best_low: Optional[Hit] = None        # HIGH 없을 때 보존할 약한 매핑(증거 소실 방지)
         for j, ci, ch, kws in mini:
             h = _match(cid, [ch], kws, labels=labels, config=config, warnings=warnings)
             if h.match_level == "HIGH":
                 best, best_j, best_item = h, j, ci
                 break
+            if h.match_level == "LOW" and best_low is None:
+                h.field = f"checklist[{j}]"
+                best_low = h
         if best is not None:
             matched_case_idx.add(best_j)
             best.field = f"checklist[{best_j}]"
@@ -901,6 +1042,10 @@ def _check_checklist(disease, labels, c, config, warnings) -> CheckResult:
                     cid, labels.get(cid, cid), "LOW", "union", best.field,
                     f"domain:{dom}≠{exp}", "field_rule", "domain_mismatch",
                 ))
+        elif best_low is not None:
+            # 약한 매핑 = "검토 필요"(완전 누락 아님). 증거 보존(Codex 적대검수 2026-06-30).
+            best_low.note = (best_low.note + ";weak_checklist_map").strip(";")
+            flagged.append(best_low)
         else:
             missing.append(_match(cid, [], [], labels=labels, config=config, warnings=warnings))
 
@@ -920,7 +1065,7 @@ def _check_checklist(disease, labels, c, config, warnings) -> CheckResult:
     note = "카드 checklist_items → case 항목 매핑 커버리지."
     if orphans:
         note += f" orphan(case 전용) 항목: {orphans}"
-    return CheckResult("checklist_mapping", status, coverage, present, missing, flagged, [], note)
+    return CheckResult("checklist_mapping", status, coverage, present, missing, flagged, [], notes=note)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -949,6 +1094,8 @@ def validate(
     ----------
     case : CpxCase | dict | str
         구조체(CpxCase/dict) 권장. str 이면 자유텍스트로 보고 자발채널에 투영(검사4·6 신뢰도↓).
+        ⚠ 자유텍스트는 diagnosis 가 비어 카드 역매칭 불가 → 다중카드·strict(기본)면 `disease_id=`
+        (또는 strict_diagnosis_match=False) 필요. 안 주면 CardResolutionError.
     ontology : 경로 | raw dict | diseases 리스트 | 단일 disease dict
         경로/ dict 면 labels·meta 까지 읽음. 리스트면 labels= 인자 사용(파일 IO 0).
     labels : dict[str,str] | None
@@ -968,15 +1115,16 @@ def validate(
     did = disease.get("id", "(unknown)")
     dlabel = labelmap.get(did, did)
 
-    spont, asked, probe, extra, kw = _build_channels(c)
-    union = [spont, asked, probe, extra]
+    spont, asked, probe, history, extra, kw = _build_channels(c)
+    fact_scope = [spont, asked, history]              # 환자 사실 렌즈(positive·모순 — 가졌나)
+    probe_scope = [probe]                              # 선별 렌즈(asked — 학생이 물었나)
 
     checks: dict[str, CheckResult] = {
-        "required_coverage": _check_required(disease, labelmap, union, kw, config, warnings),
-        "red_flags": _check_red_flags(disease, labelmap, union, kw, config, warnings),
-        "discriminators": _check_discriminators(disease, labelmap, union, kw, config, warnings),
+        "required_coverage": _check_required(disease, labelmap, fact_scope, probe_scope, kw, config, warnings),
+        "red_flags": _check_red_flags(disease, labelmap, fact_scope, probe_scope, kw, config, warnings),
+        "discriminators": _check_discriminators(disease, labelmap, fact_scope, probe_scope, kw, config, warnings),
         "disclosure": _check_disclosure(disease, labelmap, spont, kw, config, warnings),
-        "contradiction": _check_contradiction(c, disease, labelmap, union, kw, config, warnings),
+        "contradiction": _check_contradiction(c, disease, labelmap, fact_scope, config, warnings),
         "checklist_mapping": _check_checklist(disease, labelmap, c, config, warnings),
     }
     # 키 순서 고정(CHECK_KEYS)

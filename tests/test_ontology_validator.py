@@ -280,11 +280,152 @@ def test_serialization_json_and_markdown():
 # ── 9. config 핀고정(스냅샷 회귀가드) ────────────────────────────────────────
 def test_default_config_pinned():
     assert DEFAULT_CONFIG.token_match_ratio == 0.5
-    assert DEFAULT_CONFIG.flag_threshold == 0.5
     assert DEFAULT_CONFIG.strict_diagnosis_match is True
     assert DEFAULT_CONFIG.strict_discriminators is False
     assert ("exertional_or_rest_onset", "no_exertional_relation") in DEFAULT_CONFIG.mutual_exclusions
     assert "chest_pressure" in DEFAULT_CONFIG.synonyms
+
+
+# ── 10. 2-렌즈 분리(positive vs asked) + negation (Codex 적대검수 2026-06-30) ──────
+def _facts_case(**over) -> dict:
+    """환자 사실/체크리스트만 정밀 주입하는 최소 ACS 케이스(렌즈 격리용)."""
+    return {
+        "case_id": "lens", "title": "t", "diagnosis": "급성 관상동맥증후군(ACS)",
+        "chief_complaint": over.get("chief_complaint", "가슴 압박감"),
+        "situation_instruction": over.get("situation_instruction", "계단 오를 때"),
+        "demographics": {"sex": "남", "age": 58},
+        "patient": {"sex": "남", "age": 58, "name": "홍"},
+        "present_illness": over.get("present_illness", []),
+        "checklist": over.get("checklist", []),
+    }
+
+
+def test_negation_excluded_from_positive():
+    # "실신은 없었어요" → syncope 는 polarity=negated → positive 로 안 셈(선별은 인정)
+    c = _facts_case(checklist=[
+        {"id": "q", "domain": "병력청취", "scoring_rule": "실신을 물었다",
+         "keywords": ["실신"], "patient_answer": "실신은 없었어요"},
+    ])
+    rf = validate(c, DISEASES, LABELS, disease_id=ACS).checks["red_flags"]
+    syn = next(h for h in rf.screened + rf.flagged + rf.present if h.concept_id == "syncope")
+    assert syn.polarity == "negated"
+    assert syn in rf.screened                     # 물었고 환자 부인 → screened(present 아님)
+    assert syn not in rf.present
+    assert rf.positive_coverage == 0.0           # 환자가 가진 red flag 0
+    assert rf.asked_coverage and rf.asked_coverage > 0.0   # 선별은 함
+
+
+def test_screened_redflag_not_false_fail():
+    # 모든 red flag 를 선별(asked)했으면 환자가 부인해도 fail 아님(거짓fail 방지)
+    c = _facts_case(checklist=[
+        {"id": "q1", "domain": "병력청취", "scoring_rule": "저혈압·실신을 물었다",
+         "keywords": ["저혈압", "실신"], "patient_answer": "저혈압이나 실신은 없었습니다"},
+    ])
+    rf = validate(c, DISEASES, LABELS, disease_id=ACS).checks["red_flags"]
+    assert rf.status != "fail"                   # 둘 다 선별 → fail 아님
+    assert rf.positive_coverage == 0.0
+    assert rf.asked_coverage == 1.0
+
+
+def test_present_illness_not_spontaneous_but_positive():
+    # 현병력 detail 의 방사통·식은땀 → disclosure 누설 아님(자발 아님) + discriminator 는 positive
+    c = _facts_case(
+        chief_complaint="가슴 압박감",
+        present_illness=[{"time_point": "7일전", "detail": "왼팔로 방사되는 통증과 식은땀이 있었다"}],
+    )
+    r = validate(c, DISEASES, LABELS, disease_id=ACS)
+    assert r.checks["disclosure"].status == "pass"
+    assert not r.checks["disclosure"].violations
+    pres = {h.concept_id for h in r.checks["discriminators"].present}
+    assert "radiation_to_left_arm_or_jaw" in pres
+    assert "diaphoresis" in pres
+
+
+def test_required_asked_only_is_fail_not_present():
+    # 필수증상을 '물었지만' 환자 사실엔 없음 → present 아님, screened, status=fail
+    # (Codex R2: 필수증상은 환자가 *제시*해야 함 — 선별만은 미충족)
+    c = _facts_case(
+        chief_complaint="가슴이 좀 이상해요", situation_instruction="모르겠어요",
+        checklist=[
+            {"id": "q", "domain": "병력청취", "scoring_rule": "압박감·운동 연관을 물었다",
+             "keywords": ["압박", "운동"], "patient_answer": "글쎄요 잘 모르겠어요"},
+        ],
+    )
+    rq = validate(c, DISEASES, LABELS, disease_id=ACS).checks["required_coverage"]
+    assert rq.positive_coverage == 0.0
+    assert rq.asked_coverage == 1.0
+    assert rq.status == "fail"                   # 선별만(screened) → 미제시 → fail
+    assert "chest_pressure" not in {h.concept_id for h in rq.present}
+    assert "chest_pressure" in {h.concept_id for h in rq.screened}
+
+
+def test_two_lens_coverages_serialized():
+    # positive_coverage/asked_coverage 가 직렬화에 포함(라운드트립)
+    d = validate(_case(), DISEASES, LABELS, disease_id=ACS).to_dict()["checks"]["red_flags"]
+    assert "positive_coverage" in d and "asked_coverage" in d
+
+
+def test_r4_negated_hypotension_no_contradiction():
+    # "저혈압은 없어요"(자발 부정) + bp 높음 → R4 수치모순 아님(polarity 체크, Codex R2)
+    c = _facts_case(chief_complaint="가슴 압박감이 있고 저혈압은 없어요")
+    c["vitals"] = {"bp": "148/92"}
+    assert validate(c, DISEASES, LABELS, disease_id=ACS).checks["contradiction"].status == "pass"
+
+
+def test_r4_affirmed_hypotension_still_flags():
+    # 반대로 "저혈압이 심해요"(자발 단언) + bp 높음 → 수치모순 flag(휴리스틱 유지)
+    c = _facts_case(chief_complaint="가슴 압박감이 있고 저혈압이 심합니다")
+    c["vitals"] = {"bp": "148/92"}
+    con = validate(c, DISEASES, LABELS, disease_id=ACS).checks["contradiction"]
+    assert con.status == "flag"
+    assert any("hypotension_text_vs_bp" in h.note for h in con.flagged)
+
+
+def test_polarity_affirmed_preferred_across_fields():
+    # 한 필드 부정 + 다른 필드 긍정 → 긍정 우선(Codex R3): syncope 는 positive 로 채택
+    c = _facts_case(
+        chief_complaint="실신은 없었어요",
+        present_illness=[{"time_point": "이후", "detail": "이후 실신했습니다"}],
+    )
+    rf = validate(c, DISEASES, LABELS, disease_id=ACS).checks["red_flags"]
+    syn = next(h for h in rf.present + rf.flagged + rf.screened if h.concept_id == "syncope")
+    assert syn.polarity == "affirmed"
+    assert syn in rf.present
+
+
+def test_polarity_affirmed_across_synonyms():
+    # label "실신" negated + 동의어 "기절" affirmed(다른 필드) → syncope positive(Codex R4 동의어 masking)
+    c = _facts_case(
+        chief_complaint="실신은 없었어요",
+        present_illness=[{"time_point": "이후", "detail": "이후 기절했습니다"}],
+    )
+    rf = validate(c, DISEASES, LABELS, disease_id=ACS).checks["red_flags"]
+    syn = next(h for h in rf.present + rf.flagged + rf.screened if h.concept_id == "syncope")
+    assert syn.polarity == "affirmed"
+    assert syn in rf.present
+
+
+def test_no_exertional_relation_no_false_contradiction():
+    # "운동과 무관"(GERD 감별)이 exertional '운동' 부분매칭으로 거짓 모순 내면 안 됨(Codex R3)
+    c = {
+        "case_id": "gerd", "title": "t", "diagnosis": "위식도역류질환(GERD)",
+        "chief_complaint": "식후 흉골 뒤 작열감", "situation_instruction": "통증은 운동과 무관합니다",
+        "demographics": {"sex": "남", "age": 50}, "patient": {"sex": "남", "age": 50, "name": "김"},
+        "present_illness": [], "checklist": [],
+    }
+    con = validate(c, DISEASES, LABELS, disease_id="gerd").checks["contradiction"]
+    assert con.status == "pass"     # exertional 은 관계부정(무관) → 상호배타 안 켜짐
+
+
+def test_contradiction_ignores_probe_channel():
+    # checklist "운동 연관을 물었다"(keyword 운동)만으로 exertional×no_exertional 거짓모순 X (Codex R5)
+    # — 모순은 환자 사실(fact) 채널만, probe(질문) 제외.
+    c = _facts_case(
+        chief_complaint="가슴 압박감", situation_instruction="계단 오를 때 통증",
+        checklist=[{"id": "q", "domain": "병력청취", "scoring_rule": "운동 연관을 물었다",
+                    "keywords": ["운동"], "patient_answer": "네 계단 오를 때 아파요"}],
+    )
+    assert validate(c, DISEASES, LABELS, disease_id=ACS).checks["contradiction"].status == "pass"
 
 
 if __name__ == "__main__":   # pragma: no cover — pytest 없이도 단독 실행 가능
