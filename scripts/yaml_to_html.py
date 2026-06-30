@@ -1,7 +1,7 @@
 """흉통 온톨로지 YAML → 인터랙티브 HTML 그래프 (서버 0, 브라우저로 바로 열기).
 
 정본 = ontology/chest_pain.yaml. Neo4j가 없어도 미팅에서 *살아있는 흉통 그래프*를 보여주는 fallback.
-vis-network(CDN) 한 파일. 노드 드래그·줌·hover 가능.
+vis-network(vendored·인라인) 한 파일 — 완전 오프라인(인터넷 불필요). 노드 드래그·줌·hover 가능.
 
 사용:  .venv/bin/python scripts/yaml_to_html.py   # → docs/chest_pain-graph.html
 """
@@ -20,7 +20,7 @@ DEFAULT_OUT = os.path.join(ROOT, "docs", "chest_pain-graph.html")
 _TEMPLATE = """<!DOCTYPE html>
 <html lang="ko"><head><meta charset="utf-8">
 <title>흉통 온톨로지 그래프 (CPX)</title>
-<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+__VISJS__
 <style>
   body{margin:0;font-family:'Malgun Gothic',sans-serif;background:#fafafa}
   #hd{padding:10px 16px;border-bottom:1px solid #ddd;background:#fff}
@@ -58,6 +58,16 @@ _TEMPLATE = """<!DOCTYPE html>
 """
 
 
+def _vis_script() -> str:
+    """vendored vis-network 를 <script> 인라인 → 완전 오프라인. 없으면 핀고정 CDN fallback(+경고)."""
+    vendor = os.path.join(ROOT, "scripts", "vendor", "vis-network.min.js")
+    if os.path.exists(vendor):
+        with open(vendor, encoding="utf-8") as f:
+            return "<script>" + f.read() + "</script>"
+    print("⚠ scripts/vendor/vis-network.min.js 없음 → CDN fallback(오프라인 아님).", file=sys.stderr)
+    return '<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>'
+
+
 def build_html(yaml_path: str) -> str:
     _, nodes, edges = load_graph(yaml_path)
 
@@ -89,6 +99,7 @@ def build_html(yaml_path: str) -> str:
         .replace("__EDGES__", json.dumps(vis_edges, ensure_ascii=False))
         .replace("__LEGEND__", legend)
         .replace("__TITLE__", title)
+        .replace("__VISJS__", _vis_script())
     )
 
 
