@@ -20,6 +20,7 @@
 
 - **온톨로지(설계) ⊂ 지식그래프(설계+데이터) ⊂ Neo4j(그릇).** 온톨로지=타입·관계 스키마, 지식그래프=그걸 채운 점·선 전체, Neo4j=그걸 저장·질의하는 DB 제품. → **설계는 지금, Neo4j는 교수 결정 시점.**
 - **지식 전달 역할분담:** 교과서 18권 = **RAG**(현행) / CPX 형식·루브릭 등 정제지식 = **LLM wiki·롱컨텍스트** / 원인-증상-질환 **관계·감별·생성뼈대 = 지식그래프**. 셋은 경쟁 아니라 보완(크기·안정성·관계여부로 라우팅).
+  - **RAG = 조연(축소 중).** 정제·안정 지식은 wiki/그래프가 거의 다 먹는다. RAG는 *"통째로 못 올릴 만큼 큰 교과서"* 라는 한 군데에만 남는다 — ① 거대 교과서 깊은 임상사실, ② **그래프 빌드 재료**(트리플의 `source_id` 근거를 교과서에서 찾음), ③ 그래프 빈 구간 임시 보조. 흉통 그래프가 교수 검증으로 차오를수록 RAG 비중은 더 준다.
 - **"근거 갖고 생성" = 그래프가 사례 필수요소를 *강제*** (검색해서 참고로 보여주는 RAG와 다름). 미팅에선 "Pattern A/B" 같은 내부 용어 대신 *"그래프가 필수요소를 강제한다"*로 말한다.
 - **지식그래프(구조, 작아도 가치) ≠ GraphRAG(큰 코퍼스 검색 시스템).** 우리가 원하는 건 **앞엣것**(작은 흉통 그래프를 생성 뼈대로). GraphRAG의 무거운 검색 파이프라인은 코퍼스가 거대해질 때까지 불필요.
 - **LangGraph(우리 코드의 흐름제어) ≠ 지식그래프(교수님 Neo4j).** 둘 다 'graph'라 헷갈림 — 문서·미팅에서 구분.
@@ -54,8 +55,10 @@
 - **한국 SNOMED 현실:** 한국은 **2020년 SNOMED International 39번째 회원국**. 국내 기관은 **한국보건의료정보원(NRC) 통해 추가비용 없이** 활용 안내 → "라이선스 비용" 질문에 답 가능.
 - **자체(표준에 없음):** 한국어 환자표현(`ko_patient_phrase`)·학생질문 동의어 · CPX 채점항목 · 과공개 규칙 · 오답유도 감별.
 
-### 2.5 저장: YAML(지금) → Neo4j(교수 결정 시점)
-**Neo4j 없이 `YAML/JSON disease card + validator`로 그래프-스캐폴드의 ~70%를 즉시 구현.** YAML = 교수가 직접 읽고 고침 · git 버전관리·diff(재현성) · Python 1줄 로드 · 인프라 0. 쿼리 복잡도가 커지면 Neo4j로 이전(시점=교수님 결정).
+### 2.5 저장: **YAML = 정본(master) + Neo4j = 시각화 뷰 (한 방향 렌더)**
+- **`ontology/chest_pain.yaml` = 단일 정본.** 편집·검증·버전관리는 전부 여기서 — 교수가 텍스트로 직접 고침 · git diff로 변경추적(재현성) · `validator`가 `required_symptoms` 등을 기계 검사 · 인프라 0.
+- **Neo4j = 보여주는 거울(바로 사용, 시각화 목적).** 스크립트가 `YAML → Neo4j` 한 방향으로 렌더 → Neo4j Browser로 교수님께 *살아있는 흉통 그래프*를 띄움. **Neo4j에서 손으로 편집 안 함**(동기화 깨짐 방지). 산출: `scripts/yaml_to_cypher.py`(→ cypher-shell 로드) + 서버 없이 여는 `scripts/yaml_to_html.py`(→ vis-network 인터랙티브 HTML).
+- *각자 잘하는 것만: YAML이 진실(검증가능), Neo4j가 거울(시각화). "Neo4j 조기 도입" 운영·동기화 리스크는 한 방향 렌더로 회피.* (교수님이 Neo4j를 *정본*으로 원하시면 §7 확인 포인트.)
 
 ---
 
@@ -160,6 +163,23 @@ diseases:
 
 ## 5. 2주 MVP 계획 (7/2 미팅 후, 교수 확인 후 착수)
 
+### ✅ 지금 만든 것 (시각화 데모 — 미팅에 바로)
+- `ontology/chest_pain.yaml` — 정본(질환5, draft) · `ontology/chest_pain.cypher` — 자동생성
+- `docs/chest_pain-graph.html` — **서버 0, 브라우저로 바로 여는 인터랙티브 그래프** · `docs/chest_pain-graph.png` — 스샷(임베드용)
+- 스크립트: `scripts/{ontology_graph,yaml_to_cypher,yaml_to_html}.py` + `graph_shot.js`
+- **Neo4j 라이브 검증 완료**: docker neo4j → 65노드·70엣지 로드 → 타입 쿼리("ACS 감별질환", "red flag 있는 질환") 동작 확인.
+
+```bash
+# 재현: YAML 고치면 그래프 자동 갱신 (한 방향 렌더)
+.venv/bin/python scripts/yaml_to_html.py        # → docs/chest_pain-graph.html (그냥 열기)
+.venv/bin/python scripts/yaml_to_cypher.py      # → ontology/chest_pain.cypher
+# Neo4j 시각화(인터랙티브, 교수 데모용):
+docker run -d --name cpx-neo4j -p7474:7474 -p7687:7687 -e NEO4J_AUTH=neo4j/cpxneo4j2026 neo4j:5
+cat ontology/chest_pain.cypher | docker exec -i cpx-neo4j cypher-shell -u neo4j -p cpxneo4j2026
+# → http://localhost:7474 (neo4j / cpxneo4j2026) 에서 그래프 탐색
+```
+
+### 남은 산출물 (교수 확인 후):
 **산출물 4개면 충분:**
 1. `ontology/chest_pain.yaml` (위 §4.1, 교수 검증 반영)
 2. 질환 5개(대표 1 + 감별 4) 완성 카드

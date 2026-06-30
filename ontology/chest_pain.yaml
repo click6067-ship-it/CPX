@@ -1,0 +1,140 @@
+# CPX 온톨로지 — 주증상: 흉통 (chest pain)
+# ──────────────────────────────────────────────────────────────
+# 이 파일이 정본(master). 편집·검증·버전관리는 여기서만.
+# Neo4j/HTML 그래프는 scripts/yaml_to_cypher.py · yaml_to_html.py 로 한 방향 렌더(거울).
+#
+# ⚠️ review_status: draft — 임상 내용은 임선주/박정빈 교수 검증 전 *구조 시연용 초안*.
+#    의학적 정확성을 주장하지 않음. 교수 검증 후 professor_approved 갱신.
+# 설계 정본 문서 = docs/ontology-plan.md
+# ──────────────────────────────────────────────────────────────
+
+chief_complaint: chest_pain
+
+meta:
+  station_minutes: 10
+  ppi_assessed: true
+  review_status: draft
+  professor_approved: false
+
+# 표시용 한국어 라벨 (id → 한국어). 그래프 렌더가 이걸 씀. 없으면 id 그대로.
+labels:
+  chest_pain: 흉통
+  # 질환
+  acute_coronary_syndrome: 급성 관상동맥증후군(ACS)
+  gerd: 위식도역류질환(GERD)
+  musculoskeletal_chest_pain: 근골격계 흉통
+  panic_anxiety: 공황/불안
+  aortic_dissection: 대동맥박리
+  # 증상·감별단서
+  chest_pressure: 쥐어짜는 압박감
+  exertional_or_rest_onset: 운동/안정 시 발생
+  radiation_to_left_arm_or_jaw: 좌측 팔·턱 방사
+  diaphoresis: 식은땀
+  dyspnea: 호흡곤란
+  retrosternal_burning: 흉골 뒤 작열감
+  relation_to_meals_or_lying_down: 식후/눕기와 연관
+  acid_regurgitation: 산 역류
+  relieved_by_antacid: 제산제로 완화
+  no_exertional_relation: 운동과 무관
+  localized_pain: 국소 통증
+  reproducible_on_movement: 움직임으로 재현
+  pain_on_chest_wall_palpation: 흉벽 압통
+  worse_with_breathing_or_motion: 호흡/동작 시 악화
+  strain_history: 무리·외상 과거력
+  chest_tightness: 가슴 답답함
+  palpitations: 두근거림
+  hyperventilation: 과호흡
+  paresthesia: 손발 저림
+  situational_trigger: 상황 유발
+  young_low_risk: 젊고 위험인자 적음
+  sudden_tearing_pain: 갑작스런 찢어지는 통증
+  maximal_at_onset: 시작 시 최고조
+  radiation_to_back: 등으로 방사
+  bp_differential_between_arms: 양팔 혈압차
+  hypertension_hx: 고혈압 병력
+  # red flags
+  hypotension: 저혈압
+  syncope: 실신
+  dysphagia: 연하곤란
+  weight_loss: 체중감소
+  gi_bleeding: 위장관 출혈
+  must_exclude_cardiac_first: 심장 원인 우선 배제
+  bp_differential: 양팔 혈압차
+  neurologic_deficit: 신경학적 결손
+  # 체크리스트(채점, 1 행동 단위)
+  ask_onset_duration: 발병·기간 묻기
+  ask_character: 통증 양상 묻기
+  ask_radiation: 방사 묻기
+  ask_aggravating_relieving: 악화·완화인자 묻기
+  ask_associated_sx: 동반증상 묻기
+  ask_cardiac_risk_factors: 심혈관 위험인자 묻기
+  ask_relation_to_meals: 식사 연관 묻기
+  ask_regurgitation: 역류 묻기
+  ask_antacid_response: 제산제 반응 묻기
+  ask_alarm_features: 경고증상 묻기
+  ask_palpation_reproducibility: 압통 재현 확인
+  ask_movement_relation: 동작 연관 묻기
+  ask_trauma_hx: 외상력 묻기
+  exam_chest_wall: 흉벽 진찰
+  ask_anxiety_sx: 불안증상 묻기
+  ask_triggers: 유발요인 묻기
+  ask_pattern: 발작 양상 묻기
+  exclude_red_flags: red flag 배제
+  ask_onset_abruptness: 발병 급격성 묻기
+  ask_tearing_quality: 찢어지는 양상 묻기
+  ask_radiation_to_back: 등 방사 묻기
+  measure_bp_both_arms: 양팔 혈압 측정
+  # 검사·교육
+  ecg_12lead: 12유도 심전도
+  cardiac_troponin: 심근 트로포닌
+  ct_angiography: CT 혈관조영
+  explain_need_for_ecg_troponin: 심전도·효소 검사 설명
+  explain_emergency_nature: 응급성 설명
+
+# ── 질환 카드 (대표진단 1 + 주요 감별 4) ───────────────────────
+diseases:
+  - id: acute_coronary_syndrome
+    role: primary
+    required_symptoms: [chest_pressure, exertional_or_rest_onset]
+    discriminators: [radiation_to_left_arm_or_jaw, diaphoresis, dyspnea]
+    red_flags: [hypotension, syncope]
+    risk_factors: [hypertension_hx]
+    checklist_items: [ask_onset_duration, ask_character, ask_radiation, ask_aggravating_relieving, ask_associated_sx, ask_cardiac_risk_factors]
+    tests: [ecg_12lead, cardiac_troponin]
+    education_items: [explain_need_for_ecg_troponin, explain_emergency_nature]
+    disclosure:
+      spontaneous: [chest_pressure]
+      disclose_if_asked: [radiation_to_left_arm_or_jaw, diaphoresis]
+
+  - id: gerd
+    role: differential
+    differential_of: acute_coronary_syndrome
+    required_symptoms: [retrosternal_burning, relation_to_meals_or_lying_down]
+    discriminators: [acid_regurgitation, relieved_by_antacid, no_exertional_relation]
+    red_flags: [dysphagia, weight_loss, gi_bleeding]   # alarm features
+    checklist_items: [ask_relation_to_meals, ask_regurgitation, ask_antacid_response, ask_alarm_features]
+
+  - id: musculoskeletal_chest_pain
+    role: differential
+    differential_of: acute_coronary_syndrome
+    required_symptoms: [localized_pain, reproducible_on_movement]
+    discriminators: [pain_on_chest_wall_palpation, worse_with_breathing_or_motion, strain_history]
+    red_flags: []
+    checklist_items: [ask_palpation_reproducibility, ask_movement_relation, ask_trauma_hx, exam_chest_wall]
+
+  - id: panic_anxiety
+    role: differential
+    differential_of: acute_coronary_syndrome
+    required_symptoms: [chest_tightness, palpitations]
+    discriminators: [hyperventilation, paresthesia, situational_trigger, young_low_risk]
+    red_flags: [must_exclude_cardiac_first]
+    checklist_items: [ask_anxiety_sx, ask_triggers, ask_pattern, exclude_red_flags]
+
+  - id: aortic_dissection
+    role: differential
+    differential_of: acute_coronary_syndrome
+    required_symptoms: [sudden_tearing_pain, maximal_at_onset]
+    discriminators: [radiation_to_back, bp_differential_between_arms, hypertension_hx]
+    red_flags: [bp_differential, neurologic_deficit, syncope, hypotension]
+    checklist_items: [ask_onset_abruptness, ask_tearing_quality, ask_radiation_to_back, measure_bp_both_arms]
+    tests: [ct_angiography]
