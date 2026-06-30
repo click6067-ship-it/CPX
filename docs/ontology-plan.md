@@ -173,10 +173,15 @@ diseases:
 # 재현: YAML 고치면 그래프 자동 갱신 (한 방향 렌더)
 .venv/bin/python scripts/yaml_to_html.py        # → docs/chest_pain-graph.html (그냥 열기)
 .venv/bin/python scripts/yaml_to_cypher.py      # → ontology/chest_pain.cypher
-# Neo4j 시각화(인터랙티브, 교수 데모용):
-docker run -d --name cpx-neo4j -p7474:7474 -p7687:7687 -e NEO4J_AUTH=neo4j/cpxneo4j2026 neo4j:5
+# Neo4j 시각화(인터랙티브, 교수 데모용): IPv4 loopback 바인딩(아래 ⚠️ 참조)
+docker run -d --name cpx-neo4j -p127.0.0.1:7474:7474 -p127.0.0.1:7687:7687 \
+  -e NEO4J_AUTH=neo4j/cpxneo4j2026 \
+  -e NEO4J_server_default__advertised__address=127.0.0.1 \
+  -e NEO4J_server_bolt_advertised__address=127.0.0.1:7687 neo4j:5
 cat ontology/chest_pain.cypher | docker exec -i cpx-neo4j cypher-shell -u neo4j -p cpxneo4j2026
-# → http://localhost:7474 (neo4j / cpxneo4j2026) 에서 그래프 탐색
+# → http://127.0.0.1:7474 (neo4j / cpxneo4j2026) 에서 탐색  ← localhost 말고 127.0.0.1!
+```
+> ⚠️ **WSL mirrored 모드 함정: `localhost`(→IPv6 `::1`) 안 됨, `127.0.0.1`(IPv4) 써야 됨.** mirrored 모드가 IPv6 loopback SYN을 블랙홀해서 `localhost:7474`는 "TCP는 붙는데 데이터 timeout". 위처럼 IPv4 loopback에 바인딩 + advertised=127.0.0.1로 고정하면 Neo4j Browser가 bolt도 자동으로 127.0.0.1로 붙음. (검증: Windows `Invoke-WebRequest 127.0.0.1:7474`=200, `localhost`=timeout.)
 ```
 
 ### 남은 산출물 (교수 확인 후):
