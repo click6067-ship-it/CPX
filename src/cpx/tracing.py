@@ -186,17 +186,18 @@ def traced(name: str | None = None, run_type: str = "chain"):
     """함수를 LangSmith span + Langfuse generation/span 으로 감싸는 데코레이터(둘 다 선택적).
     raw SDK LLM 호출(llm.complete*)에 run_type="llm" 으로 붙여 자동계측 사각지대를 메운다.
 
-    · LangSmith traceable: 추적이 꺼져 있으면 호출 시 조용히 단락 → 항상 적용해도 무비용.
+    · LangSmith traceable: langsmith_on() 일 때만 적용 — 꺼져 있으면 OTEL exporter 미설정(shutdown export 소음 방지).
     · Langfuse observe   : 키 없으면 경고 로그를 내므로 keys 있을 때만 적용(소음 방지).
     """
     def deco(fn):
         wrapped = fn
         nm = name or fn.__name__
-        try:
-            from langsmith import traceable
-            wrapped = traceable(name=nm, run_type=run_type)(wrapped)
-        except Exception:                          # noqa: BLE001 — langsmith 부재 시 무시
-            pass
+        if langsmith_on():                         # 꺼져 있으면 traceable 미적용 — OTEL exporter 미설정
+            try:                                   #   (설정되면 shutdown 시 "Failed to export span batch" 소음)
+                from langsmith import traceable
+                wrapped = traceable(name=nm, run_type=run_type)(wrapped)
+            except Exception:                      # noqa: BLE001 — langsmith 부재 시 무시
+                pass
         if langfuse_on():
             try:
                 from langfuse import observe

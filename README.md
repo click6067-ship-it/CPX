@@ -23,10 +23,7 @@
 - **B. 재현성·투명성 (예정)** — 오픈소스(부산대 무료)이며, 블랙박스가 아니라 다음을 **공개**한다:
   - **시스템 프롬프트 공개** *(코드 내 구현됨 — 공개 예정)*
   - **실행 트레이스 공개** — LangSmith·Langfuse로 파이프라인 전 단계(생성→심사→수정)를 추적해 **누구나 재현·감사 가능**. 트레이스는 **사례·교과서(RAG) 본문을 자동 마스킹(redaction)** 하여 공개 — 구조·지연·토큰·해시만 남고 부산대 사례·저작권 본문은 비노출(③·④ 실제 학생 상호작용은 추적 제외). *(추적+redaction 구현됨 — 공개 예정, [`src/cpx/tracing.py`](src/cpx/tracing.py))*
-- **C. 일반인 이해가능성 (예정)** — **Flowise 시각 캔버스**로 작동 원리를 일반인도 직관적으로 이해. 코드-정본 다이어그램은 **LangGraph 네이티브 렌더**. *(구현됨 — 공개 예정, [`flowise/`](flowise/) · `docs/cpx-langgraph.png`)*
-- **D. 근거 기반 생성 — 온톨로지 지식그래프 + LLM wiki (예정)** — 자유 LLM 생성이 아니라, 의학 지식을 **온톨로지로 설계해 지식그래프**(주증상·질환·증상/징후·감별·red flag·체크리스트·과공개 규칙)로 만들고, 그 그래프가 **사례에 반드시 포함할 필수요소를 강제**해 누락·날조를 줄인다. 지식은 **3층 분담**(경쟁 아닌 보완): **지식그래프**=관계·감별·생성 뼈대 / **LLM wiki·롱컨텍스트**=정제지식(CPX 형식·루브릭) / **RAG**=큰 교과서(조연). 생성 사례는 **결정론 validator**(LLM 0회)가 온톨로지 카드와 대조 — **"환자가 가졌나(positive) vs 학생이 선별했나(asked)"를 분리 측정**하고 과공개·필수요소 누락을 검출(표준 온톨로지가 못 하는 CPX 고유 규칙; **Codex 6라운드 적대검수 APPROVED**). 저장은 **YAML 정본 + Neo4j 지식그래프 렌더**(거울). *(흉통 1개부터 착수 — 임상 내용은 교수 검증 전 draft, Neo4j 전환 시점·범위는 박정빈 교수 결정. [`docs/ontology-plan.md`](docs/ontology-plan.md) · [`src/cpx/ontology_validator.py`](src/cpx/ontology_validator.py) · `docs/chest_pain-graph.html`)*
-
-> ⚠️ 실제 엔진 = **LangGraph**([`src/cpx/graph.py`](src/cpx/graph.py)). **Flowise는 작동 원리를 설명하기 위한 재구성**이며 시스템을 구동하지 않는다(혼동 방지).
+- **C. 근거 기반 생성 — 온톨로지 지식그래프 + LLM wiki (예정)** — 자유 LLM 생성이 아니라, 의학 지식을 **온톨로지로 설계해 지식그래프**(주증상·질환·증상/징후·감별·red flag·체크리스트·과공개 규칙)로 만들고, 그 그래프가 **사례에 반드시 포함할 필수요소를 강제**해 누락·날조를 줄인다. 지식은 **3층 분담**(경쟁 아닌 보완): **지식그래프**=관계·감별·생성 뼈대 / **LLM wiki·롱컨텍스트**=정제지식(CPX 형식·루브릭) / **RAG**=큰 교과서(조연). 생성 사례는 **결정론 validator**(LLM 0회)가 온톨로지 카드와 대조 — **"환자가 가졌나(positive) vs 학생이 선별했나(asked)"를 분리 측정**하고 과공개·필수요소 누락을 검출(표준 온톨로지가 못 하는 CPX 고유 규칙; **Codex 6라운드 적대검수 APPROVED**). 저장은 **YAML 정본 + Neo4j 지식그래프 렌더**(거울). *(흉통 1개부터 착수 — 임상 내용은 교수 검증 전 draft, Neo4j 전환 시점·범위는 박정빈 교수 결정. [`docs/ontology-plan.md`](docs/ontology-plan.md) · [`src/cpx/ontology_validator.py`](src/cpx/ontology_validator.py) · `docs/chest_pain-graph.html`)*
 
 ### 공개 트레이스 예시 (redaction 적용)
 

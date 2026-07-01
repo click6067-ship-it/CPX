@@ -20,6 +20,9 @@ Pydantic은 *구조*만 보장한다. 이 모듈은 생성 사례(CpxCase / dict
   부정문 제외) vs **asked**(학생이 *선별* — probe 채널). `_negated`(한국어 후치부정 "실신은 없었어요")로 부정을 positive 에서 제외.
   ⚠ negation 은 *제한적 휴리스틱*(이중부정·복합문 불완전)이고, 검사별 임상정책(required=제시 필수·red_flags=다뤄짐 등)은
   교수 검증 전 draft 다. "임상 타당" 주장 아님.
+- ⚠ 어휘매칭 FP/FN trade-off(Codex 실데이터 검수 2026-07-01): 짧은 동의어·조각 substring 오매칭(발한⊂활발한·혈압⊂저혈압)을
+  동의어 정리·keyword 겹침≥3·negation cue(까봐·번도)로 줄였으나 **과교정 FN 가능**(예: "발한"만 쓴 표현 놓침, "여러 번" 강조긍정 오부정).
+  근본적으로 lexical checker 라 실데이터마다 curation 필요 → 임상 검증(교수)이 backstop.
 """
 from __future__ import annotations
 

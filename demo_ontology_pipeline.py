@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
+os.environ.setdefault("CPX_TRACE_ACK", "0")   # 데모는 트레이싱·SaaS egress 안 함(명시 CPX_TRACE_ACK=1 이면 존중)
 from cpx.agents import generator                                   # noqa: E402
 from cpx.ontology_validator import CHECK_KEYS, load_cards, validate  # noqa: E402
 
