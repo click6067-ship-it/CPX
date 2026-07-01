@@ -1,4 +1,5 @@
 # data/ 구조 (docs/data-governance.md 참조)
+> **전체 데이터 지도**(참고자료 materials/ + 파이프라인 data/ + ontology/, gitignore 포함) = **`docs/data-inventory.md`**.
 - `raw_private/` 🔒 실제 부산대 사례 원본 (gitignore·수정금지·SaaS금지)
 - `working/` 🔒 비식별 작업본 (gitignore)
   - `train_prompt/` 프롬프트·few-shot·lexicon  · `dev_tune/` 개발·디버깅  · `locked_eval/` 🔒최종평가 전용(잠금)
