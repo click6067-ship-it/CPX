@@ -240,3 +240,14 @@
 - **루트 정리**: 문서 26개 → `materials/<01~09_카테고리>/`(gitignored). 코드 `.py`는 루트 유지(import 리스크 회피). `.gitignore`에 `*.docx`·`*.xlsx`·`materials/` 추가(민감 docx/xlsx 커밋 gap 해결). **참고자료(materials/=재료) vs 파이프라인 데이터(data/=가공품)** 구분 명문화(context-map §2 + materials/INDEX.md).
 - **전 문서(26) 실내용 추출**(hwp5html 표 + PyMuPDF pdf → `materials/_extracted/`). 핵심 파악: 붙임3≈저자점검표(동일) · **PPI 2방식**(new=4단계 원본 vs 변환=1-0) · 사례개발피드백5=②심사 정답지(D6) · 급성복통=실사례(**PII·비식별 필요**) · Challenges=우리 PI 논문 · 진료수행지침=스캔본(OCR).
 - **목차** = `materials/INDEX.md`(로컬·실내용 기반). 커밋 = `.gitignore`·`context-map`·`worklog`만(문서 원본·INDEX·_extracted는 gitignore).
+
+### 흉통 온톨로지 스캐폴드 생성 '전체과정' + Codex 3라운드 협업(설계·출력·최종) — 2026-07-01
+- **README 차별점 D축 추가·푸시**: 근거 기반 생성(온톨로지 지식그래프 + LLM wiki + Neo4j + 2-렌즈 validator). (예정)·draft 정직 표기.
+- **온톨로지 제약 생성**(`generator.py` `_ontology_constraint` + `generate(ontology=)`): `chest_pain.yaml` ACS 카드의 필수요소(required·감별·red flag·checklist·과공개)를 생성/수정 프롬프트에 주입(누락·과공개 방지). `demo_ontology_pipeline.py`: **baseline(자유) vs scaffolded(제약)** — 동일 model/temp/rounds, 각각 ①생성→②심사→ontology_validator 검증→비교.
+- **Codex 설계검수(REVISE)**: 순환성(같은 온톨로지로 검증)·**라벨 누수**(평가라벨 verbatim→trivial coverage↑)·n=1 프레이밍 지적 → 반영: scaffold에 *환자 구어 표현* 지시(verbatim 금지), `matched_by` 분해(trivial/의미), '기계적 스모크·통계 아님·임상 미검증' 주장 상한.
+- **Codex 출력검수(REVISE) — 실데이터가 validator FP 4종 적발**(합성테스트가 못 잡은 것): ①diaphoresis `발한`⊂`활발한` ②hypotension keyword `혈압`⊂`저혈압` ③syncope 걱정 "쓰러질까 봐"를 긍정 오인 ④"한 번도 없"의 `없`이 negation window 밖. + 내 발표가 과대주장(red_flags/disclosure 개선이 FP 오염)이던 것도 적발.
+- **FP 4종 수정**: diaphoresis 동의어 발한·땀 제거 · keyword-anchor 겹침 min≥3자 · negation cue `까봐`(걱정)·`번도`(한번도 없) · patient 메타필드(thoughts_concerns 등) 자발채널 제외. **회귀테스트 3 추가(30→33 통과).**
+- **fresh paired 재실행(고친 validator)**: baseline overall=fail(red_flags fail·disclosure viol2), scaffolded=flag(disclosure **pass**·red_flags asked0.5). **정직한 개선 = 과공개·모순 위반 2→0**, red_flags 선별 0→0.5. required는 n=1 변이(둘 다 pass). 라벨누수 1/13(낮음).
+- **정직한 주장 상한**(Codex): "스캐폴드가 draft 카드 요소를 표면화 강제 → 과공개 제거·red flag 선별 일부 개선"까지. 임상타당·통계·논문효과·GraphRAG 우월 주장 **불가**. 산출 `data/working/ontology_pipeline/`(gitignore).
+- nit: 데모가 트레이스 export 시도(`LANGSMITH_TRACING=false`인데도) — export 실패(egress 0)나 게이트 손봐야.
+- **다음**: Codex 최종검수 → 커밋 → (2주 MVP) 사례3·교수검증.

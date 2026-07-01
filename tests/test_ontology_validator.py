@@ -428,5 +428,37 @@ def test_contradiction_ignores_probe_channel():
     assert validate(c, DISEASES, LABELS, disease_id=ACS).checks["contradiction"].status == "pass"
 
 
+# ── 11. 실데이터 FP 회귀(Codex 흉통 파이프라인 출력검수 2026-07-01) ──────────────
+def test_diaphoresis_not_matched_in_활발한():
+    # "활발한"의 "발한" substring 으로 diaphoresis 오매칭 금지(동의어 발한·땀 제거)
+    c = _facts_case(chief_complaint="가슴 압박감")
+    c["patient"]["mood_usual"] = "평소 활발한 성격이에요"
+    pres = {h.concept_id for h in validate(c, DISEASES, LABELS, disease_id=ACS).checks["discriminators"].present}
+    assert "diaphoresis" not in pres
+
+
+def test_hypotension_not_matched_by_혈압_keyword():
+    # 위험인자 질문 keyword "혈압"·"고혈압"이 "저혈압"으로 오매칭 금지(겹침 ≥3자)
+    c = _facts_case(checklist=[
+        {"id": "q", "domain": "병력청취", "scoring_rule": "위험인자를 물었다",
+         "keywords": ["고혈압", "혈압", "당뇨"], "patient_answer": "고혈압 있어요"}])
+    rf = validate(c, DISEASES, LABELS, disease_id=ACS).checks["red_flags"]
+    hyp = next((h for h in rf.present + rf.flagged + rf.missing + getattr(rf, "screened", [])
+                if h.concept_id == "hypotension"), None)
+    assert hyp is None or hyp.match_level == "NONE"
+
+
+def test_syncope_negated_worry_and_emphatic():
+    # "쓰러질까 봐"(걱정) · "한 번도 없"(강조부정) → syncope 긍정 아님(미제시)
+    for ans in ("아니요, 쓰러진 적은 한 번도 없어요", "심장마비로 쓰러질까 봐 걱정돼요"):
+        c = _facts_case(checklist=[
+            {"id": "q", "domain": "병력청취", "scoring_rule": "실신을 물었다",
+             "keywords": ["실신"], "patient_answer": ans}])
+        rf = validate(c, DISEASES, LABELS, disease_id=ACS).checks["red_flags"]
+        syn = next((h for h in rf.present + rf.flagged + getattr(rf, "screened", [])
+                    if h.concept_id == "syncope"), None)
+        assert syn not in rf.present, f"{ans!r}: syncope 가 present 이면 안 됨"
+
+
 if __name__ == "__main__":   # pragma: no cover — pytest 없이도 단독 실행 가능
     sys.exit(pytest.main([__file__, "-q"]))

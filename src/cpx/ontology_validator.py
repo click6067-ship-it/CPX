@@ -73,7 +73,7 @@ def _default_synonyms() -> dict[str, tuple[str, ...]]:
     return {
         # ── 증상·감별단서·red flag ──
         "chest_pressure": ("쥐어짜", "짓누르", "압박", "조이", "뻐근", "누르"),
-        "diaphoresis": ("식은땀", "발한", "진땀", "땀"),
+        "diaphoresis": ("식은땀", "진땀"),   # "발한"(⊂활발한)·"땀"(generic) 제거 — Codex 실데이터 FP
         "syncope": ("실신", "기절", "쓰러", "의식 소실", "정신을 잃"),
         "dyspnea": ("숨차", "호흡곤란", "숨이", "숨쉬기", "숨 쉬기"),
         "radiation_to_left_arm_or_jaw": ("방사", "뻗치", "퍼지", "어깨", "왼팔", "좌측 팔"),
@@ -381,8 +381,10 @@ def _bidir(a: str, b: str) -> bool:
 
 # 한국어 후치 부정 단서(예: "실신은 없었어요"·"저혈압 아님"·"방사통 부인"·"경험하지 않음"). polarity 판정용.
 # 관계부정("운동과 무관"·"식사와 관련없"): exertional synonym "운동"이 no_exertional 문장에 substring 끼는 충돌 차단(Codex R3).
-_NEG_CUES = ("없", "아니", "부인", "부정", "음성", "않", "못",
+_NEG_CUES = ("없", "아니", "부인", "부정", "음성", "않", "못", "까 봐", "까봐", "번도",
              "무관하", "무관합", "무관한", "관련 없", "관련없", "상관없", "상관 없")
+# "까 봐"/"까봐" = 걱정 구문("쓰러질까 봐") · "번도" = "한 번도 없"(강조 부정, "없"이 window 밖으로 밀림).
+#   둘 다 증상을 *가진 게 아님* → 미제시 처리(Codex 실데이터 FP).
 # 이중부정(="긍정") — 부정으로 오판 방지("실신이 없지는 않았어요" = 있었음).
 _DOUBLE_NEG = ("없지 않", "없지는 않", "없진 않", "아니지 않", "없는 것은 아니", "없는것은 아니")
 
@@ -460,8 +462,12 @@ def _build_channels(
         ("chief_complaint", c.get("chief_complaint")),
         ("situation_instruction", c.get("situation_instruction")),
     ]
+    # 메타인지 필드(걱정·기대·아는것·알고싶은것)는 증상 finding 아님 → 자발 채널 제외.
+    #   (Codex 실데이터 FP: patient.thoughts_concerns "쓰러질까 봐" 걱정을 syncope 긍정으로 오인)
+    _meta = {"thoughts_concerns", "expectation", "knows", "wants_to_know"}
     for k in _PATIENT_STR_FIELDS:
-        spont_raw.append((f"patient.{k}", patient.get(k)))
+        if k not in _meta:
+            spont_raw.append((f"patient.{k}", patient.get(k)))
 
     # asked(질문시) = checklist[].patient_answer 만
     asked_raw: list[tuple[str, Any]] = [
@@ -594,7 +600,8 @@ def _match(
     # (c) checklist keyword 가 앵커토큰과 양방향매칭(앵커가 generic 이면 승격 금지)
     if anchor is not None:
         for k in case_keywords:
-            if len(k) >= 2 and k in combined and _bidir(k, anchor):
+            # 짧은 조각 오매칭 차단(Codex 실데이터 FP: keyword "혈압"⊂anchor "저혈압"): 겹치는 부분 ≥3자.
+            if len(k) >= 2 and k in combined and _bidir(k, anchor) and min(len(k), len(anchor)) >= 3:
                 direction = f"{k}⊂{anchor}" if k in anchor else f"{anchor}⊂{k}"
                 return _hit("HIGH", k, "keyword", f"kw:{direction}")
 
