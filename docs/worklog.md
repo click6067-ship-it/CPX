@@ -256,4 +256,9 @@
 - **follow-up 커밋·푸시**(2dae15c): 트레이스 게이트(traceable=langsmith_on 시만 적용·데모는 `CPX_TRACE_ACK=0` opt-out) · validator FP/FN trade-off 문서화 · **README 차별점 C(Flowise) 삭제** → A/B/C(C=근거 기반 생성). ⚠️ 원인=`.env` `CPX_TRACE_ACK=1`(tracing 전역 ON) 잔존 — 끌지(=0) 용하 판단 대기.
 - **LLM wiki 개념정리**(용하 질문 "llm wiki가 뭐야? 옵시디언 아냐?"): LLM wiki=지식을 **마크다운 위키로 정제**해 LLM이 **롱컨텍스트로 통째로 읽는** 방식(RAG 조각검색 아님; 256k+·turboquant로 가능). **옵시디언≠LLM wiki**(옵시디언=마크다운 에디터·무타입 링크그래프 / 교수님 온톨로지=Neo4j **타입** 그래프). 3층=지식그래프(관계·생성뼈대)·LLM wiki(형식·루브릭)·RAG(큰 교과서)=보완.
 - **✅ 박정빈 미팅 확정**(2026-07-01, 임선주 전달): 온톨로지 적용 결정 — Neo4j 그래프로 구조화 지식 내 LLM 근거 생성. **7/2(목) 12시 시뮬레이션센터** 팀 작업(원우·민성·호영·이혜윤). 숙제="CPX 엔티티 뭘로"(→§2.1). **LLM wiki·그래프·RAG 모두 박정빈 단일 비전**(팀 발언=전달). ontology-plan §0 반영.
-- **▶ 다음 세션 시작점(용하 계획, /clear 후)**: ① **흉통 LLM wiki 만들기**(마크다운 정제지식 — CPX 형식·흉통 임상·루브릭) ② **chestpain Neo4j + validator 구현·진행** ③ 7/2 미팅. (준비완료: 흉통 온톨로지·Neo4j·HTML·validator[33테스트]·스캐폴드 생성 데모·§7 리허설.)
+- **▶ 다음 세션 시작점(용하 계획, /clear 후)**:
+  - **⓪ 문서 정합성 검수 먼저** — 모든 컨텍스트 문서가 온톨로지 대전환 이전이라 **stale**(context-map[06-18]·architecture·roadmap·transparency·memory 등). 검수 → stale 갱신 → **단일 총괄 `docs/blueprint.md` 작성(B안: 새 슬림 진입점, 30초→5분→딥다이브 + 상세문서 링크, "이거만 보면 전부").** *(용하: "작업 시작 전 검수 필요, 현재 정보 업뎃 안됨")*
+  - ① **흉통 LLM wiki 만들기**(마크다운 정제지식 — CPX 형식·흉통 임상·루브릭)
+  - ② **chestpain Neo4j + validator 구현·진행**
+  - ③ 7/2(목) 12시 시뮬센터 미팅
+  - (준비완료: 흉통 온톨로지·Neo4j·HTML·validator[33테스트, Codex 6R]·스캐폴드 생성 데모[과공개2→0]·§7 리허설.)
