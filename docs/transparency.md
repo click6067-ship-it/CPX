@@ -15,13 +15,13 @@
 | **보조**(피드백 분해·근거 추출·발췌) | gemini-2.5-flash | Google | API | 사용중 | 빠름·저렴. ②리뷰와 분리 |
 | **사례 변환(ingest)** | gemini-2.5-flash | Google | API | 사용중 | hwp→CpxCase. flash-lite는 과소추출이라 flash |
 | **적대 검수** | Codex (codex exec) | OpenAI/Codex | CLI | 사용중 | 설계·코드 red-team(메타만, raw 미전송) |
-| **로컬 LLM** (교수 비전·계획) | 35B Q4(예: Qwen3-30B-A3B) · 256k · TurboQuant | 로컬 | 로컬 | **계획(미도입)** | 박정빈 교수 숙제 — LLM wiki 롱컨텍스트·근거 생성용. 초기엔 API 병행 비교(`ontology-plan §5.5`) |
+| **로컬 LLM** (교수 비전·계획) | 35B Q4(예: Qwen3-30B-A3B) · 256k · TurboQuant | 로컬 | 로컬 | **계획(미도입)** | 지도교수 숙제 — LLM wiki 롱컨텍스트·근거 생성용. 초기엔 API 병행 비교(`ontology-plan §5.5`) |
 
 - **모델 교체 지점 = `src/cpx/llm.py`** (모델명 prefix로 Claude/GPT/Gemini 자동 라우팅). 결제 풀리면 ①②를 Claude로 1줄 교체 가능.
 - 기본값(`GEMINI_MODEL` env)=`gemini-flash-lite-latest` — 명시 모델 안 주면 이게 쓰임. 검증/생성은 위 표대로 명시 지정.
 - **⚠️ 온톨로지 validator = 모델 아님(LLM 0회).** `src/cpx/ontology_validator.py`는 **결정론 코드**(키워드·동의어·부정문 매칭)로 생성 사례를 온톨로지 카드와 대조 — API 호출·비용 0. 그래서 위 모델표에 없음. (온톨로지 상세 = `ontology-plan.md`.)
 
-## 2. 계획서(임선주 교수) vs 현재 — 정직 비교
+## 2. 계획서(연구책임자) vs 현재 — 정직 비교
 - 계획서: **Claude=①생성·②심사, GPT-4o=③대화·④채점.** 임베딩/RAG 모델은 계획서에 **명시 없음**.
 - 현재: Claude API 결제가 막혀(한국카드/백엔드) **Claude 자리를 최상위 GPT(gpt-5.5)로 대체.** 결제 풀리면 Claude로 복귀(어댑터). 임베딩=Gemini는 **우리 선택**(다국어).
 - 계획서 ⑤ 준수: 외부 API엔 **비식별 데이터만** 입력, **재학습(파인튜닝) 안 함**(프롬프트+RAG 방식).
@@ -31,9 +31,9 @@
 |---|---|---|---|
 | **RAG 교과서 코퍼스** | `data_clean.zip` → `data_clean/textbooks/en/*.txt` | **MedQA**(jind11) 영어 의학교과서 18권(Harrison·Robbins·Schwartz·Janeway·Williams·Novak 등) | 저작권상 비공개(gitignore) |
 | RAG 인덱스(현재) | `data/working/rag_index/textbooks.{npy,json}` | 위 중 **Harrison 1권 샘플 1200청크** | gitignore |
-| **CPX 실제 사례** | `data/raw_private/2026-06-18_pusan/` (hwp 170건) | 부산대 양산병원(임선주) — 최종85·초안80·피드백5 | **학교자산·비식별·gitignore** |
+| **CPX 실제 사례** | `data/raw_private/2026-06-18_pusan/` (hwp 170건) | 부산대 양산병원(PI) — 최종85·초안80·피드백5 | **학교자산·비식별·gitignore** |
 | 점검표/양식 | `실기문항저자점검표.hwp`·`[붙임2] CPX 개발 양식.hwp` | 부산대 제공 | repo 내 |
-| 계획서/연구문제 | `2026년...임선주...hwp`·`CPX AI agent 연구문제.hwp` | 임선주 교수 | repo 내 |
+| 계획서/연구문제 | `2026년...PI...hwp`·`CPX AI agent 연구문제.hwp` | 연구책임자 | repo 내 |
 | 검증 빌드(중간) | `data/working/validation_build/` (data.js·cases_meta) | 위 사례서 생성 | 학교자산·gitignore |
 
 ⚠️ 학교자산(사례·피드백)·교과서(저작권)는 **git 커밋 금지**. Codex/외부엔 **메타만**.
