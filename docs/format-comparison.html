@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CPX 온톨로지 — 형식 비교 (YAML vs Markdown)</title>
+<style>
+  :root{ --bg:#0f1115; --panel:#171a21; --ink:#e6e9ef; --dim:#9aa4b2; --line:#2a2f3a;
+         --yaml:#8bd450; --md:#5ab0f2; --warn:#f2b45a; --key:#f27b9d; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.55 -apple-system,"Segoe UI",Roboto,"Noto Sans KR",sans-serif}
+  header{padding:20px 24px 8px}
+  h1{font-size:20px;margin:0 0 4px}
+  .sub{color:var(--dim);font-size:13.5px;margin:0}
+  .draft{display:inline-block;margin-top:8px;padding:2px 8px;border:1px solid var(--warn);
+         color:var(--warn);border-radius:4px;font-size:12px}
+  .split{display:flex;flex-wrap:wrap;gap:14px;padding:14px 24px}
+  .pane{flex:1 1 420px;min-width:340px;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .pane h2{margin:0;padding:12px 16px;font-size:15px;border-bottom:1px solid var(--line)}
+  .pane .role{color:var(--dim);font-weight:400;font-size:12.5px;display:block;margin-top:2px}
+  .pane.y h2{color:var(--yaml)} .pane.m h2{color:var(--md)}
+  pre{margin:0;padding:14px 16px;font:13px/1.5 "SFMono-Regular",Consolas,"Liberation Mono",monospace;
+      white-space:pre-wrap;word-break:break-word;color:#dfe4ec}
+  pre .c{color:var(--dim)}          /* comment */
+  pre .k{color:var(--key)}          /* keyword-anchor / rule */
+  .row{padding:8px 24px 24px}
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;font-size:13.5px}
+  th{color:var(--dim);font-weight:600;background:#12151c}
+  td.y{color:var(--yaml)} td.m{color:var(--md)}
+  .defense{margin:8px 24px 28px;padding:16px 18px;background:#1a1410;border:1px solid var(--warn);border-radius:10px}
+  .defense h2{margin:0 0 8px;font-size:15px;color:var(--warn)}
+  .defense b{color:var(--ink)} .defense .q{color:var(--warn)}
+  .defense ol{margin:6px 0 6px 20px;padding:0} .defense li{margin:3px 0}
+  code{background:#000;padding:1px 5px;border-radius:3px;color:#dfe4ec;font-size:12.5px}
+  footer{color:var(--dim);font-size:12px;padding:0 24px 28px}
+</style>
+</head>
+<body>
+<header>
+  <h1>CPX 온톨로지 — 형식 비교: <span style="color:var(--yaml)">YAML</span> vs <span style="color:var(--md)">Markdown</span></h1>
+  <p class="sub">같은 흉통·ACS 지식을 두 형식으로. <b>왼쪽 = 구조(기계가 검증)</b> · <b>오른쪽 = 산문(사람·LLM이 읽고 씀)</b>. 택일이 아니라 <b>층마다 맞는 걸 쓴다.</b></p>
+  <span class="draft">⚠️ 임상내용 draft — 교수 검증 전 · 구조 시연용</span>
+</header>
+
+<div class="split">
+  <!-- YAML pane -->
+  <div class="pane y">
+    <h2>🗂 YAML — 온톨로지(구조·규칙)
+      <span class="role">validator가 <b>기계로</b> 검사 · git diff로 한 줄 추적 · Neo4j로 렌더</span></h2>
+<pre><span class="c"># 온톨로지 = 엔티티 + 관계 + 규칙 (코드가 읽음)</span>
+chief_complaint: chest_pain          <span class="c"># 주호소=흉통</span>
+disease:
+  id: acute_coronary_syndrome        <span class="c"># ACS(엔티티)</span>
+  label_ko: 급성 관상동맥 증후군
+  role: primary
+  <span class="k">required_symptoms:</span>                 <span class="c"># 반드시 포함 → 없으면 FAIL</span>
+    - id: chest_pressure
+      keywords: [쥐어짜는, 누르는, 조이는, 답답]   <span class="c"># ← keyword-앵커</span>
+    - id: exertional_onset
+      keywords: [계단, 오르막, 운동 중, 움직이면]
+  discriminators:                    <span class="c"># 감별 단서</span>
+    - id: radiation_left_arm_jaw
+      keywords: [왼팔, 어깨로 퍼지, 턱으로]
+    - id: diaphoresis
+      keywords: [식은땀, 땀이 났, 땀범벅]
+  <span class="k">red_flags:</span>                         <span class="c"># 응급 → 단순사례 금기</span>
+    - {id: hypotension, keywords: [혈압 낮, 어지러]}
+    - {id: syncope,     keywords: [쓰러졌, 실신]}
+  risk_factors: [흡연, 당뇨, 고혈압, 가족력]
+  <span class="k">disclosure:</span>                        <span class="c"># 과공개 규칙</span>
+    spontaneous: [chest_pressure]              <span class="c"># 먼저 말해도 OK</span>
+    disclose_if_asked:                         <span class="c"># 물어야만 답</span>
+      [radiation_left_arm_jaw, diaphoresis]
+  source_id: TODO_교과서_또는_지침    <span class="c"># ⚠️ 근거 채우기 전 "근거기반" 주장 X</span>
+  review_status: draft
+</pre>
+  </div>
+
+  <!-- Markdown pane -->
+  <div class="pane m">
+    <h2>📄 Markdown — LLM wiki + 사례
+      <span class="role">사람·LLM이 <b>읽고 씀</b> · "LLM wiki 처럼" · 교수님 "md로 사례변환"</span></h2>
+<pre><span class="c">## 급성 관상동맥 증후군(ACS) — 흉통  ⟨LLM wiki⟩</span>
+
+전형적으로 **쥐어짜는/누르는 흉통**이 **운동 중(계단·오르막)**
+발생한다. **왼팔·턱 방사통**, **식은땀**이 동반되면 강하게 의심.
+**저혈압·실신**은 응급 신호. 위험인자: 흡연·당뇨·고혈압·가족력.
+
+&gt; 학생이 **물어야만** 답할 것: 방사통·식은땀
+&gt; (환자가 먼저 흘리면 = 과공개 위반)
+
+<span class="c">---</span>
+
+<span class="c">## 생성된 사례 (예시)  ⟨case, md⟩</span>
+
+55세 남성. **"계단 오르다 가슴을 쥐어짜는 듯한 통증"**
+으로 내원. 20분 지속.
+- (방사통 물으면) "왼팔이 좀 저릿했어요."
+- (식은땀 물으면) "식은땀이 났습니다."
+과거력: 흡연 20갑년, 당뇨.
+</pre>
+  </div>
+</div>
+
+<div class="row">
+<table>
+  <tr><th>질문</th><th class="y">YAML (온톨로지)</th><th class="m">Markdown (wiki·사례)</th></tr>
+  <tr><td>누가 읽나</td><td class="y">코드(validator)·그래프 렌더</td><td class="m">사람·LLM(롱컨텍스트)</td></tr>
+  <tr><td>"필수 증상 다 있나?" 검사</td><td class="y">✅ <code>required_symptoms</code> 리스트를 <b>기계가 대조</b>(LLM 0회)</td><td class="m">❌ 산문이라 기계가 정확히 못 뽑음 → 검사하려면 또 LLM 필요</td></tr>
+  <tr><td>과공개 규칙 강제</td><td class="y">✅ <code>disclose_if_asked</code> 로 명시</td><td class="m">△ 글로 적을 순 있으나 강제·검증 약함</td></tr>
+  <tr><td>변경 추적·재현(논문)</td><td class="y">✅ git diff 한 줄 · 결정론</td><td class="m">△ 산문 diff는 모호</td></tr>
+  <tr><td>사람이 읽기/서사</td><td class="m">△ 딱딱함</td><td class="y">✅ 자연스러움 — 사례·지식엔 이게 맞음</td></tr>
+  <tr><td>교수님 Neo4j 그래프</td><td class="y">✅ YAML→Neo4j 자동 렌더</td><td class="m">✗ 직접 그래프 아님</td></tr>
+</table>
+</div>
+
+<div class="defense">
+  <h2>🛡 예상 공격 — <span class="q">"왜 md 안 하고 yaml로 했냐?"</span> · 방어</h2>
+  <p><b>핵심 1줄:</b> md를 <b>안 쓴 게 아닙니다.</b> <b>wiki·사례는 md</b>로 갑니다(교수님 지시대로). yaml은 <b>온톨로지(기계 검증 대상)에만</b> 썼습니다. 역할이 다른 두 층이라 <b>둘 다 씁니다.</b></p>
+  <p><b>온톨로지를 yaml로 한 이유:</b></p>
+  <ol>
+    <li>결정론 <b>validator가 "필수요소 누락·과공개"를 LLM 0회로 기계 검사</b> → <code>required: [A,B]</code>는 코드가 읽지만, "필수 증상은 쥐어짜는 흉통과…"라는 <b>산문은 못 뽑음.</b></li>
+    <li><b>재현성·감사(논문):</b> 규칙이 구조화 → git diff 추적·검증 재현. (프로젝트 핵심가치)</li>
+    <li><b>yaml → Neo4j 렌더 = 교수님이 원한 그래프 그대로.</b></li>
+  </ol>
+  <p><b>"md로도 검증되잖아?" 반박:</b> 산문 검증은 <b>또 LLM을 불러야</b> 함(비결정론·비용·순환검증 위험). yaml은 규칙이 명시적이라 <b>확정·무료·감사가능.</b></p>
+  <p><b>정직한 양보(과대주장 방지):</b> "온톨로지도 그냥 md로"를 교수님이 원하시면 <b>가능</b> — 대신 <b>기계검증을 포기</b>(LLM검증으로 대체, 재현성↓). = 미팅 §7 확인 포인트.</p>
+</div>
+
+<footer>
+  같은 지식·두 형식. YAML=구조/규칙(검증·그래프), Markdown=지식/사례(읽기·서사). 임상내용 draft — 교수 검증 후 확정. 정본 설계 = <code>docs/ontology-plan.md</code>.
+</footer>
+</body>
+</html>

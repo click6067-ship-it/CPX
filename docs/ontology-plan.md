@@ -75,10 +75,29 @@
 - **자체(표준에 없음):** 한국어 환자표현(`ko_patient_phrase`)·학생질문 동의어 · CPX 채점항목 · 과공개 규칙 · 오답유도 감별.
 - **keyword 기반 설계 (교수님 숙제②):** 온톨로지 노드를 **키워드-앵커**로 — 각 엔티티가 *한국어 환자표현·학생질문 트리거 키워드 집합*을 갖고, validator가 생성 사례 자유텍스트에서 그 키워드/동의어를 매칭(현행 `ontology_validator`가 이미 이 방식). 표준 코드(SNOMED 등)=*기계 상호운용* 축, keyword 레이어=*한국어 CPX 매칭* 축 — **두 축 병행**(어느 쪽을 정본으로 볼지는 §7 확인).
 
-### 2.5 저장: **YAML = 정본(master) + Neo4j = 시각화 뷰 (한 방향 렌더)**
+### 2.5 저장·형식: **YAML(규칙 정본) + Markdown(위키·사례) + Neo4j(투영)**
 - **`ontology/chest_pain.yaml` = 단일 정본.** 편집·검증·버전관리는 전부 여기서 — 교수가 텍스트로 직접 고침 · git diff로 변경추적(재현성) · `validator`가 `required_symptoms` 등을 기계 검사 · 인프라 0.
 - **Neo4j = 보여주는 거울(바로 사용, 시각화 목적).** 스크립트가 `YAML → Neo4j` 한 방향으로 렌더 → Neo4j Browser로 교수님께 *살아있는 흉통 그래프*를 띄움. **Neo4j에서 손으로 편집 안 함**(동기화 깨짐 방지). 산출: `scripts/yaml_to_cypher.py`(→ cypher-shell 로드) + 서버 없이 여는 `scripts/yaml_to_html.py`(→ vis-network 인터랙티브 HTML).
 - **교수님 지시대로 Neo4j로 그래프를 그린다.** 다만 *편집·검증의 정본*을 YAML로 두면 git diff·기계검증·재현성이 쉬워, **한 방향 렌더(YAML→Neo4j)로 시작**해 운영·동기화 부담을 줄인다. *각자 잘하는 것: YAML=진실(검증가능), Neo4j=그 렌더(시각화·탐색).* **Neo4j를 정본(직접 편집)으로 두는 것도 교수님이 원하시면 그 방향으로** — §7 확인 포인트.
+
+#### 📌 형식 결정 — "YAML 하이브리드" 근거·방어 (Claude + Codex 블라인드 합의, 2026-07-01)
+> **결정:** "md냐 yaml이냐" 택일이 아니라 **층마다 다른 형식.** 시연 = `docs/format-comparison.html`.
+> **온톨로지 규칙 = YAML 정본** · **LLM wiki·정제지식 = Markdown** · **CPX 사례 = Markdown + structured frontmatter** · **Neo4j = YAML의 투영(정본 아님).**
+
+**왜 규칙은 YAML인가:**
+1. **검증은 구조를 먹는다.** 결정론 validator(LLM 0회)가 "필수요소 누락·과공개 위반·red flag"를 검사하려면 `required: [...]` 같은 *구조*가 필요. 산문("필수 증상은 쥐어짜는 흉통과…")은 기계가 정확히 못 뽑아 **brittle**.
+2. **재현성·감사(프로젝트 핵심가치).** 규칙 구조화 → git diff 한 줄 추적 · 검증 재현.
+3. **정본 단일화.** 정본은 YAML 하나, Neo4j·md는 파생 → *"정본이 어디냐"* 모호성 제거(Codex 지적).
+
+**왜 지식·사례는 Markdown인가:**
+4. 교수 방향("md·LLM wiki") 충족 + 사람·LLM 롱컨텍스트 읽기·서사엔 산문이 맞음. 각 md에 `ontology_id`로 YAML과 연결(traceability). 사례는 상단 frontmatter(`target_dx_id`·`included_required`·`withheld`·`red_flags_present`)로 검증 → **validator는 구조·메타데이터만 읽고 md 본문은 안 믿는다.**
+
+**방어 ("왜 md 안 하고 yaml?" 공격 대비):**
+- **md를 안 쓴 게 아니다** — 위키·사례는 md. yaml은 *검증할 규칙*에만.
+- **"md로도 검증되잖아?"** → 산문 검증은 또 LLM 호출(비결정론·비용·**순환검증** 위험). yaml은 **확정·무료·감사가능.**
+- **신뢰 근거:** Claude·Codex 두 모델에 **블라인드**(서로 안 보고)로 물어도 **독립적으로 같은 결론**(Codex 확신 85%) — "검증할 규칙=구조(yaml) / 읽을 지식·사례=산문(md) / 정본=yaml / Neo4j=투영."
+
+**⚠️ 전제 (정직):** 위는 **결정론 검증이 요구사항일 때** 성립. validator는 *우리 추가 아이디어*이지 교수 요구가 아님 → 교수님이 결정론 검증을 원치 않으면 **md-first**로 무게추 이동. **§7 확인 포인트.**
 
 ---
 
