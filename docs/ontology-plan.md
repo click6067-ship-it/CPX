@@ -47,22 +47,28 @@
 
 ### 2.1 엔티티 (주증상-중심 — 질환명이 아니라 주증상·수행항목이 축)
 
-> **의미 축 = 원인–증상–질환 (교수님 원문 "Graph 연결이 아닌 온톨로지 — 원인·증상·질환").** 아래 계층이 그 축을 CPX용으로 구체화한 것: **원인**=`RiskFactor`/병태생리(etiology) → **증상·징후**=`Symptom`/`Sign` → **질환**=`Disease`, 이를 **주증상(`ChiefComplaint`)** 입구로 묶는다. *단순 `has_symptom` 링크 그래프가 아니라 감별·강제·과공개 규칙을 담은 의미 온톨로지*(→ §2.3 엣지속성). *(원문 "원인"을 `RiskFactor`와 별개의 `Cause/Etiology` 엔티티로 세분할지는 §7 교수 확인 포인트.)*
+> **의미 축 = 원인–증상–질환 (교수님 원문 "Graph 연결이 아닌 온톨로지 — 원인·증상·질환").** 단순 `has_symptom` 링크가 아니라 감별·강제·과공개 규칙을 담은 의미 온톨로지(→ §2.3). **주증상(`ChiefComplaint`) 입구 → 원인(`RiskFactor`)→증상/징후→질환.**
+> ⭐ **Claude+Codex 블라인드 합의(2026-07-01):** 의학 지식 노드만으론 부족 → **CPX 실행·채점·가상환자 제어 노드**(Station·PatientProfile·ClinicalFact·ExamManeuver·ScoreRule 등)를 추가하고, 과도하게 노드화한 것(감별·RedFlag·Education)은 **관계·역할로** 줄인다. MVP 열 = 흉통 2주 범위(v2=후속).
 
-| 계층 | 엔티티 | 표준 재사용 | 자체 구축 |
-|---|---|---|---|
-| 입구 | `ChiefComplaint`(주호소) · `CpxStationMeta`(48주증상·시간·난이도·task·PPI) | 표준 없음 | CPX 출제 구조 |
-| 질환 | `Disease` | MONDO · SNOMED CT | 주증상별 출제범위·부산대 case id |
-| 표현형 | `Symptom`(주관·환자호소) · `Sign`(객관·진찰소견) | SNOMED CT · HPO | 한국어 환자표현·학생질문 트리거 |
-| 위험 | `RiskFactor` · `RedFlag`(단순사례 금기) | SNOMED CT | CPX red flag 목록 |
-| 감별 | `DifferentialDiagnosis` | SNOMED/MONDO | "혼동 유발 감별" 우선순위 |
-| 검사 | `Test` · `Finding` | LOINC · SNOMED CT | "시행해야 할 진찰/검사" |
-| 관리 | `Treatment` · `Medication` · `EducationItem` | RxNorm · SNOMED CT | 학생에 요구되는 설명 문구 |
-| 채점 | `ChecklistItem`(1 행동 단위) · `PpiRubric` | **표준 없음** | 부산대 체크리스트·PPI 루브릭 |
+| 층 | 엔티티 | 표준 | MVP | 비고 (Claude+Codex 합의) |
+|---|---|---|---|---|
+| **CPX 실행** | `Station/Case` = 주증상+숨은진단+난이도+금지정보+채점표 묶음 | 없음 | ✅ | **최상위 단위**(Codex 추가 — 내가 놓친 것) |
+| | `PatientProfile` = 나이·성별·직업·말투·감정·건강문해력 | — | ✅ | 가상환자 일관성 |
+| | `StudentIntent/Action` = 학생 발화(질문의도·진찰·교육) 정규화 | 없음 | v2 | 채점 매칭 핵심 |
+| **입구** | `ChiefComplaint` = 주호소(48 임상표현) | 없음 | ✅ | CPX 조직축 |
+| **질환** | `Disease` | MONDO·SNOMED | ✅ | 주증상별 출제범위 |
+| **표현형** | `Symptom`(환자호소)·`Sign`(진찰소견) · `ClinicalFact`(사례별 사실) | HPO·SNOMED | ✅ | Symptom=타입 / ClinicalFact=인스턴스(Codex) · 한국어 키워드 |
+| **위험/원인** | `RiskFactor` (원인성은 관계로 → §2.2) | SNOMED | ✅ | 별도 `Cause` 노드 X, `Etiology` subtype만(Codex) |
+| **검사/진찰** | `Test`·`Finding` · `ExamManeuver`(진찰 *행위*) | LOINC·SNOMED | ✅ | 행위 ≠ 소견(Codex: "촉진 했나" ≠ "반발통 양성") |
+| **채점** | `ChecklistItem`(1 행동) · `ScoreRule/RubricVersion` | 없음 | ✅ / v2 | 부산대 체크리스트 · 버전추적 |
+| **정책** | `DisclosureRule`(fact 단위 가시성) | 없음 | ✅ | 과공개 제어(CPX 정체성) |
+| **거버넌스** | `EvidenceSource/Provenance` | — | v2 | 출처·교수수정·버전 |
+
+> **노드 아님 → 관계·역할로 (Codex, 과노드화 회피):** `감별(Differential)` = `ChiefComplaint→Disease` **관계**(`rank`·`must_not_miss`·`likelihood`) · `RedFlag` = Symptom/Sign/Disease에 붙는 **역할 속성** · `Education·PPI` = `ChecklistItem.domain` **subtype**(별도 노드로 시작 X).
 
 ### 2.2 관계
-`Disease -has_symptom→ Symptom` · `-has_sign→ Sign` · `-has_risk_factor→ RiskFactor` · `-has_red_flag→ RedFlag` · `-differential_of→ Disease` · `-indicated_test→ Test` · `-treated_by→ Treatment` · `Symptom -discriminates_between→ Disease/Disease` · `ChecklistItem -assesses→ Symptom/Action`
-> **원인축 — ⚠️ 아래는 내가 제안하는 것(교수 확정·채택 아님, §7):** 원문 "원인·증상·질환" 강조를 반영해 관계 `-caused_by→ Cause/Etiology` · `RiskFactor -predisposes_to→ Disease` 추가를 **제안**. `RiskFactor`(소인·위험인자)와 `Cause/Etiology`(병태생리 원인)는 임상적으로 다르므로, 원인을 `RiskFactor` 하나로 볼지 별도 엔티티+관계로 세분할지 **§7 교수 확인**(관계명·채택 여부 미정).
+`ChiefComplaint -has_differential→ Disease` {`rank`·`must_not_miss`·`likelihood`} · `Disease -has_symptom→ Symptom` · `-has_sign→ Sign` · `-indicated_test→ Test` · `Test -yields→ Finding` · `Symptom -discriminates→ Disease/Disease` · `ChecklistItem -assesses→ Symptom/ExamManeuver/Disease/Education` · `DisclosureRule -governs→ ClinicalFact`
+> **원인축 (Claude 제안 → Codex 정교화, §7 확인):** 별도 `Cause` 노드는 **과함** — "흡연 = ACS 원인이자 폐암·기흉 위험인자"라 *"원인"으로 고정하면 오분류.* → **`RiskFactor` 하나 + 관계타입으로 원인성 표현:** `-risk_factor_for→` · `-causes→` · `-precipitates→` · `-associated_with→`. 진짜 병인(감염원·외상·약물 부작용)만 `Etiology/CausalAgent` subtype 허용. 채택·명칭 §7 교수 확인.
 
 ### 2.3 엣지 속성 (3종 — 단순 `has_symptom`만이면 "기침=폐렴" 얕은 그래프)
 - **임상:** `frequency` · `sensitivity` · `specificity` · `pathognomonic`(있으면 거의 확진) · `is_discriminating`(감별을 가르나) · `severity` · `onset` · `typical_age/sex`

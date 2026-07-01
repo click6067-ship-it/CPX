@@ -277,3 +277,10 @@
 - **검증**: 코드펜스 균형·stale 제거·내부링크 broken 0. 11파일 +219/−136 + blueprint 신규. (feedback-todo "팀원 제안"=pre-pivot RAG 역사적 귀속이라 의도적 유지.)
 - **§7 교수 확인 포인트(미팅용)**: 원인 엔티티 세분 · markdown 해석(사례변환 vs wiki) · Skill.MD 의도 · Neo4j 정본 여부 · 검증 노동.
 - **다음**: 설계 리뷰 → 교수 확인 → 흉통 LLM wiki(다음스텝①)·validator 실사례·사례3.
+
+### 온톨로지 심화 — 형식(YAML 하이브리드)·엔티티 확정 (Claude+Codex 블라인드) — 2026-07-01 (이어서)
+- **개념 정리**(개발 담당 요청): 엔티티=그래프 노드(도메인 명사) · 온톨로지=명시적 개념+관계+규칙 스키마(LLM "맥락이해"가 아니라 LLM을 *잡아주는* 구조) · keyword 온톨로지=노드에 한국어 환자표현·질문 트리거 키워드 부착 · **옵시디언≠LLM wiki**(옵시디언=무타입 링크그래프+md에디터 / LLM wiki=산문을 롱컨텍스트로 통째 읽는 *방법*). 3축 분리(표현/도구/형식).
+- **로컬 35B "왜?"**: API로 불가능한 게 아님(256k는 API도 됨) — 로컬 선호 이유=거버넌스(저작권·실사례 SaaS 금지)·비용(롱컨텍스트×대량)·재현성/오픈소스/학생무료. trade-off=로컬 품질 약함→API 병행 측정. "왜 로컬인지"는 §7 교수 확인.
+- **형식 결정 (Claude+Codex 블라인드 수렴, Codex 85%):** "md vs yaml" 아니라 **YAML=규칙(validator·Neo4j) / MD=위키·사례 / Neo4j=투영.** 근거·공격방어 = `ontology-plan §2.5`. 스플릿뷰 시연 `docs/format-comparison.html`. ⚠️ 전제=결정론 검증이 요구사항(§7).
+- **엔티티 설계 (Claude 초안 → Codex 블라인드 보강):** 내 초안(주증상-중심 지식노드)이 **CPX 실행 노드를 놓침** → Codex가 Station/Case·PatientProfile·ClinicalFact·StudentIntent·ExamManeuver·ScoreRule·Provenance 추가 · 과노드화(감별·RedFlag·Education)→관계/역할 축소 · ChecklistItem/DisclosureRule 스키마 보강 · 원인축=별도 Cause노드 X→**RiskFactor+관계타입**(흡연이 여러 질환 위험인자라 "원인" 고정 시 오분류). `§2.1`(엔티티표+MVP단계)·`§2.2`(관계) 정본화.
+- **⏸ 파킹 = 구현(용하 결정 B: 설계 커밋·구현 별도):** `chest_pain.yaml` + validator 반영 — 키워드 **코드→yaml** 이동(교수 편집·재현성) + validator 리팩터(33테스트 유지) + Differential 관계화 + DisclosureRule fact단위. MVP-now 범위(Station 등 정식노드=v2).
