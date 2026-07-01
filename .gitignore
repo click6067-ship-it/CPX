@@ -12,5 +12,9 @@ data/working/
 *.zip
 *.hwp
 *.pdf
+*.docx
+*.xlsx
+# 참고자료(기획·CPX양식·채점루브릭·논문·회의록·원본사례) — 민감·저작권. 목차는 materials/INDEX.md(로컬).
+materials/
 # Flowise 로컬 세션 토큰(JWT) — 절대 커밋 금지
 flowise/.cookies

@@ -234,3 +234,9 @@
 - **(Codex R6 → APPROVED ✅)** R6 = **APPROVED**(6라운드 만에 승인 — R1~R5 REVISE → R6). contradiction fact_scope 수정 확인(운동 keyword→pass; 진짜 모순=성별·산부인과력·fact채널 상호배타 "계단통증+운동무관"→fail 유지) + 결정론. validator 적대검수 종료. **테스트 30.**
 - **(미팅 §7 보강)** 리허설 반영: A질문 열고-대비(Q1 근거=강제 vs 출처, Q2 권고-후-위임), **Q5 검증노동**·**Q6 coverage 의미론**, 2-렌즈 차별점(C 보강), 가드레일, 당일 데모점검.
 - **다음**: 7/2 미팅 → 교수 §7 확인 → 교수검증 반영·validator 실사례 적용·사례3 생성.
+
+### 자료 폴더 정리 + 전 문서 실내용 파악 — 2026-07-01
+- **새 데이터 8개 확인**(붙임3·급성복통 사례·국시공지·new PPI채점표·신체진찰평가·PPI피드백·환자의사관계채점표·사례개발점검표) — 전부 루트에 흩어져 있던 것.
+- **루트 정리**: 문서 26개 → `materials/<01~09_카테고리>/`(gitignored). 코드 `.py`는 루트 유지(import 리스크 회피). `.gitignore`에 `*.docx`·`*.xlsx`·`materials/` 추가(민감 docx/xlsx 커밋 gap 해결). **참고자료(materials/=재료) vs 파이프라인 데이터(data/=가공품)** 구분 명문화(context-map §2 + materials/INDEX.md).
+- **전 문서(26) 실내용 추출**(hwp5html 표 + PyMuPDF pdf → `materials/_extracted/`). 핵심 파악: 붙임3≈저자점검표(동일) · **PPI 2방식**(new=4단계 원본 vs 변환=1-0) · 사례개발피드백5=②심사 정답지(D6) · 급성복통=실사례(**PII·비식별 필요**) · Challenges=우리 PI 논문 · 진료수행지침=스캔본(OCR).
+- **목차** = `materials/INDEX.md`(로컬·실내용 기반). 커밋 = `.gitignore`·`context-map`·`worklog`만(문서 원본·INDEX·_extracted는 gitignore).
