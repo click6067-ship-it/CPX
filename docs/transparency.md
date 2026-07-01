@@ -1,7 +1,7 @@
 # 투명성 — 어디에 어떤 모델·데이터를 썼나 (단일 정본)
 
 > **이 문서가 "무엇을 어디에 썼나"의 단일 출처.** 헷갈리면 여기를 본다. (오픈소스·논문 투명성 + 재현성)
-> 최종 갱신: 2026-06-19
+> 최종 갱신: 2026-07-01
 
 ## 1. 모델 사용 현황 (컴포넌트별)
 | 컴포넌트 | 모델 | 제공사 | API/로컬 | 상태 | 메모 |
@@ -9,15 +9,17 @@
 | **① 사례 생성** | gpt-5.5 (의도) | OpenAI | API | 프로토타입 | 계획서=Claude. Claude 결제 막혀 **gpt-5.5로 대체**(어댑터 1줄 교체) |
 | **② 사례 심사**(검증 대상) | **gpt-5.5** | OpenAI | API | **검증 진행** | 최상위. ②A 구조+②B 임상 |
 | **③ 가상환자 대화** | GPT-4o | OpenAI | API(음성 STT/TTS) | **미구현** | 계획서대로 |
-| **④ 자동채점** | GPT-4o / gpt-5.5 | OpenAI | API | **미구현(나=다음)** | 계획서=GPT-4o |
+| **④ 자동채점** | GPT-4o | OpenAI | API | **미구현(나=다음)** | 계획서=GPT-4o |
 | **RAG 임베딩(dense)** | **gemini-embedding-001** | Google | API | 사용중 | **임베딩 전용 모델(글→벡터, 생성 LLM 아님)**. 다국어(한↔영). Claude=임베딩 없음, OpenAI도 가능하나 다국어로 Gemini 택. cf. EmbeddingGemma=같은 계열 오픈웨이트 |
 | **RAG 검색(sparse)** | **BM25** (rank_bm25) | — | **로컬(모델·API 없음)** | 사용중 | 정확 용어 매칭. dense와 RRF 병합 |
 | **보조**(피드백 분해·근거 추출·발췌) | gemini-2.5-flash | Google | API | 사용중 | 빠름·저렴. ②리뷰와 분리 |
 | **사례 변환(ingest)** | gemini-2.5-flash | Google | API | 사용중 | hwp→CpxCase. flash-lite는 과소추출이라 flash |
 | **적대 검수** | Codex (codex exec) | OpenAI/Codex | CLI | 사용중 | 설계·코드 red-team(메타만, raw 미전송) |
+| **로컬 LLM** (교수 비전·계획) | 35B Q4(예: Qwen3-30B-A3B) · 256k · TurboQuant | 로컬 | 로컬 | **계획(미도입)** | 박정빈 교수 숙제 — LLM wiki 롱컨텍스트·근거 생성용. 초기엔 API 병행 비교(`ontology-plan §5.5`) |
 
 - **모델 교체 지점 = `src/cpx/llm.py`** (모델명 prefix로 Claude/GPT/Gemini 자동 라우팅). 결제 풀리면 ①②를 Claude로 1줄 교체 가능.
 - 기본값(`GEMINI_MODEL` env)=`gemini-flash-lite-latest` — 명시 모델 안 주면 이게 쓰임. 검증/생성은 위 표대로 명시 지정.
+- **⚠️ 온톨로지 validator = 모델 아님(LLM 0회).** `src/cpx/ontology_validator.py`는 **결정론 코드**(키워드·동의어·부정문 매칭)로 생성 사례를 온톨로지 카드와 대조 — API 호출·비용 0. 그래서 위 모델표에 없음. (온톨로지 상세 = `ontology-plan.md`.)
 
 ## 2. 계획서(임선주 교수) vs 현재 — 정직 비교
 - 계획서: **Claude=①생성·②심사, GPT-4o=③대화·④채점.** 임베딩/RAG 모델은 계획서에 **명시 없음**.
@@ -52,3 +54,10 @@
 ## 5. 키·보안
 - 키는 `.env`(gitignore): `GOOGLE_API_KEY`·`OPENAI_API_KEY`(있음), `ANTHROPIC_API_KEY`(결제 보류). 코드/로그에 하드코딩 금지.
 - 배포 설문(`web/adjudication/`)은 비식별 검증항목만, 암호게이트+noindex, CPX repo와 분리 배포.
+
+## 6. 관찰·추적 (트레이싱) — 기본 OFF, redaction 필수
+파이프라인 재현·감사를 위해 실행 트레이스를 남길 수 있으나, **거버넌스상 기본 OFF**이고 켤 때도 **본문은 마스킹**한다(`src/cpx/tracing.py`).
+- **2종:** **LangSmith**(langgraph 네이티브 노드 트리; `LANGSMITH_HIDE_INPUTS/OUTPUTS=true`로 내용 전체 비공개) + **셀프호스트 Langfuse**(데이터가 이 머신 밖으로 안 나감; `Langfuse(mask=_mask)`).
+- **egress 게이트:** `CPX_TRACE_ACK` 미동의 시 langgraph-native 추적까지 OFF(SaaS 전송 0).
+- **redaction(`_mask`):** 긴/민감 문자열·cpx 도메인모델 → `<redacted:Nc sha256:…>`(해시 보존=재현·감사). 짧은 비민감(role·verdict·log)·수치는 통과. → 부산대 사례·저작권 교과서 본문 **SaaS 비유출** (라이브 검증: LangSmith 업로드분 `inputs={}`, Langfuse observation 전부 마스킹).
+- **범위:** 현재 dev 그래프(합성/사례개발)만. **③·④ 실제 학생 상호작용은 추적 제외**(민감·IRB). 공개 트레이스 예시 = `docs/sample-trace-redacted.*` · 셀프호스트 셋업 = `docs/langfuse-selfhost.md`.

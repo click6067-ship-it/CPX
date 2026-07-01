@@ -61,6 +61,7 @@
 ## C. 온톨로지 — `ontology/` (커밋 OK)
 - `chest_pain.yaml` — 흉통 온톨로지 정본(질환5, `review_status: draft`) → validator 대조 카드.
 - `chest_pain.cypher` — Neo4j 렌더(YAML→자동생성).
+- *(예정)* **흉통 LLM wiki**(마크다운 정제지식·롱컨텍스트) + **markdown 변환 사례** — 교수 숙제 4·6(`ontology-plan §5.5`), 다음 스텝 산출물. 위치 = `ontology/wiki/` 또는 `docs/wiki/`(착수 시 확정).
 
 ---
 

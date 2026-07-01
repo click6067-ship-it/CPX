@@ -10,7 +10,7 @@
 ### 진행 요약 (요청 → 한 일 → 결과)
 
 1. **자료 파악 요청** → 임선주 사업계획서(.hwp) + MedQA 레포 정독 → CPX 문제정의·MedQA 구조 파악.
-2. **"aristo-mini/MedQA 접목, 거시 구조화"** → aristo-mini 6개 솔버 분석. 결론: **코드 복붙 X, 설계 골격만 오마주**(2017년 코드라 낡음). MedQA의 "텍스트 A↔B 부합도 점수화" 구조 = CPX 채점/사례평가 뼈대와 동일(핵심 통찰).
+2. **"aristo-mini/MedQA 접목, 거시 구조화"** → aristo-mini 6개 솔버 분석. 결론: **코드 복붙 X, 설계 골격만 오마주**(2017년 코드라 낡음). MedQA의 "텍스트 A↔B 부합도 점수화" 구조 = CPX 채점/사례평가 뼈대와 동일(핵심 통찰). *(⚠️ 이후 2026-06-20 결정: "MedQA처럼/오마주" 비유는 공개문서에서 전부 삭제 — MedQA는 RAG 교과서 데이터 출처로만 인용. 이 줄은 당시 연대기 기록.)*
 3. **범위 리프레임** → "MVP" → **"90% 완성품"**(교수 깐깐). 역할 = 팀분담 명목상, **전체 end-to-end 김용하 단독**.
 4. **기술 방향 확정** (2026 최신 검색): 새 레포 · 하이브리드 RAG(임베딩+BM25) · 상위모델(Claude/GPT, 결제) · LangGraph · Gemini Live API(음성) · LangSmith · GraphRAG는 고도화 이관.
 5. **파일 전체 정독** → `[붙임2]`(사례 스키마, 설사/김선미 예시 완전체), `실기문항저자점검표`(루브릭), `사례개발피드백`×5(정답지·~90사례), `연구문제`(4 Agent별 RQ + 하네스 정의), 회의록×2(역할·결정·리스크), data_clean.zip(교과서18권+문제) → **`context-map.md`** 작성.
@@ -148,7 +148,7 @@
 - **배포 설문 웹앱**(`web/adjudication/`, Vercel): 교수가 **주소+암호만** 받아 한 문항씩 클릭(AI 잠정판정 미리선택) → **중앙 자동수집**(Blob). 3명→N명 확장. 암호 게이트+noindex+URL추측불가, CPX repo와 **분리 배포**(사례데이터 안 올라감). Live: cpx-adj-web.vercel.app. **현재 토이데이터** — 실데이터는 PI 동의 후 전환(SURVEY_PW+CSV교체+재배포, 판정자/관리자 암호 분리 예정).
 - 스크립트: `build_adjudication_sheets.py`(CSV 생성, 배치1=9페어·전문가지적84·②지적76) · `build_adjudication_html.py`(오프라인 단일HTML 대안) · `build_survey_data.py`(CSV→data.js+items_meta.json, 실데이터 검증: 73지적/카테고리분포) · `aggregate_adjudication.py`(**Fleiss kappa+다수결 합의+카테고리별 recall/precision/F1+페어부트스트랩 CI**, `--demo`/`--url` 지원, 데모+live e2e 검증 완료).
 - excluded(사례품질 아님) 다수결은 분모 제외 = Codex 지적 구성불일치를 사람판정으로 교정. tie는 재검토 플래그.
-- 다음: PI 동의 → 실데이터 전환 → 교수 판정 → 집계(첫 진짜 H2 결과). 배치2~3로 30페어 확대. locked15 봉인 유지.
+- 다음: PI 동의 → 실데이터 전환 → 교수 판정 → 집계(첫 진짜 H2 결과). 배치2~3로 30페어 확대. locked17 봉인 유지.
 
 ### H2 검증 v3 — Codex 3라운드 적대검수 후 전면 재설계·재배포 — 2026-06-19 (용하 지시: "codex랑 끝까지 완벽하게")
 - **Codex 적대검수 3회**(메타만): R1(v1 설계)·R2(v2 설계) **둘 다 REVISE** → R3(v3 구현) **PILOT-OK**. 상세 `docs/validation-design.md`.
@@ -262,3 +262,18 @@
   - ② **chestpain Neo4j + validator 구현·진행**
   - ③ 7/2(목) 12시 시뮬센터 미팅
   - (준비완료: 흉통 온톨로지·Neo4j·HTML·validator[33테스트, Codex 6R]·스캐폴드 생성 데모[과공개2→0]·§7 리허설.)
+
+### ⓪ 실행 — 문서 정합성 검수 + blueprint(B안) + 3자 블라인드 감사 — 2026-07-01 (이어서)
+- **박정빈 교수 원문(verbatim) 정본화**: 미팅 메시지 원문(온톨로지·Neo4j 근거생성 / 숙제=엔티티·keyword 온톨로지·**원인-증상-질환**·**markdown CPX 사례변환**·로컬35B/256k/TurboQuant·LLM wiki·**Skill.MD** / 7/2 12시 시뮬센터)을 `ontology-plan §0`·`AGENTS.md`·memory에 앵커로 박음. **용하 지시 "위 의견대로 따라야 해"** → 로컬35B·LLM wiki·keyword 온톨로지를 *"측정하며 실행할 비전"*으로 전면화, 기존 *"리스크라 미루자"* 저항톤 제거(측정≠저항).
+- **stale 5문서 전면 재작성**(용하 "전면 재작성" 결정): context-map(D10/D11 온톨로지 결정·옛 TODO 해소·데이터는 data-inventory 위임) · architecture(**v2→v3** + §4.5 온톨로지 레이어 + §0 다이어그램 3층지식화) · roadmap(07-01 현황·온톨로지 마일스톤) · transparency(validator LLM0·트레이싱·로컬LLM 트랙) · memory("MedQA처럼" 삭제·pivot 반영).
+- **`docs/blueprint.md` 신규 = 단일 진입점**(B안: 30초→5분→딥다이브 + 링크). AGENTS·CLAUDE·README·context-map·roadmap 문서지도가 blueprint·ontology-plan 가리키게 배선.
+- **Codex + Claude×2 독립·병렬·블라인드 감사**(용하 지시): 축=박정빈 비전 정합·stale·모순·과대주장. **29건 전부 반영**:
+  - [BLOCKER] ontology-plan 고아 코드펜스(§5 이후 통째 코드블록 렌더) 삭제.
+  - [정합] roadmap ② 모델 gemini→**gpt-5.5**(`build_validation_data.py`로 확정; gemini=보조 발췌) · `locked15`→**17**(`splits.json` 실측) · "저녁 도착" stale 제거 · H2 완료vsTODO 모순 해소.
+  - [숙제 정본화] 교수 숙제 **7항목 정본표**(Skill.MD·markdown 사례변환·LLM wiki 포함) — 문서별 부분집합 상이 해소 · **§5.5 로컬 모델·Skill.MD 실행계획 신설**(서지 1줄→실행 홈) · markdown "사례 변환" vs "wiki 정제지식" 갈래 분리.
+  - [de-hedge] architecture §1 "오픈모델 후순위"·§0 RAG-only 다이어그램 · ontology-plan §6/§7 "Neo4j 조기도입 위험" → 교수 비전 실행톤.
+  - [정직성] README 온톨로지 efficacy caveat 추가·"줄인다"→"줄이는 것을 목표(측정 전)" · ontology-plan 신규성 "논문 없음"→"확인된 범위에선 못 찾음" · `source_id:TODO` caveat.
+  - [기타] 원인축 관계(`caused_by`/`predisposes_to`)+§7 · D11 "제안(7/2 확인)" 강등 · ④모델 GPT-4o 통일 · ontology-plan 작성일 07-01 · README/data-inventory doc-list·wiki 위치.
+- **검증**: 코드펜스 균형·stale 제거·내부링크 broken 0. 11파일 +219/−136 + blueprint 신규. (feedback-todo "채원우 제안"=pre-pivot RAG 역사적 귀속이라 의도적 유지.)
+- **§7 교수 확인 포인트(미팅용)**: 원인 엔티티 세분 · markdown 해석(사례변환 vs wiki) · Skill.MD 의도 · Neo4j 정본 여부 · 검증 노동.
+- **다음**: 7/2 미팅 → 교수 확인 → 흉통 LLM wiki(다음스텝①)·validator 실사례·사례3.

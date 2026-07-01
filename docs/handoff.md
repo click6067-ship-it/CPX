@@ -1,6 +1,7 @@
 # 교수 파일럿 핸드오프 (H2 검증 설문)
 
 > 상태: **배포 완료·검증 끝·수집함 클린 → 교수님께 전달 가능.** (2026-06-19)
+> ⚠️ 이 문서는 **H2 검증 파일럿 전용** 운영 핸드오프. 프로젝트 전체 진입점 = `docs/blueprint.md`, 최우선 설계(온톨로지) = `docs/ontology-plan.md`.
 > 모델/데이터/작동방식 = `docs/transparency.md` · 설계근거 = `docs/validation-design.md`
 
 ## 무엇
