@@ -3,10 +3,13 @@
 # 이 파일이 정본(master). 편집·검증·버전관리는 여기서만.
 # Neo4j/HTML 그래프는 scripts/yaml_to_cypher.py · yaml_to_html.py 로 한 방향 렌더(거울).
 #
-# 범위 = **임시 12-card teaching set** — 공식 출제범위가 아님.
-#   ⚠️ 공식 CPX 감별목록(기본진료수행지침)을 확보하지 못했으므로, 이 12개는 실사례 채점표 + Harrison을
+# 범위 = **임시 14-card teaching set** — 공식 출제범위가 아님.
+#   ⚠️ 공식 CPX 감별목록(기본진료수행지침)을 확보하지 못했으므로, 이 14개는 실사례 채점표 + 교과서를
 #      근거로 만든 **AI 초안**이다. "변비 station 출제범위"라고 말하지 말 것 — 교수 확인 전까지는
 #      교육·구조 시연용 카드 묶음이다. (Codex 검수 지적 반영, 2026-08-11)
+#   ⚠️ 처음 12개였던 카드가 14개가 된 것은 Codex 3~4라운드가 "서로 다른 병원체·질환을 한 카드에 묶었다"고
+#      지적했기 때문이며, **분리 여부는 지도교수 판단이 아니라 사용자 지시로 결정**됐다.
+#      공식 감별목록 확보 후 카드 구성을 반드시 재검토할 것. (검수기록 5라운드 참조)
 # ⚠️ review_status: draft — 임상 내용은 PI·지도교수 검증 전 초안.
 #
 # 📌 근거 표기(출처·근거 명시): 질환마다 `evidence` 블록.
@@ -58,7 +61,7 @@ sources:
 # 표시용 한국어 라벨 (id → 한국어). 그래프 렌더가 이걸 씀. 없으면 id 그대로.
 labels:
   constipation: 변비
-  # ── 질환 (대표 기능성 변비 + 감별 11)
+  # ── 질환 (대표 기능성 변비 + 감별 13)
   functional_constipation: 기능성 변비
   rectocele: 직장류
   rectal_prolapse: 직장탈출증
@@ -213,7 +216,7 @@ labels:
   explain_alarm_symptoms_return: 경고징후 시 재방문 설명
   explain_biofeedback: 바이오피드백(배변 재훈련) 설명
 
-# ── 질환 카드 (대표 기능성 변비 + 감별 11) ───────────────────
+# ── 질환 카드 (대표 기능성 변비 + 감별 13) ───────────────────
 diseases:
   - id: functional_constipation
     role: primary
