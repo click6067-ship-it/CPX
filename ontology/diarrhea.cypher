@@ -9,6 +9,7 @@ MERGE (:Symptom {id:"no_nocturnal_symptoms", label:"야간에는 증상 없음"}
 MERGE (:Symptom {id:"stress_related_symptoms", label:"스트레스와 연관"});
 MERGE (:Symptom {id:"alternating_constipation", label:"변비와 교대"});
 MERGE (:Symptom {id:"no_weight_loss", label:"체중감소 없음"});
+MERGE (:RedFlag {id:"alarm_features_chronic_diarrhea", label:"만성 설사의 경보징후(혈변·체중감소·빈혈·야간증상)"});
 MERGE (:ChecklistItem {id:"ask_onset_duration_diarrhea", label:"언제부터 설사했는지 묻기"});
 MERGE (:ChecklistItem {id:"ask_stool_frequency", label:"설사 빈도 묻기"});
 MERGE (:ChecklistItem {id:"ask_stool_form", label:"변의 형태 묻기"});
@@ -32,6 +33,7 @@ MERGE (:Symptom {id:"outbreak_contact", label:"집단발생·주변 동일증상
 MERGE (:Symptom {id:"crampy_abdominal_pain", label:"경련성 복통"});
 MERGE (:RedFlag {id:"dehydration_signs", label:"탈수 징후(구강건조·갈증)"});
 MERGE (:RedFlag {id:"elderly_or_immunocompromised", label:"고령(≥70세)·면역저하"});
+MERGE (:RedFlag {id:"severe_dehydration_iv", label:"심한 탈수 — 정맥 수액 필요"});
 MERGE (:ChecklistItem {id:"ask_fever_chills", label:"발열·오한 묻기"});
 MERGE (:ChecklistItem {id:"ask_thirst_dehydration", label:"갈증·탈수 묻기"});
 MERGE (:ChecklistItem {id:"exam_dehydration_tongue", label:"탈수 평가(혀·구강)"});
@@ -56,7 +58,7 @@ MERGE (:DiseaseDifferential {id:"shigellosis_dysentery", label:"세균성 이질
 MERGE (:Symptom {id:"tenesmus_mucoid_stool", label:"뒤무직·점액변"});
 MERGE (:Symptom {id:"fecal_leukocytes", label:"대변 백혈구"});
 MERGE (:RedFlag {id:"overtly_bloody_stool", label:"육안적 혈변"});
-MERGE (:RedFlag {id:"hemolytic_uremic_syndrome", label:"용혈요독증후군(HUS)"});
+MERGE (:RedFlag {id:"hemolytic_uremic_syndrome", label:"용혈요독증후군(HUS) — 급성 신부전·미세혈관병성 용혈빈혈·혈소판감소"});
 MERGE (:DiseaseDifferential {id:"stec_infection", label:"장출혈성 대장균(STEC·O157:H7) 감염"});
 MERGE (:Symptom {id:"initially_nonbloody_then_bloody", label:"처음엔 비혈성이다가 혈성으로 변함"});
 MERGE (:Symptom {id:"undercooked_beef_unpasteurized_milk", label:"덜 익힌 소고기·저온살균 안 한 우유"});
@@ -85,6 +87,7 @@ MERGE (:Symptom {id:"chronic_bloody_diarrhea", label:"만성 혈성 설사"});
 MERGE (:Symptom {id:"extraintestinal_manifestation", label:"장외 증상(관절·눈·피부)"});
 MERGE (:Symptom {id:"young_adult_onset", label:"젊은 나이 발병"});
 MERGE (:RedFlag {id:"bowel_obstruction_sign", label:"장폐색 징후"});
+MERGE (:RedFlag {id:"severe_uc_activity", label:"중증 활동성 대장염(하루 6회↑ 혈변·맥박≥90·발열·빈혈·ESR↑)"});
 MERGE (:ChecklistItem {id:"ask_weight_loss", label:"체중감소 묻기"});
 MERGE (:ChecklistItem {id:"ask_family_hx", label:"가족력 묻기"});
 MERGE (:Test {id:"fecal_calprotectin", label:"대변 칼프로텍틴"});
@@ -92,6 +95,7 @@ MERGE (:DiseaseDifferential {id:"crohn_disease", label:"크론병"});
 MERGE (:Symptom {id:"rluq_pain_recurrent", label:"반복되는 우하복부 통증"});
 MERGE (:Symptom {id:"perianal_disease", label:"항문주위 병변(누공·농양·항문협착)"});
 MERGE (:Symptom {id:"weight_loss", label:"체중감소"});
+MERGE (:RedFlag {id:"crohn_complication", label:"크론 합병증(협착성 장폐색·누공·농양)"});
 MERGE (:DiseaseDifferential {id:"lactose_intolerance", label:"유당불내증(삼투성)"});
 MERGE (:Symptom {id:"symptoms_after_dairy", label:"유제품 섭취 후 증상"});
 MERGE (:Symptom {id:"bloating_flatus", label:"복부팽만·가스"});
@@ -103,6 +107,7 @@ MERGE (:Symptom {id:"heat_intolerance", label:"더위를 못 참음"});
 MERGE (:Symptom {id:"palpitations", label:"두근거림"});
 MERGE (:Symptom {id:"unintentional_weight_loss", label:"의도치 않은 체중감소"});
 MERGE (:Symptom {id:"goiter_or_thyroid_disease_hx", label:"갑상선 종대·질환 과거력"});
+MERGE (:RedFlag {id:"thyroid_storm", label:"갑상선중독 위기(고열·섬망·경련·혼수)"});
 MERGE (:ChecklistItem {id:"ask_hyperthyroid_symptoms", label:"갑상선기능항진 증상 묻기"});
 MERGE (:ChecklistItem {id:"exam_thyroid", label:"갑상샘 진찰"});
 MERGE (:Test {id:"thyroid_function_test", label:"갑상선기능검사"});
@@ -131,6 +136,7 @@ MATCH (a {id:"ibs_diarrhea"}), (b {id:"no_nocturnal_symptoms"}) MERGE (a)-[:DISC
 MATCH (a {id:"ibs_diarrhea"}), (b {id:"stress_related_symptoms"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"ibs_diarrhea"}), (b {id:"alternating_constipation"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"ibs_diarrhea"}), (b {id:"no_weight_loss"}) MERGE (a)-[:DISCRIMINATOR]->(b);
+MATCH (a {id:"ibs_diarrhea"}), (b {id:"alarm_features_chronic_diarrhea"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"ibs_diarrhea"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"ibs_diarrhea"}), (b {id:"ask_stool_frequency"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"ibs_diarrhea"}), (b {id:"ask_stool_form"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -154,6 +160,7 @@ MATCH (a {id:"viral_gastroenteritis"}), (b {id:"outbreak_contact"}) MERGE (a)-[:
 MATCH (a {id:"viral_gastroenteritis"}), (b {id:"crampy_abdominal_pain"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"viral_gastroenteritis"}), (b {id:"dehydration_signs"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"viral_gastroenteritis"}), (b {id:"elderly_or_immunocompromised"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"viral_gastroenteritis"}), (b {id:"severe_dehydration_iv"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"viral_gastroenteritis"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"viral_gastroenteritis"}), (b {id:"ask_stool_frequency"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"viral_gastroenteritis"}), (b {id:"ask_fever_chills"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -171,6 +178,7 @@ MATCH (a {id:"campylobacter_enteritis"}), (b {id:"poultry_or_pet_exposure"}) MER
 MATCH (a {id:"campylobacter_enteritis"}), (b {id:"fever_over_38_5"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"campylobacter_enteritis"}), (b {id:"toxic_megacolon"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"campylobacter_enteritis"}), (b {id:"stec_antibiotic_contraindication"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"campylobacter_enteritis"}), (b {id:"severe_dehydration_iv"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"campylobacter_enteritis"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"campylobacter_enteritis"}), (b {id:"ask_blood_or_color"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"campylobacter_enteritis"}), (b {id:"ask_fever_chills"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -188,6 +196,7 @@ MATCH (a {id:"nontyphoidal_salmonella"}), (b {id:"reptile_or_foodborne_exposure"
 MATCH (a {id:"nontyphoidal_salmonella"}), (b {id:"fever_over_38_5"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"nontyphoidal_salmonella"}), (b {id:"toxic_megacolon"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"nontyphoidal_salmonella"}), (b {id:"stec_antibiotic_contraindication"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"nontyphoidal_salmonella"}), (b {id:"severe_dehydration_iv"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"nontyphoidal_salmonella"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"nontyphoidal_salmonella"}), (b {id:"ask_blood_or_color"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"nontyphoidal_salmonella"}), (b {id:"ask_fever_chills"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -202,6 +211,7 @@ MATCH (a {id:"yersinia_enterocolitis"}), (b {id:"severe_abdominal_pain"}) MERGE 
 MATCH (a {id:"yersinia_enterocolitis"}), (b {id:"high_fever"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"yersinia_enterocolitis"}), (b {id:"fever_over_38_5"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"yersinia_enterocolitis"}), (b {id:"stec_antibiotic_contraindication"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"yersinia_enterocolitis"}), (b {id:"severe_dehydration_iv"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"yersinia_enterocolitis"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"yersinia_enterocolitis"}), (b {id:"ask_food_relation"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"yersinia_enterocolitis"}), (b {id:"ask_fever_chills"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -253,6 +263,7 @@ MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"vomiting_prominent"}) M
 MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"minimal_or_no_fever"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"shared_meal_history"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"dehydration_signs"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"severe_dehydration_iv"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"ask_food_relation"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"ask_fever_chills"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -267,6 +278,7 @@ MATCH (a {id:"in_vivo_toxin_food_poisoning"}), (b {id:"crampy_abdominal_pain"}) 
 MATCH (a {id:"in_vivo_toxin_food_poisoning"}), (b {id:"minimal_or_no_fever"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"in_vivo_toxin_food_poisoning"}), (b {id:"shared_meal_history"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"in_vivo_toxin_food_poisoning"}), (b {id:"dehydration_signs"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"in_vivo_toxin_food_poisoning"}), (b {id:"severe_dehydration_iv"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"in_vivo_toxin_food_poisoning"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"in_vivo_toxin_food_poisoning"}), (b {id:"ask_food_relation"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"in_vivo_toxin_food_poisoning"}), (b {id:"ask_fever_chills"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -317,6 +329,7 @@ MATCH (a {id:"ulcerative_colitis"}), (b {id:"young_adult_onset"}) MERGE (a)-[:DI
 MATCH (a {id:"ulcerative_colitis"}), (b {id:"overtly_bloody_stool"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"ulcerative_colitis"}), (b {id:"toxic_megacolon"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"ulcerative_colitis"}), (b {id:"bowel_obstruction_sign"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"ulcerative_colitis"}), (b {id:"severe_uc_activity"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"ulcerative_colitis"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"ulcerative_colitis"}), (b {id:"ask_blood_or_color"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"ulcerative_colitis"}), (b {id:"ask_weight_loss"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -336,6 +349,7 @@ MATCH (a {id:"crohn_disease"}), (b {id:"young_adult_onset"}) MERGE (a)-[:DISCRIM
 MATCH (a {id:"crohn_disease"}), (b {id:"bowel_obstruction_sign"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"crohn_disease"}), (b {id:"toxic_megacolon"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"crohn_disease"}), (b {id:"overtly_bloody_stool"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"crohn_disease"}), (b {id:"crohn_complication"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"crohn_disease"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"crohn_disease"}), (b {id:"ask_blood_or_color"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"crohn_disease"}), (b {id:"ask_weight_loss"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -352,6 +366,7 @@ MATCH (a {id:"lactose_intolerance"}), (b {id:"symptoms_after_dairy"}) MERGE (a)-
 MATCH (a {id:"lactose_intolerance"}), (b {id:"bloating_flatus"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"lactose_intolerance"}), (b {id:"resolves_with_fasting"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"lactose_intolerance"}), (b {id:"no_weight_loss"}) MERGE (a)-[:DISCRIMINATOR]->(b);
+MATCH (a {id:"lactose_intolerance"}), (b {id:"alarm_features_chronic_diarrhea"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"lactose_intolerance"}), (b {id:"ask_food_relation"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"lactose_intolerance"}), (b {id:"ask_dairy_relation"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"lactose_intolerance"}), (b {id:"ask_stool_form"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -364,6 +379,7 @@ MATCH (a {id:"hyperthyroidism_diarrhea"}), (b {id:"heat_intolerance"}) MERGE (a)
 MATCH (a {id:"hyperthyroidism_diarrhea"}), (b {id:"palpitations"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"hyperthyroidism_diarrhea"}), (b {id:"unintentional_weight_loss"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"hyperthyroidism_diarrhea"}), (b {id:"goiter_or_thyroid_disease_hx"}) MERGE (a)-[:DISCRIMINATOR]->(b);
+MATCH (a {id:"hyperthyroidism_diarrhea"}), (b {id:"thyroid_storm"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"hyperthyroidism_diarrhea"}), (b {id:"ask_hyperthyroid_symptoms"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"hyperthyroidism_diarrhea"}), (b {id:"ask_weight_loss"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"hyperthyroidism_diarrhea"}), (b {id:"ask_family_hx"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -376,6 +392,7 @@ MATCH (a {id:"bile_acid_diarrhea"}), (b {id:"chronic_recurrent_diarrhea"}) MERGE
 MATCH (a {id:"bile_acid_diarrhea"}), (b {id:"cholecystectomy_or_ileal_surgery_hx"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"bile_acid_diarrhea"}), (b {id:"urgency_after_meals"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"bile_acid_diarrhea"}), (b {id:"no_weight_loss"}) MERGE (a)-[:DISCRIMINATOR]->(b);
+MATCH (a {id:"bile_acid_diarrhea"}), (b {id:"alarm_features_chronic_diarrhea"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"bile_acid_diarrhea"}), (b {id:"ask_abdominal_surgery_hx"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"bile_acid_diarrhea"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"bile_acid_diarrhea"}), (b {id:"ask_stool_form"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -410,6 +427,7 @@ MATCH (a {id:"drug_induced_diarrhea"}), (b {id:"temporal_relation_to_drug"}) MER
 MATCH (a {id:"drug_induced_diarrhea"}), (b {id:"laxative_or_antidiarrheal_use"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"drug_induced_diarrhea"}), (b {id:"resolves_with_fasting"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"drug_induced_diarrhea"}), (b {id:"no_weight_loss"}) MERGE (a)-[:DISCRIMINATOR]->(b);
+MATCH (a {id:"drug_induced_diarrhea"}), (b {id:"alarm_features_chronic_diarrhea"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"drug_induced_diarrhea"}), (b {id:"ask_medication_hx"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"drug_induced_diarrhea"}), (b {id:"ask_antibiotic_hx"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"drug_induced_diarrhea"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -420,6 +438,7 @@ MATCH (a {id:"diarrhea"}), (b {id:"microscopic_colitis"}) MERGE (a)-[:PRESENTS_A
 MATCH (a {id:"microscopic_colitis"}), (b {id:"chronic_watery_diarrhea_on_drugs"}) MERGE (a)-[:REQUIRES_SYMPTOM]->(b);
 MATCH (a {id:"microscopic_colitis"}), (b {id:"chronic_recurrent_diarrhea"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"microscopic_colitis"}), (b {id:"no_weight_loss"}) MERGE (a)-[:DISCRIMINATOR]->(b);
+MATCH (a {id:"microscopic_colitis"}), (b {id:"alarm_features_chronic_diarrhea"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"microscopic_colitis"}), (b {id:"ask_medication_hx"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"microscopic_colitis"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"microscopic_colitis"}), (b {id:"ask_stool_form"}) MERGE (a)-[:CHECKLIST]->(b);

@@ -151,7 +151,12 @@ labels:
   fever_over_38_5: 발열 ≥38.5℃
   overtly_bloody_stool: 육안적 혈변
   duration_over_48h_no_improvement: 48시간 이상 호전 없음
-  hemolytic_uremic_syndrome: 용혈요독증후군(HUS)
+  hemolytic_uremic_syndrome: 용혈요독증후군(HUS) — 급성 신부전·미세혈관병성 용혈빈혈·혈소판감소
+  alarm_features_chronic_diarrhea: 만성 설사의 경보징후(혈변·체중감소·빈혈·야간증상)
+  thyroid_storm: 갑상선중독 위기(고열·섬망·경련·혼수)
+  severe_uc_activity: 중증 활동성 대장염(하루 6회↑ 혈변·맥박≥90·발열·빈혈·ESR↑)
+  crohn_complication: 크론 합병증(협착성 장폐색·누공·농양)
+  severe_dehydration_iv: 심한 탈수 — 정맥 수액 필요
   stec_antibiotic_contraindication: STEC 의심 시 항생제·지사제 금기
   elderly_or_immunocompromised: 고령(≥70세)·면역저하
   severe_pain_over_age_50: 50세 초과에서 심한 복통
@@ -215,7 +220,7 @@ diseases:
     role: primary
     required_symptoms: [chronic_recurrent_diarrhea, abdominal_pain_with_diarrhea]
     discriminators: [pain_relieved_by_defecation, no_nocturnal_symptoms, stress_related_symptoms, alternating_constipation, no_weight_loss]
-    red_flags: []
+    red_flags: [alarm_features_chronic_diarrhea]
     checklist_items: [ask_onset_duration_diarrhea, ask_stool_frequency, ask_stool_form, ask_stool_volume, ask_pain_with_diarrhea, ask_pain_onset, ask_pain_relief, ask_stress_relation, exam_abdomen_auscultation, exam_abdomen_percussion, exam_abdomen_palpation, exam_digital_rectal]
     tests: [cbc_blood_test, stool_study, colonoscopy]
     education_items: [explain_ibs_diagnosis_basis, explain_test_purpose, explain_dietary_modification]
@@ -231,7 +236,7 @@ diseases:
     role: differential
     required_symptoms: [acute_watery_diarrhea]
     discriminators: [vomiting_prominent, fever_present, outbreak_contact, crampy_abdominal_pain]
-    red_flags: [dehydration_signs, elderly_or_immunocompromised]
+    red_flags: [dehydration_signs, elderly_or_immunocompromised, severe_dehydration_iv]
     checklist_items: [ask_onset_duration_diarrhea, ask_stool_frequency, ask_fever_chills, ask_thirst_dehydration, exam_dehydration_tongue, exam_abdomen_palpation]
     tests: [stool_study, serum_electrolytes]
     education_items: [explain_oral_rehydration, explain_hand_hygiene_transmission, explain_red_flag_return]
@@ -247,7 +252,7 @@ diseases:
     role: differential
     required_symptoms: [inflammatory_diarrhea]
     discriminators: [bloody_diarrhea, high_fever, crampy_abdominal_pain, poultry_or_pet_exposure]
-    red_flags: [fever_over_38_5, toxic_megacolon, stec_antibiotic_contraindication]
+    red_flags: [fever_over_38_5, toxic_megacolon, stec_antibiotic_contraindication, severe_dehydration_iv]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_fever_chills, ask_food_relation, exam_abdomen_palpation, exam_digital_rectal]
     tests: [stool_culture_pcr, stool_study, cbc_blood_test]
     education_items: [explain_test_purpose, explain_red_flag_return]
@@ -261,7 +266,7 @@ diseases:
     role: differential
     required_symptoms: [inflammatory_diarrhea]
     discriminators: [high_fever, severe_abdominal_pain, reptile_or_foodborne_exposure]
-    red_flags: [fever_over_38_5, toxic_megacolon, stec_antibiotic_contraindication]
+    red_flags: [fever_over_38_5, toxic_megacolon, stec_antibiotic_contraindication, severe_dehydration_iv]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_fever_chills, ask_food_relation, exam_abdomen_palpation]
     tests: [stool_culture_pcr, stool_study, cbc_blood_test]
     education_items: [explain_test_purpose, explain_red_flag_return]
@@ -275,7 +280,7 @@ diseases:
     role: differential
     required_symptoms: [pseudoappendicitis]
     discriminators: [severe_abdominal_pain, high_fever]
-    red_flags: [fever_over_38_5, stec_antibiotic_contraindication]
+    red_flags: [fever_over_38_5, stec_antibiotic_contraindication, severe_dehydration_iv]
     checklist_items: [ask_onset_duration_diarrhea, ask_food_relation, ask_fever_chills, exam_abdomen_palpation]
     tests: [stool_culture_pcr, stool_study, cbc_blood_test]
     education_items: [explain_test_purpose, explain_red_flag_return]
@@ -317,7 +322,7 @@ diseases:
     role: differential
     required_symptoms: [acute_watery_diarrhea, onset_within_hours_of_meal]
     discriminators: [vomiting_prominent, minimal_or_no_fever, shared_meal_history]
-    red_flags: [dehydration_signs]
+    red_flags: [dehydration_signs, severe_dehydration_iv]
     checklist_items: [ask_onset_duration_diarrhea, ask_food_relation, ask_fever_chills, ask_thirst_dehydration, exam_dehydration_tongue]
     tests: [stool_study]
     education_items: [explain_oral_rehydration, explain_dietary_modification]
@@ -331,7 +336,7 @@ diseases:
     role: differential
     required_symptoms: [acute_watery_diarrhea, onset_6_24h_after_meal]
     discriminators: [reheated_food_history, crampy_abdominal_pain, minimal_or_no_fever, shared_meal_history]
-    red_flags: [dehydration_signs]
+    red_flags: [dehydration_signs, severe_dehydration_iv]
     checklist_items: [ask_onset_duration_diarrhea, ask_food_relation, ask_fever_chills, ask_thirst_dehydration, exam_dehydration_tongue]
     tests: [stool_study, stool_culture_pcr]
     education_items: [explain_oral_rehydration, explain_dietary_modification]
@@ -375,7 +380,7 @@ diseases:
     role: differential
     required_symptoms: [rectal_bleeding_tenesmus_mucus]
     discriminators: [chronic_bloody_diarrhea, abdominal_pain_with_diarrhea, extraintestinal_manifestation, young_adult_onset]
-    red_flags: [overtly_bloody_stool, toxic_megacolon, bowel_obstruction_sign]
+    red_flags: [overtly_bloody_stool, toxic_megacolon, bowel_obstruction_sign, severe_uc_activity]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_weight_loss, ask_fever_chills, ask_family_hx, exam_abdomen_palpation, exam_digital_rectal]
     tests: [colonoscopy, fecal_calprotectin, cbc_blood_test]
     education_items: [explain_test_purpose, explain_red_flag_return]
@@ -389,7 +394,7 @@ diseases:
     role: differential
     required_symptoms: [rluq_pain_recurrent]
     discriminators: [perianal_disease, extraintestinal_manifestation, weight_loss, young_adult_onset]
-    red_flags: [bowel_obstruction_sign, toxic_megacolon, overtly_bloody_stool]
+    red_flags: [bowel_obstruction_sign, toxic_megacolon, overtly_bloody_stool, crohn_complication]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_weight_loss, ask_fever_chills, ask_family_hx, exam_abdomen_palpation, exam_digital_rectal]
     tests: [colonoscopy, fecal_calprotectin, cbc_blood_test]
     education_items: [explain_test_purpose, explain_red_flag_return]
@@ -403,7 +408,7 @@ diseases:
     role: differential
     required_symptoms: [chronic_recurrent_diarrhea, symptoms_after_dairy]
     discriminators: [bloating_flatus, resolves_with_fasting, no_weight_loss]
-    red_flags: []
+    red_flags: [alarm_features_chronic_diarrhea]
     checklist_items: [ask_food_relation, ask_dairy_relation, ask_stool_form, ask_pain_with_diarrhea, exam_abdomen_palpation]
     tests: [lactose_breath_test]
     education_items: [explain_dietary_modification, explain_ibs_diagnosis_basis]
@@ -417,7 +422,7 @@ diseases:
     role: differential
     required_symptoms: [chronic_recurrent_diarrhea, heat_intolerance]
     discriminators: [palpitations, unintentional_weight_loss, goiter_or_thyroid_disease_hx]
-    red_flags: []
+    red_flags: [thyroid_storm]
     checklist_items: [ask_hyperthyroid_symptoms, ask_weight_loss, ask_family_hx, exam_thyroid, exam_abdomen_palpation]
     tests: [thyroid_function_test, cbc_blood_test]
     education_items: [explain_test_purpose]
@@ -430,7 +435,7 @@ diseases:
     role: differential
     required_symptoms: [chronic_recurrent_diarrhea]
     discriminators: [cholecystectomy_or_ileal_surgery_hx, urgency_after_meals, no_weight_loss]
-    red_flags: []
+    red_flags: [alarm_features_chronic_diarrhea]
     risk_factors: [cholecystectomy_or_ileal_surgery_hx]
     checklist_items: [ask_abdominal_surgery_hx, ask_onset_duration_diarrhea, ask_stool_form, ask_food_relation, exam_abdomen_palpation]
     tests: [cbc_blood_test, stool_study]
@@ -458,7 +463,7 @@ diseases:
     role: differential
     required_symptoms: [chronic_recurrent_diarrhea, temporal_relation_to_drug]
     discriminators: [laxative_or_antidiarrheal_use, resolves_with_fasting, no_weight_loss]
-    red_flags: []
+    red_flags: [alarm_features_chronic_diarrhea]
     checklist_items: [ask_medication_hx, ask_antibiotic_hx, ask_onset_duration_diarrhea, ask_stool_form]
     tests: [cbc_blood_test, serum_electrolytes]
     education_items: [explain_test_purpose, explain_dietary_modification]
@@ -472,7 +477,7 @@ diseases:
     role: differential
     required_symptoms: [chronic_watery_diarrhea_on_drugs]
     discriminators: [chronic_recurrent_diarrhea, no_weight_loss]
-    red_flags: []
+    red_flags: [alarm_features_chronic_diarrhea]
     checklist_items: [ask_medication_hx, ask_onset_duration_diarrhea, ask_stool_form, ask_weight_loss]
     tests: [colonoscopy, cbc_blood_test]
     education_items: [explain_test_purpose]

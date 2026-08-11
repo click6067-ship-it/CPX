@@ -91,16 +91,19 @@ MERGE (:DiseaseDifferential {id:"hypothyroidism_constipation", label:"갑상선�
 MERGE (:Symptom {id:"cold_intolerance", label:"추위를 못 참음"});
 MERGE (:Symptom {id:"fatigue_weight_gain", label:"피로·체중증가"});
 MERGE (:Symptom {id:"dry_skin_bradycardia", label:"피부건조·서맥"});
+MERGE (:RedFlag {id:"myxedema_coma", label:"점액부종 혼수(의식저하·저체온)"});
 MERGE (:ChecklistItem {id:"ask_hypothyroid_symptoms", label:"갑상선기능저하 증상 묻기"});
 MERGE (:DiseaseDifferential {id:"hypercalcemia_constipation", label:"고칼슘혈증"});
 MERGE (:Symptom {id:"polyuria_polydipsia", label:"다뇨·다음"});
 MERGE (:Symptom {id:"hypercalcemia", label:"고칼슘혈증"});
 MERGE (:Symptom {id:"muscle_weakness_confusion", label:"근력저하·의식혼탁"});
+MERGE (:RedFlag {id:"hypercalcemic_crisis", label:"중증 고칼슘혈증(기면·혼미·혼수)"});
 MERGE (:ChecklistItem {id:"ask_neurologic_symptoms", label:"신경학적 증상·과거력 묻기"});
 MERGE (:Test {id:"serum_calcium_potassium", label:"혈청 칼슘·칼륨"});
 MERGE (:DiseaseDifferential {id:"electrolyte_disturbance", label:"전해질 이상(저칼륨혈증 등)"});
 MERGE (:Symptom {id:"hypokalemia", label:"저칼륨혈증"});
 MERGE (:RedFlag {id:"megacolon", label:"거대결장"});
+MERGE (:RedFlag {id:"hypokalemic_paralysis", label:"중증 저칼륨혈증(근위부 근병증·마비)"});
 MERGE (:DiseaseDifferential {id:"slow_transit_constipation", label:"서행성 변비"});
 MERGE (:Symptom {id:"no_urge_to_defecate", label:"변의 자체가 드묾"});
 MERGE (:Symptom {id:"prolonged_colonic_transit", label:"대장통과시간 지연"});
@@ -157,6 +160,7 @@ MATCH (a {id:"rectocele"}), (b {id:"vaginal_pressure_to_defecate"}) MERGE (a)-[:
 MATCH (a {id:"rectocele"}), (b {id:"digital_maneuver_to_evacuate"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"rectocele"}), (b {id:"prolonged_defecation_time"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"rectocele"}), (b {id:"female_with_obstetric_hx"}) MERGE (a)-[:DISCRIMINATOR]->(b);
+MATCH (a {id:"rectocele"}), (b {id:"fecal_impaction"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"rectocele"}), (b {id:"ask_bowel_frequency"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"rectocele"}), (b {id:"ask_stool_form"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"rectocele"}), (b {id:"ask_defecation_time"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -219,6 +223,7 @@ MATCH (a {id:"ibs_constipation"}), (b {id:"pain_relieved_by_defecation"}) MERGE 
 MATCH (a {id:"ibs_constipation"}), (b {id:"alternating_diarrhea"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"ibs_constipation"}), (b {id:"bloating"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"ibs_constipation"}), (b {id:"no_weight_loss"}) MERGE (a)-[:DISCRIMINATOR]->(b);
+MATCH (a {id:"ibs_constipation"}), (b {id:"constipation_alarm_features"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"ibs_constipation"}), (b {id:"ask_onset_duration_constipation"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"ibs_constipation"}), (b {id:"ask_bowel_frequency"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"ibs_constipation"}), (b {id:"ask_stool_form"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -260,6 +265,7 @@ MATCH (a {id:"drug_induced_constipation"}), (b {id:"opioid_or_anticholinergic_us
 MATCH (a {id:"drug_induced_constipation"}), (b {id:"calcium_blocker_or_antidepressant"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"drug_induced_constipation"}), (b {id:"hard_lumpy_stool"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"drug_induced_constipation"}), (b {id:"fecal_impaction"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"drug_induced_constipation"}), (b {id:"constipation_alarm_features"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"drug_induced_constipation"}), (b {id:"ask_medication_hx"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"drug_induced_constipation"}), (b {id:"ask_onset_duration_constipation"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"drug_induced_constipation"}), (b {id:"ask_bowel_frequency"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -271,6 +277,7 @@ MATCH (a {id:"hypothyroidism_constipation"}), (b {id:"cold_intolerance"}) MERGE 
 MATCH (a {id:"hypothyroidism_constipation"}), (b {id:"fatigue_weight_gain"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"hypothyroidism_constipation"}), (b {id:"dry_skin_bradycardia"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"hypothyroidism_constipation"}), (b {id:"hard_lumpy_stool"}) MERGE (a)-[:DISCRIMINATOR]->(b);
+MATCH (a {id:"hypothyroidism_constipation"}), (b {id:"myxedema_coma"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"hypothyroidism_constipation"}), (b {id:"ask_hypothyroid_symptoms"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"hypothyroidism_constipation"}), (b {id:"ask_weight_change"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"hypothyroidism_constipation"}), (b {id:"ask_past_illness"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -283,6 +290,7 @@ MATCH (a {id:"hypercalcemia_constipation"}), (b {id:"polyuria_polydipsia"}) MERG
 MATCH (a {id:"hypercalcemia_constipation"}), (b {id:"hypercalcemia"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"hypercalcemia_constipation"}), (b {id:"muscle_weakness_confusion"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"hypercalcemia_constipation"}), (b {id:"infrequent_bowel_movement"}) MERGE (a)-[:DISCRIMINATOR]->(b);
+MATCH (a {id:"hypercalcemia_constipation"}), (b {id:"hypercalcemic_crisis"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"hypercalcemia_constipation"}), (b {id:"ask_past_illness"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"hypercalcemia_constipation"}), (b {id:"ask_medication_hx"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"hypercalcemia_constipation"}), (b {id:"ask_weight_change"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -294,6 +302,7 @@ MATCH (a {id:"electrolyte_disturbance"}), (b {id:"infrequent_bowel_movement"}) M
 MATCH (a {id:"electrolyte_disturbance"}), (b {id:"hypokalemia"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"electrolyte_disturbance"}), (b {id:"muscle_weakness_confusion"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"electrolyte_disturbance"}), (b {id:"megacolon"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"electrolyte_disturbance"}), (b {id:"hypokalemic_paralysis"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"electrolyte_disturbance"}), (b {id:"ask_past_illness"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"electrolyte_disturbance"}), (b {id:"ask_medication_hx"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"electrolyte_disturbance"}), (b {id:"ask_neurologic_symptoms"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -309,6 +318,7 @@ MATCH (a {id:"slow_transit_constipation"}), (b {id:"hard_lumpy_stool"}) MERGE (a
 MATCH (a {id:"slow_transit_constipation"}), (b {id:"bloating"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"slow_transit_constipation"}), (b {id:"megacolon"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"slow_transit_constipation"}), (b {id:"fecal_impaction"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"slow_transit_constipation"}), (b {id:"constipation_alarm_features"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"slow_transit_constipation"}), (b {id:"ask_bowel_frequency"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"slow_transit_constipation"}), (b {id:"ask_onset_duration_constipation"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"slow_transit_constipation"}), (b {id:"ask_digital_or_enema_use"}) MERGE (a)-[:CHECKLIST]->(b);

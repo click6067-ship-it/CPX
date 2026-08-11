@@ -160,6 +160,9 @@ labels:
   loss_of_anal_reflex: 항문반사 소실(S2–S4 반사궁 병변)
   atypical_fissure_secondary: 비전형 치열(직장염·크론병 등 이차성 원인)
   palpable_mass_with_habit_change: 배변습관 변화 + 촉지되는 종괴
+  myxedema_coma: 점액부종 혼수(의식저하·저체온)
+  hypercalcemic_crisis: 중증 고칼슘혈증(기면·혼미·혼수)
+  hypokalemic_paralysis: 중증 저칼륨혈증(근위부 근병증·마비)
 
   # ── 병력청취 채점항목 (실사례 2건 채점표 기반)
   ask_onset_duration_constipation: 언제부터 변비였는지 묻기
@@ -238,7 +241,7 @@ diseases:
     role: differential
     required_symptoms: [incomplete_evacuation, excessive_straining]
     discriminators: [vaginal_pressure_to_defecate, digital_maneuver_to_evacuate, prolonged_defecation_time, female_with_obstetric_hx]
-    red_flags: []
+    red_flags: [fecal_impaction]
     checklist_items: [ask_bowel_frequency, ask_stool_form, ask_defecation_time, ask_straining, ask_incomplete_evacuation, ask_digital_or_enema_use, ask_easy_difficult_situations, ask_blood_in_stool, ask_weight_change, ask_prior_colonoscopy, ask_diet_exercise_habit, ask_past_illness, ask_family_hx_crc, exam_abdomen_auscultation, exam_abdomen_percussion, exam_abdomen_palpation, exam_position_for_rectal, exam_perianal_inspection, exam_digital_rectal]
     tests: [defecography, anorectal_manometry]
     education_items: [explain_rectocele_basis, explain_test_purpose, explain_lifestyle_fluid_fiber, explain_laxative_use, explain_followup_after_test]
@@ -278,7 +281,7 @@ diseases:
     role: differential
     required_symptoms: [recurrent_abdominal_pain, altered_stool_frequency_or_form]
     discriminators: [pain_relieved_by_defecation, alternating_diarrhea, bloating, no_weight_loss]
-    red_flags: []
+    red_flags: [constipation_alarm_features]
     checklist_items: [ask_onset_duration_constipation, ask_bowel_frequency, ask_stool_form, ask_abdominal_pain, ask_incomplete_evacuation, ask_diet_exercise_habit, exam_abdomen_palpation]
     tests: [cbc_blood_test, colonoscopy]
     education_items: [explain_test_purpose, explain_lifestyle_fluid_fiber]
@@ -304,7 +307,7 @@ diseases:
     role: differential
     required_symptoms: [infrequent_bowel_movement, temporal_relation_to_drug]
     discriminators: [opioid_or_anticholinergic_use, calcium_blocker_or_antidepressant, hard_lumpy_stool]
-    red_flags: [fecal_impaction]
+    red_flags: [fecal_impaction, constipation_alarm_features]
     checklist_items: [ask_medication_hx, ask_onset_duration_constipation, ask_bowel_frequency, ask_past_illness]
     tests: [cbc_blood_test]
     education_items: [explain_test_purpose, explain_lifestyle_fluid_fiber, explain_laxative_use]
@@ -318,7 +321,7 @@ diseases:
     role: differential
     required_symptoms: [infrequent_bowel_movement, cold_intolerance]
     discriminators: [fatigue_weight_gain, dry_skin_bradycardia, hard_lumpy_stool]
-    red_flags: []
+    red_flags: [myxedema_coma]
     checklist_items: [ask_hypothyroid_symptoms, ask_weight_change, ask_past_illness, ask_medication_hx, exam_abdomen_palpation]
     tests: [thyroid_function_test, cbc_blood_test]
     education_items: [explain_test_purpose]
@@ -334,7 +337,7 @@ diseases:
     role: differential
     required_symptoms: [polyuria_polydipsia]
     discriminators: [hypercalcemia, muscle_weakness_confusion, infrequent_bowel_movement]
-    red_flags: []
+    red_flags: [hypercalcemic_crisis]
     checklist_items: [ask_past_illness, ask_medication_hx, ask_weight_change, ask_neurologic_symptoms]
     tests: [serum_calcium_potassium, cbc_blood_test]
     education_items: [explain_test_purpose]
@@ -348,7 +351,7 @@ diseases:
     role: differential
     required_symptoms: [infrequent_bowel_movement]
     discriminators: [hypokalemia, muscle_weakness_confusion]
-    red_flags: [megacolon]
+    red_flags: [megacolon, hypokalemic_paralysis]
     checklist_items: [ask_past_illness, ask_medication_hx, ask_neurologic_symptoms]
     tests: [serum_calcium_potassium, cbc_blood_test, thyroid_function_test]
     education_items: [explain_test_purpose]
@@ -362,7 +365,7 @@ diseases:
     role: differential
     required_symptoms: [infrequent_bowel_movement, no_urge_to_defecate]
     discriminators: [prolonged_colonic_transit, laxative_dependence, hard_lumpy_stool, bloating]
-    red_flags: [megacolon, fecal_impaction]
+    red_flags: [megacolon, fecal_impaction, constipation_alarm_features]
     checklist_items: [ask_bowel_frequency, ask_onset_duration_constipation, ask_digital_or_enema_use, ask_medication_hx, exam_abdomen_percussion, exam_abdomen_palpation]
     tests: [colonic_transit_study, abdominal_xray, anorectal_manometry]
     education_items: [explain_test_purpose, explain_lifestyle_fluid_fiber, explain_laxative_use]
