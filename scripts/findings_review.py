@@ -42,7 +42,8 @@ ROLE_COLOR = {"required": "#8c2f1f", "discriminator": "#1f5c8c",
 # **별도 축으로 분리**한다 — 교재 근거로서는 가치가 있으나 '발현소견'은 아니기 때문.
 KIND_KO = {"workup": "진단검사", "management": "치료·관리", "differential": "감별진단",
            "epidemiology": "역학·빈도", "definition": "용어 정의", "mechanism": "기전 설명",
-           "sequela": "후유증", "normal_finding": "정상 대조소견", "history_taking": "병력청취"}
+           "sequela": "후유증", "normal_finding": "정상 대조소견", "history_taking": "병력청취",
+           "complication": "합병증·응급상태"}
 
 COND_KO = {"age_group": "연령대", "sex_group": "성별", "occupation": "직업",
            "exposure": "노출", "lifestyle_factor": "생활습관", "risk_factor": "위험인자",
