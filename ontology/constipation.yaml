@@ -48,6 +48,12 @@ sources:
   tintinalli_em_8th:
     type: textbook
     ref: "Tintinalli's Emergency Medicine: A Comprehensive Study Guide, 8th ed. 2016 — 로컬 텍스트 코퍼스 직독(비공개·저작권, 이 repo 미포함). 인용 구간 = 변비의 Rome 기준 '다음 중 2개 이상'(p545). 8판은 판·연도가 원문에 명시되어 있다."
+  harrison_part12_endocrine:
+    type: textbook
+    ref: "Harrison's Principles of Internal Medicine, PART 12 'Endocrinology and Metabolism' — 로컬 텍스트 코퍼스 직독(`내과/harrison/PART12_Endocrinology_and_Metabolism.md`, 비공개·저작권, 이 repo 미포함). 인용 구간 = 갑상선기능저하 증상·징후표 Table 395-3(p52), 갑상선중독증 Table 396-2(p57), 고칼슘혈증 증상·PTH(p105). ⚠️ Harrison은 원본에 판 미표기 — 대외 인용 전 원본 PDF 대조 필요."
+  bates_physical_exam:
+    type: textbook
+    ref: "Bates' Guide to Physical Examination and History Taking — 로컬 텍스트 코퍼스 직독(`공통/Bates_PhysicalExam_HistoryTaking.txt`, 비공개·저작권, 이 repo 미포함). 인용 구간 = 대장암의 배변습관 변화·촉지 종괴(p311·p338), 치열의 이차성 원인(p313), 항문반사 소실과 마미증후군(p380), 마미증후군 경고징후(p463)."
 
 # 표시용 한국어 라벨 (id → 한국어). 그래프 렌더가 이걸 씀. 없으면 id 그대로.
 labels:
@@ -60,8 +66,9 @@ labels:
   ibs_constipation: 과민성대장증후군(변비형)
   colorectal_cancer_constipation: 대장암
   drug_induced_constipation: 약물유발 변비
+  electrolyte_disturbance: 전해질 이상(저칼륨혈증 등)
   hypothyroidism_constipation: 갑상선기능저하증
-  metabolic_hypercalcemia: 고칼슘혈증 등 대사장애
+  hypercalcemia_constipation: 고칼슘혈증
   slow_transit_constipation: 서행성 변비
   anal_fissure: 치열(anal fissure)
   internal_hemorrhoid: 내치핵(internal hemorrhoid)
@@ -144,6 +151,12 @@ labels:
   bowel_obstruction_sign: 장폐색 징후
   incarcerated_prolapse: 감돈된 탈출(응급)
   megacolon: 거대결장
+  # 2026-08-11 4라운드 경보징후 보강 (Codex "경보소견 누락" 지적)
+  constipation_alarm_features: 변비 경보증상(발열·식욕부진·구토·혈변·빈혈·체중감소·대장암 가족력·50세 이후 시작)
+  cauda_equina_syndrome: 마미증후군(요폐·안장부 감각저하·회음부 저림) — 즉시 영상·수술 평가
+  loss_of_anal_reflex: 항문반사 소실(S2–S4 반사궁 병변)
+  atypical_fissure_secondary: 비전형 치열(직장염·크론병 등 이차성 원인)
+  palpable_mass_with_habit_change: 배변습관 변화 + 촉지되는 종괴
 
   # ── 병력청취 채점항목 (실사례 2건 채점표 기반)
   ask_onset_duration_constipation: 언제부터 변비였는지 묻기
@@ -206,7 +219,7 @@ diseases:
     role: primary
     required_symptoms: [infrequent_bowel_movement, hard_lumpy_stool]
     discriminators: [abdominal_discomfort, low_fiber_low_fluid_intake, sedentary_lifestyle, no_alarm_feature, normal_rectal_exam]
-    red_flags: [fecal_impaction]
+    red_flags: [fecal_impaction, constipation_alarm_features]
     checklist_items: [ask_onset_duration_constipation, ask_bowel_frequency, ask_stool_hardness, ask_blood_in_stool, ask_stool_caliber_change, ask_incomplete_evacuation, ask_abdominal_pain, ask_diet_exercise_habit, ask_smoking_alcohol, ask_family_hx_crc, exam_abdomen_auscultation, exam_abdomen_percussion, exam_abdomen_palpation, exam_digital_rectal, exam_stool_color_on_glove]
     tests: [cbc_blood_test, thyroid_function_test, colonic_transit_study, colonoscopy]
     education_items: [explain_functional_constipation_basis, explain_test_purpose, explain_lifestyle_fluid_fiber]
@@ -275,7 +288,7 @@ diseases:
     role: differential
     required_symptoms: [recent_onset_constipation]
     discriminators: [change_in_stool_caliber, hematochezia, weight_loss, anemia_symptoms, age_over_50, family_hx_colorectal_cancer]
-    red_flags: [alarm_weight_loss, alarm_rectal_bleeding, alarm_anemia, bowel_obstruction_sign]
+    red_flags: [alarm_weight_loss, alarm_rectal_bleeding, alarm_anemia, bowel_obstruction_sign, palpable_mass_with_habit_change]
     checklist_items: [ask_onset_duration_constipation, ask_stool_caliber_change, ask_blood_in_stool, ask_weight_change, ask_prior_colonoscopy, ask_family_hx_crc, exam_abdomen_palpation, exam_digital_rectal, exam_stool_color_on_glove]
     tests: [colonoscopy, cbc_blood_test, abdominal_xray]
     education_items: [explain_test_purpose, explain_alarm_symptoms_return]
@@ -312,19 +325,35 @@ diseases:
       sources: [harrison_ch49_diarrhea_constipation]
       basis: "⚠️ 실사례 채점표의 **진단·감별 항목에 이 질환명은 없음** — 교과서 근거만. (참고: 검사계획에 갑상선 검사가 있어 내분비 배제 축은 station에 내장되나, 검사 지정이 질환명 명시는 아니므로 승격 근거로 쓰지 않음 — Codex 검수 지적 반영.) Harrison Ch.49 Table 49-5 만성 변비 'Endocrinopathies — Hypothyroidism, hypercalcemia, pregnancy'. 본문: 혈청 칼슘·칼륨·갑상선자극호르몬 측정으로 드문 대사성 원인 환자를 가려낼 수 있음."
 
-  - id: metabolic_hypercalcemia
+  # ⚠️ 2026-08-11 Codex 4라운드 MAJOR("고칼슘혈증·저칼륨혈증·갑상선질환 등 서로 다른 원인을 하나의
+  #    질환 카드로 묶음")를 **사용자 지시로** 반영해 분리했다. 지도교수 결정이 아니다.
+  - id: hypercalcemia_constipation
+    role: differential
+    required_symptoms: [polyuria_polydipsia]
+    discriminators: [hypercalcemia, muscle_weakness_confusion, infrequent_bowel_movement]
+    red_flags: []
+    checklist_items: [ask_past_illness, ask_medication_hx, ask_weight_change, ask_neurologic_symptoms]
+    tests: [serum_calcium_potassium, cbc_blood_test]
+    education_items: [explain_test_purpose]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation, harrison_part12_endocrine]
+      basis: "Harrison Ch.49 Table 49-5 'Endocrinopathies — Hypothyroidism, **hypercalcemia**, pregnancy'. Harrison PART12: 고칼슘혈증 환자는 무증상이거나 **다뇨·다음·변비·권태·소화불량** 같은 모호한 증상으로 나타나며 신결석도 동반될 수 있다. 핵심 검사는 **혈청(또는 이온화) 칼슘과 PTH** — 생화학 검사에서 고칼슘혈증과 함께 상승한 PTH가 확인된다(Codex 4라운드: 칼륨·TSH는 고칼슘혈증의 필수검사가 아니다). ⚠️ 실사례에 이 진단명 없음."
+
+  - id: electrolyte_disturbance
     role: differential
     required_symptoms: [infrequent_bowel_movement]
-    discriminators: [hypercalcemia, hypokalemia, polyuria_polydipsia, muscle_weakness_confusion]
+    discriminators: [hypokalemia, muscle_weakness_confusion]
     red_flags: [megacolon]
-    checklist_items: [ask_past_illness, ask_medication_hx, ask_weight_change, ask_neurologic_symptoms]
+    checklist_items: [ask_past_illness, ask_medication_hx, ask_neurologic_symptoms]
     tests: [serum_calcium_potassium, cbc_blood_test, thyroid_function_test]
     education_items: [explain_test_purpose]
     evidence:
       level: standard_textbook
       real_case: none
       sources: [harrison_ch49_diarrhea_constipation]
-      basis: "Harrison Ch.49 Table 49-5 'Endocrinopathies — Hypothyroidism, **hypercalcemia**, pregnancy'. 본문: 혈청 칼슘·칼륨·TSH 측정이 드문 대사성 원인 환자를 식별. ⚠️ 실사례에 이 진단명 없음 — 2026 사례의 '일반혈액검사·갑상선 검사' 계획이 대사성 배제 축을 부분적으로 담당."
+      basis: "Harrison PART2: **저칼륨혈증의 장 평활근 마비 작용이 장마비(ileus)를 일으킬 수 있다.** Ch.49 본문: 혈청 칼슘·칼륨·TSH 측정이 드문 대사성 원인 환자를 식별한다. 거대결장이나 하제남용대장 같은 예상 못한 질환이 대장 방사선촬영에서 발견될 수 있으나, 이는 대사장애의 동반증상이 아니라 별도 원인이다(Codex 4라운드 지적). ⚠️ 실사례에 이 진단명 없음 — 2026 사례의 '일반혈액검사·갑상선 검사' 계획이 대사성 배제 축을 부분적으로 담당."
 
   - id: slow_transit_constipation
     role: differential
@@ -344,7 +373,7 @@ diseases:
     role: differential
     required_symptoms: [painful_defecation]
     discriminators: [sharp_sudden_anal_pain, bright_red_blood_on_tissue, stool_withholding_due_to_pain, high_anal_sphincter_tone]
-    red_flags: [alarm_rectal_bleeding]
+    red_flags: [alarm_rectal_bleeding, atypical_fissure_secondary]
     checklist_items: [ask_blood_in_stool, ask_stool_hardness, ask_straining, exam_perianal_inspection, exam_digital_rectal]
     tests: [anoscopy_perianal_exam]
     education_items: [explain_lifestyle_fluid_fiber, explain_laxative_use, explain_alarm_symptoms_return]
@@ -372,7 +401,7 @@ diseases:
     role: differential
     required_symptoms: [infrequent_bowel_movement, parkinsonism_or_neurologic_disease]
     discriminators: [spinal_cord_injury_hx, diabetic_autonomic_neuropathy, no_urge_to_defecate, sedentary_lifestyle]
-    red_flags: [megacolon, fecal_impaction]
+    red_flags: [megacolon, fecal_impaction, cauda_equina_syndrome, loss_of_anal_reflex]
     checklist_items: [ask_neurologic_symptoms, ask_past_illness, ask_medication_hx, ask_bowel_frequency, exam_digital_rectal]
     tests: [colonic_transit_study, anorectal_manometry, abdominal_xray]
     education_items: [explain_test_purpose, explain_lifestyle_fluid_fiber, explain_laxative_use]

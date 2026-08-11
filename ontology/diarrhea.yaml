@@ -48,14 +48,18 @@ labels:
   # ── 질환 (대표 IBS-D + 감별 11)
   ibs_diarrhea: 과민성대장증후군(설사형)
   viral_gastroenteritis: 바이러스 장염
-  invasive_bacterial_enterocolitis: 침습성 세균성 장염(Campylobacter·Salmonella·Yersinia)
+  campylobacter_enteritis: Campylobacter 장염
+  nontyphoidal_salmonella: 비장티푸스성 Salmonella 장염
+  yersinia_enterocolitis: Yersinia 장염
   shigellosis_dysentery: 세균성 이질(Shigella)
   stec_infection: 장출혈성 대장균(STEC·O157:H7) 감염
   preformed_toxin_food_poisoning: 전구성 독소 식중독(황색포도알균·B. cereus 구토독소)
   in_vivo_toxin_food_poisoning: 정착 후 독소생성 식중독(C. perfringens 등)
   travelers_diarrhea: 여행자 설사
   cdi_antibiotic_associated: 항생제연관 설사(C. difficile)
-  inflammatory_bowel_disease: 염증성 장질환(크론·궤양성대장염)
+  ulcerative_colitis: 궤양성대장염
+  crohn_disease: 크론병
+  microscopic_colitis: 현미경적 대장염(림프구성·교원성)
   lactose_intolerance: 유당불내증(삼투성)
   hyperthyroidism_diarrhea: 갑상선기능항진증
   bile_acid_diarrhea: 담즙산 설사(담낭절제·회장질환 후)
@@ -81,6 +85,20 @@ labels:
   bloody_diarrhea: 혈성 설사(이질)
   initially_nonbloody_then_bloody: 처음엔 비혈성이다가 혈성으로 변함
   undercooked_beef_unpasteurized_milk: 덜 익힌 소고기·저온살균 안 한 우유
+  # 병원체별 분기 (2026-08-11 Codex 4라운드 MAJOR — 사용자 지시로 분리)
+  poultry_or_pet_exposure: 가금류·생닭·반려동물 접촉
+  pseudoappendicitis: 가성충수염(급성충수염 유사 심한 우하복부 통증)
+  reptile_or_foodborne_exposure: 파충류 접촉·식품매개 노출
+  # IBD 분기
+  rectal_bleeding_tenesmus_mucus: 직장출혈·뒤무직·점액변
+  rluq_pain_recurrent: 반복되는 우하복부 통증
+  perianal_disease: 항문주위 병변(누공·농양·항문협착)
+  # 현미경적 대장염
+  chronic_watery_diarrhea_on_drugs: NSAID·스타틴·PPI·SSRI 복용 중 만성 물설사
+  # 경보징후 보강
+  fulminant_cdi: 전격성 CDI(설사 없이 급성 복증·패혈증)
+  unexplained_leukocytosis: 설명되지 않는 백혈구증가(≥15,000/μL)
+  palpable_mass_with_habit_change: 배변습관 변화 + 촉지되는 종괴
   high_fever: 고열
   severe_abdominal_pain: 심한 복통
   fecal_leukocytes: 대변 백혈구
@@ -220,10 +238,12 @@ diseases:
       sources: [harrison_ch49_diarrhea_constipation]
       basis: "Harrison Ch.49: 급성 설사의 90% 초과가 감염성이며 구토·발열·복통을 동반. Table 49-2 'Invasive organisms — minimal inflammation: Rotavirus and norovirus' 잠복기 1–3일, 구토 1–3+, 복통 2–3+, 발열 3–4+, 물설사 1–3+. ⚠️ 'Invasive organisms'는 **Harrison 표의 분류 그대로**이며(하위 구분 = minimal inflammation), 로타·노로가 병태생리적으로 점막 침습성이라는 뜻이 아니다 — 오독 주의. 크루즈선 등 노로바이러스 집단발생 명시. ⚠️ 설사 station 실사례에 이 진단명은 없음 — 채점표 8번(발열·오한)·9번(탈수) 문진이 이 감별을 겨냥."
 
-  - id: invasive_bacterial_enterocolitis
+  # ⚠️ 2026-08-11 Codex 4라운드 MAJOR("세 균의 임상상이 다른데 혈변과 발열을 required로 묶음")를
+  #    **사용자 지시로** 반영해 병원체별로 분기했다. 지도교수 결정이 아니며, 공식 감별목록 확보 후 재검토 대상.
+  - id: campylobacter_enteritis
     role: differential
     required_symptoms: [inflammatory_diarrhea]
-    discriminators: [high_fever, severe_abdominal_pain, fecal_leukocytes]
+    discriminators: [bloody_diarrhea, high_fever, crampy_abdominal_pain, poultry_or_pet_exposure]
     red_flags: [fever_over_38_5, toxic_megacolon]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_fever_chills, ask_food_relation, exam_abdomen_palpation, exam_digital_rectal]
     tests: [stool_culture_pcr, stool_study, cbc_blood_test]
@@ -231,8 +251,36 @@ diseases:
     evidence:
       level: standard_textbook
       real_case: none
+      sources: [tintinalli_em_8th, harrison_ch49_diarrhea_constipation]
+      basis: "Tintinalli 8th: 설사·혈변·복통·발열·권태로 나타나며 잠복 2~10일. 노출 = 덜 익힌 가금류·생닭 접촉, 저온살균 안 한 우유, 오염된 물, 반려동물(개·고양이·햄스터·조류), 사람 간 전파도 가능. 회복기에 반응관절염·Reiter증후군·결절홍반이 뒤따를 수 있음. Campylobacter 장염은 만성 복통·설사로 **크론병과 비슷할 수 있어** 대변배양으로 감별한다. ⚠️ 실사례에 이 진단명 없음."
+
+  - id: nontyphoidal_salmonella
+    role: differential
+    required_symptoms: [inflammatory_diarrhea]
+    discriminators: [high_fever, severe_abdominal_pain, reptile_or_foodborne_exposure]
+    red_flags: [fever_over_38_5, toxic_megacolon]
+    checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_fever_chills, ask_food_relation, exam_abdomen_palpation]
+    tests: [stool_culture_pcr, stool_study, cbc_blood_test]
+    education_items: [explain_test_purpose, explain_red_flag_return]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [tintinalli_em_8th, harrison_ch49_diarrhea_constipation]
+      basis: "Tintinalli 8th: 발열·복통을 동반한 식품매개 설사, 파충류 접촉도 노출원. 🚨 **치료 주의** — 건강한 성인의 비장티푸스성 Salmonella 장염에는 항생제를 쓰지 않는다(Cochrane 12개 시험·767명에서 이득 근거 없음). 장티푸스·패혈증·생후 3개월 미만·면역저하 등 특정 위험요인이 있을 때만 투여. ⚠️ 실사례에 이 진단명 없음."
+
+  - id: yersinia_enterocolitis
+    role: differential
+    required_symptoms: [pseudoappendicitis]
+    discriminators: [severe_abdominal_pain, high_fever]
+    red_flags: [fever_over_38_5]
+    checklist_items: [ask_onset_duration_diarrhea, ask_food_relation, ask_fever_chills, exam_abdomen_palpation]
+    tests: [stool_culture_pcr, stool_study, cbc_blood_test]
+    education_items: [explain_test_purpose, explain_red_flag_return]
+    evidence:
+      level: standard_textbook
+      real_case: none
       sources: [harrison_ch49_diarrhea_constipation, tintinalli_em_8th]
-      basis: "Harrison Ch.49 Table 49-2 'Invasive organisms': Salmonella·Campylobacter·Yersinia(잠복 12h–11d, 발열 3–4+, 물 또는 혈성). Yersinia는 말단회장·근위대장 침범으로 급성 충수염과 혼동될 심한 복통·압통. Tintinalli 8th: 'Inflammatory diarrhea (grossly bloody, fever)' 군에 Shigella·Campylobacter·Salmonella·EIEC·STEC. ⚠️ **2026-08-11 Codex 임상타당성 검수로 이질을 별도 카드(shigellosis_dysentery)로 분리** — 혈성 설사는 모든 세균성 장염의 required가 아니라 이질형에 한정되고, 발열·복통도 침습감염에서 항상 동반되지는 않아 discriminator로 내렸다. ⚠️ 실사례에 이 진단명 없음 — 채점표 6번(혈변)·8번(발열) 문진이 겨냥."
+      basis: "Harrison Ch.49: Yersinia는 말단회장·근위대장 점막을 침범해 **급성충수염과 혼동될 심한 복통·압통**을 유발한다. Tintinalli 8th도 Yersinia를 '복통(가성충수염)'으로 요약하며 드물다고 기술. 혈색소증 환자는 Vibrio·Yersinia 침습감염에 특히 취약. Yersinia 회장대장염은 만성 복통·설사로 **크론병과 비슷할 수 있어** 대변배양으로 감별한다. 드문 후기 후유증으로 자가면역성 갑상선염·심막염·사구체신염이 보고되나, 대표적 후유증은 반응관절염·결절홍반이다. ⚠️ 실사례에 이 진단명 없음."
 
   - id: shigellosis_dysentery
     role: differential
@@ -307,7 +355,7 @@ diseases:
     role: differential
     required_symptoms: [acute_watery_diarrhea]
     discriminators: [recent_antibiotic_use, crampy_abdominal_pain, healthcare_exposure, fever_present]
-    red_flags: [toxic_megacolon, fever_over_38_5, elderly_or_immunocompromised]
+    red_flags: [toxic_megacolon, fever_over_38_5, elderly_or_immunocompromised, fulminant_cdi, unexplained_leukocytosis]
     risk_factors: [recent_antibiotic_use, healthcare_exposure]
     checklist_items: [ask_onset_duration_diarrhea, ask_antibiotic_hx, ask_medication_hx, ask_fever_chills, exam_abdomen_palpation]
     tests: [cdiff_toxin_assay, stool_study, cbc_blood_test]
@@ -318,10 +366,12 @@ diseases:
       sources: [harrison_ch49_diarrhea_constipation]
       basis: "Harrison Ch.49: 항생제에 의한 정상균총 교란이 Clostridioides difficile 등 병원체 과증식을 허용해 설사를 유발. 시설수용자에서 병원감염성 설사의 가장 흔한 원인이 C. difficile이며, 항생제 사용력이 없어도 지역사회 획득이 가능. Table 49-2 'Cytotoxin producers — C. difficile' 잠복 1–3일, 복통 3–4+, 대개 물설사·간혹 혈성. ⚠️ 실사례에 이 진단명 없음."
 
-  - id: inflammatory_bowel_disease
+  # ⚠️ 2026-08-11 Codex 4라운드 MAJOR("Crohn과 UC의 혈변·절박변·뒤무직·항문주위 병변 분포가 다르다")를
+  #    **사용자 지시로** 반영해 분리했다. 지도교수 결정이 아니며, 공식 감별목록 확보 후 재검토 대상.
+  - id: ulcerative_colitis
     role: differential
-    required_symptoms: [chronic_recurrent_diarrhea]
-    discriminators: [chronic_bloody_diarrhea, abdominal_pain_with_diarrhea, weight_loss, extraintestinal_manifestation, young_adult_onset]
+    required_symptoms: [rectal_bleeding_tenesmus_mucus]
+    discriminators: [chronic_bloody_diarrhea, abdominal_pain_with_diarrhea, extraintestinal_manifestation, young_adult_onset]
     red_flags: [overtly_bloody_stool, toxic_megacolon, bowel_obstruction_sign]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_weight_loss, ask_fever_chills, ask_family_hx, exam_abdomen_palpation, exam_digital_rectal]
     tests: [colonoscopy, fecal_calprotectin, cbc_blood_test]
@@ -330,7 +380,21 @@ diseases:
       level: standard_textbook
       real_case: none
       sources: [harrison_ch49_diarrhea_constipation]
-      basis: "Harrison Ch.49 Table 49-3 Inflammatory Causes 최상단 'Idiopathic inflammatory bowel disease (Crohn's, chronic ulcerative colitis)'. 본문: 크론병·궤양성대장염은 성인 만성 설사의 가장 흔한 기질적 원인 중 하나이며 포도막염·다발관절통·구강궤양·원발경화쓸개관염·결절홍반·괴저농피증을 동반할 수 있음. 염증성 설사는 통증·발열·출혈을 동반하고 대변에서 백혈구·칼프로텍틴이 검출됨. ⚠️ 실사례에 이 진단명 없음 — 채점표 6·7·8번(혈변·체중감소·발열)이 겨냥."
+      basis: "Harrison PART10: **'궤양성대장염의 주 증상은 설사·직장출혈·뒤무직·점액변·쥐어짜는 복통'**이며 증상 정도는 침범 범위와 상관한다. 장외 증상(포도막염·다발관절통·구강궤양·원발경화쓸개관염·결절홍반·괴저농피증) 동반 가능. 심한 염증에서는 삼출성 단백소실로 전신부종. **감별 포인트** — UC에서도 치열·항문주위 농양·치핵이 생길 수 있으나 **광범위한 항문주위 병변은 크론병을 시사**한다. ⚠️ 실사례에 이 진단명 없음."
+
+  - id: crohn_disease
+    role: differential
+    required_symptoms: [rluq_pain_recurrent]
+    discriminators: [perianal_disease, extraintestinal_manifestation, weight_loss, young_adult_onset]
+    red_flags: [bowel_obstruction_sign, toxic_megacolon, overtly_bloody_stool]
+    checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_weight_loss, ask_fever_chills, ask_family_hx, exam_abdomen_palpation, exam_digital_rectal]
+    tests: [colonoscopy, fecal_calprotectin, cbc_blood_test]
+    education_items: [explain_test_purpose, explain_red_flag_return]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation, tintinalli_em_8th]
+      basis: "Harrison PART10: 가장 흔한 침범 부위가 말단회장이라 **회장대장염의 통상 발현은 우하복부 통증과 설사가 반복되는 만성 경과**이며, 때로 촉지되는 종괴·발열·백혈구증가로 **급성충수염을 흉내**낸다. **항문주위 병변이 크론 대장염 환자의 약 1/3**에서 나타나 변실금·큰 치핵꼬리·항문협착·항문직장 누공·직장주위 농양으로 표현된다(= UC와의 핵심 감별점). Tintinalli 8th: Yersinia 회장대장염·Campylobacter 장염이 크론병과 비슷한 만성 복통·설사를 낼 수 있어 대변배양이 필요. ⚠️ 실사례에 이 진단명 없음."
 
   - id: lactose_intolerance
     role: differential
@@ -377,7 +441,7 @@ diseases:
     role: differential
     required_symptoms: [chronic_recurrent_diarrhea]
     discriminators: [hematochezia, change_in_stool_caliber, weight_loss, age_over_50, family_hx_colorectal_cancer, anemia_symptoms]
-    red_flags: [overtly_bloody_stool, bowel_obstruction_sign, severe_pain_over_age_50]
+    red_flags: [overtly_bloody_stool, bowel_obstruction_sign, severe_pain_over_age_50, palpable_mass_with_habit_change]
     checklist_items: [ask_blood_or_color, ask_weight_loss, ask_family_hx, ask_stool_form, exam_abdomen_palpation, exam_digital_rectal]
     tests: [colonoscopy, cbc_blood_test, stool_study]
     education_items: [explain_test_purpose, explain_red_flag_return]
@@ -399,4 +463,18 @@ diseases:
       level: standard_textbook
       real_case: none
       sources: [harrison_ch49_diarrhea_constipation]
-      basis: "⚠️ 실사례 채점표(배점 항목)에 약물력 문진이 독립 항목으로 없어 승격 근거 불충분 — 교과서 근거만. (SP 대본의 개별 복약 내용은 사례 고유 정보라 미수록.) Harrison Ch.49: '약물 부작용이 급성 설사의 비감염성 원인 중 가장 흔하며, 복용 시점과 증상 발생의 시간적 연관으로 원인을 시사할 수 있다' — 항생제·항부정맥제·항고혈압제·NSAID·일부 항우울제·체중감량제·항암제·기관지확장제·제산제·완하제. Table 49-3 Secretory Causes 최상단이 'Exogenous stimulant laxatives'이며 세나·카스카라·비사코딜의 은밀·습관적 사용을 반드시 고려."
+      basis: "⚠️ 실사례 채점표(배점 항목)에 약물력 문진이 독립 항목으로 없어 승격 근거 불충분 — 교과서 근거만. (SP 대본의 개별 복약 내용은 사례 고유 정보라 미수록.) Harrison Ch.49: '약물 부작용이 급성 설사의 비감염성 원인 중 가장 흔하며, 복용 시점과 증상 발생의 시간적 연관으로 원인을 시사할 수 있다' — 항생제·항부정맥제·항고혈압제·NSAID·일부 항우울제·체중감량제·항암제·기관지확장제·제산제·완하제. Table 49-3 Secretory Causes 최상단이 'Exogenous stimulant laxatives'이며 세나·카스카라·비사코딜의 은밀·습관적 사용을 반드시 고려. ⚠️ 2026-08-11 Codex 4라운드 MAJOR(\"현미경적 대장염·올메사르탄 장병증·완하제 남용을 한 카드에 병렬 배치하면 감별 학습을 방해\")를 **사용자 지시로** 반영해 현미경적 대장염을 별도 카드로 분리했다."
+
+  - id: microscopic_colitis
+    role: differential
+    required_symptoms: [chronic_watery_diarrhea_on_drugs]
+    discriminators: [chronic_recurrent_diarrhea, no_weight_loss]
+    red_flags: []
+    checklist_items: [ask_medication_hx, ask_onset_duration_diarrhea, ask_stool_form, ask_weight_loss]
+    tests: [colonoscopy, cbc_blood_test]
+    education_items: [explain_test_purpose]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "Harrison Ch.49: 현미경적 대장염(림프구성·교원성)은 **만성 수양성 설사**를 일으키며 특히 **중년 여성**과 NSAID·스타틴·PPI·SSRI 복용자에서 흔하다. 대장내시경 육안 소견은 정상일 수 있어 생검이 필요하다는 점이 감별 요점. ⚠️ 2026-08-11 Codex 4라운드 지적으로 `drug_induced_diarrhea`에서 분리(**사용자 지시**). ⚠️ 실사례에 이 진단명 없음."
