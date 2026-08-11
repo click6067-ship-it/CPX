@@ -35,6 +35,12 @@ sources:
   harrison_ch49_diarrhea_constipation:
     type: textbook
     ref: "Harrison's Principles of Internal Medicine, Ch.49 'Diarrhea and Constipation' (Camilleri M, Murray JA) — Table 49-2(급성 감염성 설사: 병태생리↔임상소견), Table 49-3(만성 설사 기전별 원인), Table 49-4(만성 설사 진찰), Fig.49-3/49-4(알고리듬). 로컬 텍스트 코퍼스 직독 — 파일 `cpx-agent/data/raw/textbook/내과/harrison/PART2_Cardinal_Manifestations_and_Presentation_of_Diseases.md`(비공개·저작권, 이 repo 미포함), 챕터 구간 26555–28092행, 원문 페이지마커 [[p211]]–[[p222]]. ⚠️ **원본에 판(edition) 미표기** — 인용 참고문헌 최신 2023년. **basis의 수치는 원문 대조는 마쳤으나 판이 확정되지 않았으므로, 논문·대외 인용 전 원본 PDF로 판·페이지를 확정해야 함.**"
+  rosen_em_8th:
+    type: textbook
+    ref: "Rosen's Emergency Medicine: Concepts and Clinical Practice, 8th ed. — 로컬 텍스트 코퍼스 직독(`응급의학과/Rosen_8th_Full.md`, 비공개·저작권, 이 repo 미포함). 이 파일에서 인용한 구간 = 급성 설사 접근(p314·p316), 식품매개질환 병원체·잠복기 표(p1425), 항문직장 질환(p1461), 소아 감염성 설사 치료표(p2492). 인용문은 `scripts/findings_review.py`가 원문 대조하며, 페이지는 원문 `[[pN]]` 마커에서 기계가 딴다."
+  tintinalli_em_8th:
+    type: textbook
+    ref: "Tintinalli's Emergency Medicine: A Comprehensive Study Guide, 8th ed. 2016 — 로컬 텍스트 코퍼스 직독(`응급의학과/Tintinallis Emergency Medicine ... 8th 2016.md`, 비공개·저작권, 이 repo 미포함). 인용 구간 = 지사제 금기(p539), 변비 Rome 기준(p545), 감염성 설사 병원체 임상양상표(p892), 소아 설사·HUS(p930), 급성 설사 분류·STEC 항생제 금기·처치기준(p1123–p1125). 8판은 **판·연도가 원문에 명시**되어 있어 Harrison(판 미확정)과 달리 대외 인용에 바로 쓸 수 있다."
 
 # 표시용 한국어 라벨 (id → 한국어). 그래프 렌더가 이걸 씀. 없으면 id 그대로.
 labels:
@@ -42,8 +48,11 @@ labels:
   # ── 질환 (대표 IBS-D + 감별 11)
   ibs_diarrhea: 과민성대장증후군(설사형)
   viral_gastroenteritis: 바이러스 장염
-  invasive_bacterial_enterocolitis: 세균성 장염(침습성·이질)
-  foodborne_toxin_illness: 독소형 식중독
+  invasive_bacterial_enterocolitis: 침습성 세균성 장염(Campylobacter·Salmonella·Yersinia)
+  shigellosis_dysentery: 세균성 이질(Shigella)
+  stec_infection: 장출혈성 대장균(STEC·O157:H7) 감염
+  preformed_toxin_food_poisoning: 전구성 독소 식중독(황색포도알균·B. cereus 구토독소)
+  in_vivo_toxin_food_poisoning: 정착 후 독소생성 식중독(C. perfringens 등)
   travelers_diarrhea: 여행자 설사
   cdi_antibiotic_associated: 항생제연관 설사(C. difficile)
   inflammatory_bowel_disease: 염증성 장질환(크론·궤양성대장염)
@@ -67,13 +76,19 @@ labels:
   vomiting_prominent: 구토 우세
   fever_present: 발열
   outbreak_contact: 집단발생·주변 동일증상
-  # 침습성 세균성
+  # 침습성 세균성 / 이질 (2026-08-11 Codex 지적으로 카드 분리)
+  inflammatory_diarrhea: 염증성(침습성) 설사 — 혈변·발열 동반
   bloody_diarrhea: 혈성 설사(이질)
+  initially_nonbloody_then_bloody: 처음엔 비혈성이다가 혈성으로 변함
+  undercooked_beef_unpasteurized_milk: 덜 익힌 소고기·저온살균 안 한 우유
   high_fever: 고열
   severe_abdominal_pain: 심한 복통
   fecal_leukocytes: 대변 백혈구
-  # 독소형 식중독
-  onset_within_hours_of_meal: 식후 수 시간 내 발생
+  tenesmus_mucoid_stool: 뒤무직·점액변
+  # 독소형 식중독 (전구성 독소 / 정착 후 독소생성으로 분리)
+  onset_within_hours_of_meal: 식후 수 시간(1~6h) 내 발생
+  onset_6_24h_after_meal: 식후 6~24시간 발생
+  reheated_food_history: 다시 데우거나 오래 방치한 음식 섭취
   minimal_or_no_fever: 발열 없거나 미미
   shared_meal_history: 같은 음식 먹은 사람 동시 발병
   # 여행자 설사
@@ -115,6 +130,8 @@ labels:
   fever_over_38_5: 발열 ≥38.5℃
   overtly_bloody_stool: 육안적 혈변
   duration_over_48h_no_improvement: 48시간 이상 호전 없음
+  hemolytic_uremic_syndrome: 용혈요독증후군(HUS)
+  stec_antibiotic_contraindication: STEC 의심 시 항생제·지사제 금기
   elderly_or_immunocompromised: 고령(≥70세)·면역저하
   severe_pain_over_age_50: 50세 초과에서 심한 복통
   fecal_incontinence: 변실금(변을 지림)
@@ -205,19 +222,47 @@ diseases:
 
   - id: invasive_bacterial_enterocolitis
     role: differential
-    required_symptoms: [acute_watery_diarrhea]
-    discriminators: [bloody_diarrhea, high_fever, severe_abdominal_pain, fecal_leukocytes]
-    red_flags: [overtly_bloody_stool, fever_over_38_5, toxic_megacolon]
+    required_symptoms: [inflammatory_diarrhea]
+    discriminators: [high_fever, severe_abdominal_pain, fecal_leukocytes]
+    red_flags: [fever_over_38_5, toxic_megacolon]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_fever_chills, ask_food_relation, exam_abdomen_palpation, exam_digital_rectal]
     tests: [stool_culture_pcr, stool_study, cbc_blood_test]
     education_items: [explain_test_purpose, explain_red_flag_return]
     evidence:
       level: standard_textbook
       real_case: none
-      sources: [harrison_ch49_diarrhea_constipation]
-      basis: "Harrison Ch.49 Table 49-2 'Invasive organisms': Salmonella·Campylobacter·Yersinia(잠복 12h–11d, 발열 3–4+, 물 또는 혈성) / 'Severe inflammation: Shigella·enteroinvasive E. coli·Entamoeba histolytica'(발열 3–4+, 혈성 1–2+). 본문: 침습 세균과 E. histolytica는 흔히 혈성 설사(dysentery)를 일으킴. Yersinia는 말단회장·근위대장 침범으로 급성 충수염과 혼동될 심한 복통·압통. ⚠️ 실사례에 이 진단명 없음 — 채점표 6번(혈변)·8번(발열) 문진이 겨냥."
+      sources: [harrison_ch49_diarrhea_constipation, tintinalli_em_8th]
+      basis: "Harrison Ch.49 Table 49-2 'Invasive organisms': Salmonella·Campylobacter·Yersinia(잠복 12h–11d, 발열 3–4+, 물 또는 혈성). Yersinia는 말단회장·근위대장 침범으로 급성 충수염과 혼동될 심한 복통·압통. Tintinalli 8th: 'Inflammatory diarrhea (grossly bloody, fever)' 군에 Shigella·Campylobacter·Salmonella·EIEC·STEC. ⚠️ **2026-08-11 Codex 임상타당성 검수로 이질을 별도 카드(shigellosis_dysentery)로 분리** — 혈성 설사는 모든 세균성 장염의 required가 아니라 이질형에 한정되고, 발열·복통도 침습감염에서 항상 동반되지는 않아 discriminator로 내렸다. ⚠️ 실사례에 이 진단명 없음 — 채점표 6번(혈변)·8번(발열) 문진이 겨냥."
 
-  - id: foodborne_toxin_illness
+  - id: shigellosis_dysentery
+    role: differential
+    required_symptoms: [inflammatory_diarrhea]
+    discriminators: [bloody_diarrhea, high_fever, tenesmus_mucoid_stool, severe_abdominal_pain, fecal_leukocytes]
+    red_flags: [overtly_bloody_stool, fever_over_38_5, hemolytic_uremic_syndrome]
+    checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_fever_chills, ask_food_relation, exam_abdomen_palpation, exam_digital_rectal]
+    tests: [stool_culture_pcr, stool_study, cbc_blood_test]
+    education_items: [explain_test_purpose, explain_red_flag_return]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation, tintinalli_em_8th]
+      basis: "Harrison Ch.49: 침습 세균과 E. histolytica는 흔히 혈성 설사(dysentery)를 일으킴. Tintinalli 8th: Shigella는 전신증상 없는 물설사부터 발열·복통·뒤무직·점액변·혈변까지 폭이 넓고 S. dysenteriae 1형이 가장 중증 — **초기에는 수양성일 수 있어 혈변을 required로 두지 않는다.** 🚨 **2026-08-11 Codex 4라운드 BLOCKER 반영으로 STEC를 별도 카드(stec_infection)로 분리** — 한 카드에 묶으면 혈변 양상·발열·HUS 위험·**항생제 원칙이 정면으로 충돌**한다(Shigella 이질은 경우에 따라 항균치료 대상이지만 STEC는 항생제 금기). 경험적 항균치료를 고려한다면 STEC를 먼저 배제해야 한다. ⚠️ 실사례에 이 진단명 없음."
+
+  - id: stec_infection
+    role: differential
+    required_symptoms: [initially_nonbloody_then_bloody, severe_abdominal_pain]
+    discriminators: [undercooked_beef_unpasteurized_milk, minimal_or_no_fever]
+    red_flags: [hemolytic_uremic_syndrome, stec_antibiotic_contraindication, overtly_bloody_stool]
+    checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_fever_chills, ask_food_relation, ask_thirst_dehydration, exam_abdomen_palpation]
+    tests: [stool_culture_pcr, stool_study, cbc_blood_test]
+    education_items: [explain_test_purpose, explain_red_flag_return]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [tintinalli_em_8th, harrison_ch49_diarrhea_constipation]
+      basis: "Tintinalli 8th: STEC는 처음에는 비혈성이다가 흔히 혈성으로 바뀌는 설사와 심한 복통으로 나타나며, 사람·소 분변에 오염된 물·음식, 덜 익힌 소고기, 저온살균 안 한 우유가 원인이고 합병증은 출혈성 대장염·용혈요독증후군이다. 🚨 **환자 안전(최우선)** — Tintinalli 8th는 STEC(O157:H7) 감염에서 **항생제와 지사제를 금기**로 기술하며(HUS 위험 증가, 특히 소아·고령), 기전으로 항생제가 Shiga 독소 방출을 촉진함을 든다. 치료는 보존적. Harrison Ch.49도 EHEC(O157:H7)·Shigella의 HUS 위험을 명시. (교재 원문 인용은 저작권상 이 공개 YAML에 싣지 않는다 — 원문 대조는 `data/working/findings/`의 비공개 검토표에서 `scripts/findings_review.py`가 수행.) ⚠️ 실사례에 이 진단명 없음."
+
+  - id: preformed_toxin_food_poisoning
     role: differential
     required_symptoms: [acute_watery_diarrhea, onset_within_hours_of_meal]
     discriminators: [vomiting_prominent, minimal_or_no_fever, shared_meal_history]
@@ -228,8 +273,22 @@ diseases:
     evidence:
       level: standard_textbook
       real_case: none
-      sources: [harrison_ch49_diarrhea_constipation]
-      basis: "⚠️ 실사례에 이 진단명 없음 — 교과서 근거만. (참고: station 문진에 음식-증상 연관 항목이 있어 '음식 관련 설사' 축은 다루지만 질환명 특정은 아니라 승격 근거로 쓰지 않음.) Harrison Ch.49 Table 49-2 'Toxin producers — preformed toxin: Bacillus cereus, Staphylococcus aureus, Clostridium perfringens' — ⚠️ 이 행의 잠복기는 표에 **두 값이 병기**(1–8시간 / 8–24시간)되어 있고 균종별로 갈린다(통상 B. cereus·S. aureus=1–8시간, C. perfringens=8–24시간). 구토 3–4+, 복통 1–2+, 발열 0–1+, 물설사 3–4+. 본문: 섭취 수 시간 내 급작 발병 + 구토 뚜렷 + 발열 없거나 미미 → 독소 원인 시사."
+      sources: [harrison_ch49_diarrhea_constipation, rosen_em_8th]
+      basis: "Harrison Ch.49 Table 49-2 'Toxin producers — preformed toxin' 및 본문: 섭취 수 시간 내 급작 발병 + 구토 뚜렷 + 발열 없거나 미미 → 독소 원인 시사. Rosen 8th는 이 군을 **'TOXIGENIC FOOD POISONING WITH PREFORMED TOXINS'(B. cereus·C. botulinum·S. aureus)** 로 명시하고 잠복기를 균종별로 구분한다 — 포도알균 1–6시간(조리자 관련 감자샐러드·마요네즈·과자), B. cereus 구토독소 2–4시간(볶음밥). ⚠️ **2026-08-11 Codex 지적으로 C. perfringens형(정착 후 독소생성)을 별도 카드로 분리** — 예전 단일 카드는 잠복기 1–8h와 8–24h를 한 행에 묶고 있었다. ⚠️ 실사례에 이 진단명 없음 — 교과서 근거만."
+
+  - id: in_vivo_toxin_food_poisoning
+    role: differential
+    required_symptoms: [acute_watery_diarrhea, onset_6_24h_after_meal]
+    discriminators: [reheated_food_history, crampy_abdominal_pain, minimal_or_no_fever, shared_meal_history]
+    red_flags: [dehydration_signs]
+    checklist_items: [ask_onset_duration_diarrhea, ask_food_relation, ask_fever_chills, ask_thirst_dehydration, exam_dehydration_tongue]
+    tests: [stool_study, stool_culture_pcr]
+    education_items: [explain_oral_rehydration, explain_dietary_modification]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [rosen_em_8th, tintinalli_em_8th]
+      basis: "Rosen 8th 'Toxins Produced after Colonization' — Clostridium perfringens: 육류·가금류·그레이비·스팀테이블 보관육, 잠복기 6–24시간, 다시 데우거나 오래 방치한 음식, 경과 약 24시간. Tintinalli 8th: 물설사·오심·복부경련이 1–2일 지속, 온도관리가 나쁜 육류·가금류·건조/조리식품. 전구성 독소형(1–6시간, 구토 우세)과 잠복기·주증상이 갈린다. ⚠️ 실사례에 이 진단명 없음 — 교과서 근거만."
 
   - id: travelers_diarrhea
     role: differential

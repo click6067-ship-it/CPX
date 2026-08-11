@@ -177,3 +177,134 @@ runs:
           아니며 과도. **이것이 인용 대조의 한계를 실증한다** — 150건 전부 "교재에 있는 문장"이었으나,
           그 문장을 어떤 소견·어떤 role에 붙였는지는 대조가 검사하지 못한다.
           미반영 — 별도 수정 라운드 필요.
+
+  - date: "2026-08-11 (4라운드)"
+    scope: "3라운드 Codex 지적(BLOCKER 2 · MAJOR 94 · MINOR 9) 반영 + 인용 페이지 산출 버그 수정"
+    by: "개발 담당(Claude) — Codex 재검수는 아직 미실시"
+    checks:
+      - name: "🚨 BLOCKER 2건 수정"
+        method: "발현소견에서 제거 → 참고항목(치료·관리) 축으로 이동 + 반대 근거 인용 추가"
+        status: PASS
+        detail: >-
+          ① **세균성 장염 경험적 항생제** — `discriminator` 발현소견이던 것을 참고항목(management)으로 내리고,
+          "혈변만으로 항생제를 권하지 않는다. STEC가 배제되지 않은 혈성 설사에서 항생제는 HUS 위험을 높인다"는
+          주의를 붙였다. 나아가 **분리된 이질/STEC 카드에 red_flag 소견을 신설** — Tintinalli 8th p1124가
+          STEC(O157:H7) 감염에서 항생제·지사제를 금기로 기술하는 대목(HUS 위험 증가, 특히 소아·고령)을
+          근거로 삼았다(기계대조 통과). 혈성·염증성 설사의 지사제 금기(Tintinalli p539)도 함께 넣었다.
+          (교재 원문 인용은 저작권상 이 공개 파일에 싣지 않는다 — 원문은 비공개 검토표에만 있다.)
+          ② **배변협조장애 회장루** — 참고항목(management)으로 이동. 검수 중 **인용문이 "regular enemas"에서
+          잘려 있어 한국어 소견명의 '회장루'를 인용이 뒷받침하지 못하던 것**을 발견해 Harrison 원문 전체
+          문장으로 교체하고, "난치성 변비의 최후 수단이며 배변협조장애의 일반적 다음 단계가 아니다.
+          다음 단계는 전문 평가·골반저 재활·동반 구조병변 평가"라는 주의를 명시했다.
+          "수술·보툴리눔은 성적이 나빠 대체로 폐기됨"이라는 Harrison 문장도 함께 실었다.
+
+      - name: "role 체계 재정비 — '소견이 아닌 것'을 별도 축으로 분리"
+        method: "findings JSON에 `참고항목` 축 신설(kind=진단검사·치료관리·감별진단·역학·정의·기전·후유증·정상대조·병력청취)"
+        status: PASS
+        detail: >-
+          Codex 총평("검사·치료·감별진단·역학 문장이 required/discriminator로 섞여 있다")의 뿌리를 구조로 해결.
+          지우지 않고 **분리**했다(교재 근거로서는 가치가 있으나 발현소견은 아니므로).
+          결과: 발현소견 127→91, 참고항목 83 신설. role 분포도 정상화 —
+          설사 required 14·discriminator 21·supporting 26·red_flag 9 / 변비 required 11·discriminator 9·supporting 21·red_flag 2.
+          (이전에는 required가 남발돼 "그 질환이면 거의 항상 있는 소견"이라는 정의가 무의미했다.)
+
+      - name: "질환 카드 분리 (24 → 27)"
+        method: "검토표와 ontology YAML 양쪽에서 분리 + cypher·그래프·리포트 재생성"
+        status: PASS
+        detail: >-
+          Codex가 세분화를 요구한 3건을 **사용자 승인 후** 실제로 분리했다.
+          설사 12→14: `invasive_bacterial_enterocolitis`(침습성 세균성 장염) / `shigellosis_dysentery`(세균성 이질),
+          `preformed_toxin_food_poisoning`(전구성 독소, 1~6h·구토 우세) / `in_vivo_toxin_food_poisoning`(정착 후 독소생성, 6~24h).
+          변비 12→13: `anal_fissure`(치열 — 배변 후 통증성 출혈) / `internal_hemorrhoid`(내치핵 — 무통성 선홍색 출혈).
+          치열/치핵은 **핵심 소견이 서로 모순(통증성 vs 무통성)** 이라 한 카드로 묶을 수 없었다.
+          Rosen 8th p1461이 두 병태의 통증 양상을 직접 대비해 분리 근거가 된다.
+
+      - name: "🐛 인용 페이지 산출 버그 수정 (findings_review.resolve)"
+        method: "페이지 마커 경계 기준 누적 인덱스로 교체 + 원문공간 독립 계산과 143건 교차검증"
+        status: PASS
+        detail: >-
+          **기존 인용 150건 중 54건(36%)의 페이지가 틀려 있었다.** 원인은 squash 인덱스를 원문 인덱스로
+          되돌릴 때 `[[pN]]` 마커의 글자까지 함께 센 것 — 마커는 squash 코퍼스에 없으므로 마커 1개당 약 7자씩
+          오차가 누적됐고(Tintinalli 1124번째 마커에서 약 7,900자 ≈ 2페이지), **뒤쪽 페이지일수록 인용 페이지가
+          앞으로 밀려 찍혔다.** 실측 차이는 +1페이지 43건·+3 3건·+4 5건·+5 3건(항상 실제보다 앞).
+          교차검증(원문 공간에서 직접 계산) 143/143 일치로 수정 확인. 책(book) 표기는 변경 0건.
+          같은 맥락으로 `verify()`의 "일치 @파일"과 `resolve()`의 출처가 서로 다른 파일을 가리킬 수 있던
+          순서 불일치도 단일 `search_order()`로 통일했다.
+
+      - name: "누락 핵심소견 보강 (Rosen 8th · Tintinalli 8th 신규 채굴)"
+        method: "scripts/textbook_mine.py — 응급의학 2종은 그동안 한 건도 채굴되지 않았던 미개척 구간"
+        status: PARTIAL
+        detail: >-
+          Codex가 "핵심 소견 누락"으로 지적한 항목을 교재 원문으로 채워 넣었다 —
+          갑상선기능항진 증상·징후(Harrison Table 396-2), 갑상선기능저하 증상·징후(Table 395-3),
+          고칼슘혈증 증상·PTH(PART12 p105), 치열/내치핵 감별(Rosen p1461·Sabiston p1184),
+          직장탈출증의 변실금(Sabiston p1375), 담낭절제후 설사(5~10%), 유당불내증 증상,
+          Rome 변비 기준 "2개 이상"(Tintinalli p545), 탈수 평가 지표, 입원·귀가 기준(Tintinalli p1124),
+          C. perfringens 임상·잠복기(Rosen p1425).
+          ⚠️ **밀도는 여전히 참고표(복통) 수준에 못 미친다** — 질환당 발현소견 설사 3.9·변비 2.8 대 참고표 18.
+          다음 라운드의 최우선 과제.
+
+      - name: "required 없는 카드 3건의 사유 명시"
+        method: "`required_없음_사유` 필드 + 검토표 렌더"
+        status: PASS
+        detail: >-
+          대장암(설사·변비)·직장류는 **required를 두지 않는 것이 옳다**(설사·변비 자체가 대장암의 필수 소견이
+          아니고, 직장류는 무증상일 수 있다 — Codex 지적). 빠뜨린 것으로 오해되지 않도록 사유를 표에 남겼다.
+
+      - name: "인용-주장 불일치 자체 발견 1건"
+        method: "작업 중 자기점검"
+        status: PASS
+        detail: >-
+          약물유발 변비의 required 배경조건 "변비를 유발하는 약물의 복용력"에 병력청취 문장
+          ("A good diet and medication history ... are key")이 인용으로 붙어 있었다 — **기계 대조는
+          통과하지만 그 인용이 그 주장의 근거가 아니다.** 칼슘통로차단제·항우울제가 명시된 Harrison
+          변비 원인표 문장으로 교체하고, 병력청취 문장은 참고항목(병력청취)으로 옮겼다.
+          이번 라운드에서 BLOCKER가 통과했던 것과 **정확히 같은 종류의 틈**이다.
+
+      - name: "재검증 (인용 대조 · 구조 · 렌더)"
+        method: "findings_review.py 전수 재실행 + YAML 정합성 검사 + 전체 재렌더"
+        status: PASS
+        detail: >-
+          검토표 **196/196 인용 대조 통과**(설사 소견54·조건16·참고45 / 변비 소견37·조건6·참고38).
+          YAML 라벨 누락 0 · 미등록 출처 0 · 중복 id 0. 설사 106노드·223엣지 / 변비 115노드·228엣지.
+          그래프 HTML·PNG·근거그래프·리포트 재생성 및 실제 렌더 확인.
+
+      - name: "인용문 단어중간 절단 복원 (findings_review --snap)"
+        method: "원문에서 인용 앞뒤 글자가 실제로 이어지는지 보고, 잘린 것만 문장·단어 경계까지 확장"
+        status: PASS
+        detail: >-
+          'ience a sudden onset…'(=experience) · 'ld be formally evaluated'(=should) · 's cause painless,
+          bright red bleeding'(=Internal hemorrhoids cause…) 처럼 **단어 중간에서 잘린 인용 8건**을
+          기계로 복원했다. 기계 대조는 통과하지만 교수가 읽을 표에서 깨져 보이고 그대로 재인용할 수도 없다.
+          ⚠️ 처음에는 *모든* 인용을 문장 경계로 넓혔더니 표(table)에서 딴 인용이 바로 앞 본문을 끌어와
+          **오히려 나빠졌다**(Shigella 표 인용 앞에 "The World Health Organization recommends…"가 붙음).
+          그래서 '실제 절단된 것만' + '머리쪽 확장 90자 상한'으로 좁혔다. 되돌린 뒤 재적용해 8건만 변경.
+
+      - name: "Codex 4차 적대검수 (수정본)"
+        method: "인용문·주의문구를 모두 제거한 구조만 넘겨 재검수 (gpt-5.6-luna, xhigh, read-only)"
+        status: FAIL
+        detail: >-
+          **판정 REVISE — BLOCKER 1(중복 계상 2) · MAJOR 122 · MINOR 4.**
+          편향을 막기 위해 **내가 붙인 '주의' 문구를 전부 빼고** 구조만 넘겼다(무엇을 이미 고쳤는지
+          알려주지 않음). 3라운드 BLOCKER 2건은 **재지적되지 않았다** — 구조적 수정이 실제로 먹혔다.
+          🚨 **그러나 새 BLOCKER 1건이 나왔고, 그것은 이번 라운드에서 내가 만든 것이다** —
+          "세균성 이질(Shigella·장출혈성 대장균)" 카드에 Shigella와 STEC를 함께 묶은 것.
+          **항생제 원칙이 정면으로 충돌한다**(Shigella 이질은 경우에 따라 항균치료 대상, STEC는 금기).
+          → 즉시 두 카드로 분리해 반영(설사 14→15). **분리가 새 위험을 만들 수 있다는 실례.**
+          총평 3줄: ① 서로 다른 병원체·질환을 한 카드에 묶은 구조가 가장 큰 결함
+          ② Rome 기준·검사·병력·기전이 발현소견과 섞여 role 점수를 오염시킴
+          ③ STEC·CDI·폐색·독성거대결장·신경학적 응급의 안전 문구가 아직 불충분.
+
+      - name: "Codex 4차 MAJOR 122건 반영"
+        method: "-"
+        status: NOT_RUN
+        detail: >-
+          **BLOCKER만 즉시 반영했고 MAJOR 122·MINOR 4는 미반영이다.** 원문 = 바탕화면
+          `CPX_설사변비_온톨로지_260811/Codex검수4_*.md`. 성격상 세 덩어리다 —
+          ① **추가 분리 요구**(Campylobacter/Salmonella/Yersinia 분기, Crohn/UC 분리,
+          고칼슘혈증·전해질·내분비 변비 분리, 약물유발 설사의 약물군별 분리): 카드 수가 CPX 교육용
+          범위를 넘어설 수 있어 **교수 판단이 필요한 설계 결정**이다. 임의로 늘리지 않았다.
+          ② **Rome IV 기준 정밀화**(6개월 조건·"2개 이상"·subtype 변 형태 비율): 현재 인용은
+          Tintinalli의 축약형 Rome 기준이라 Rome IV 원문 확보가 선행되어야 한다.
+          ③ **경보징후 보강**(기능성 변비의 혈변·체중감소·빈혈, 신경질환성 변비의 마미증후군,
+          CDI의 전격성 징후 등): 교재 채굴로 바로 채울 수 있는 부분 — 다음 라운드 최우선.
