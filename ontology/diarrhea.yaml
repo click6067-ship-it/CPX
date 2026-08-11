@@ -156,6 +156,9 @@ labels:
   thyroid_storm: 갑상선중독 위기(고열·섬망·경련·혼수)
   severe_uc_activity: 중증 활동성 대장염(하루 6회↑ 혈변·맥박≥90·발열·빈혈·ESR↑)
   crohn_complication: 크론 합병증(협착성 장폐색·누공·농양)
+  perfusion_signs: 관류 평가(빈맥·빈호흡·맥압감소·모세혈관 재충만 지연)
+  acute_severe_colitis: 급성 중증 대장염(하루 6회↑ 혈변 + 발열·빈맥)
+  hus_fluid_caution: HUS 수액 주의(핍뇨·무뇨에서 과부하 회피)
   severe_dehydration_iv: 심한 탈수(쇼크·의식저하·경구수액 실패) — 정맥 수액
   botulism_neurotoxin: 보툴리즘(뇌신경마비·하행성 이완마비) — 설사독소 아님
   avoid_antimotility_inflammatory: 염증성 설사에서 지사제 회피
@@ -237,7 +240,7 @@ diseases:
   - id: viral_gastroenteritis
     role: differential
     required_symptoms: [acute_watery_diarrhea]
-    discriminators: [vomiting_prominent, fever_present, outbreak_contact, crampy_abdominal_pain]
+    discriminators: [vomiting_prominent, fever_present, outbreak_contact, crampy_abdominal_pain, perfusion_signs]
     red_flags: [dehydration_signs, elderly_or_immunocompromised, severe_dehydration_iv]
     checklist_items: [ask_onset_duration_diarrhea, ask_stool_frequency, ask_fever_chills, ask_thirst_dehydration, exam_dehydration_tongue, exam_abdomen_palpation]
     tests: [stool_study, serum_electrolytes]
@@ -253,7 +256,7 @@ diseases:
   - id: campylobacter_enteritis
     role: differential
     required_symptoms: [inflammatory_diarrhea]
-    discriminators: [bloody_diarrhea, high_fever, crampy_abdominal_pain, poultry_or_pet_exposure]
+    discriminators: [bloody_diarrhea, high_fever, crampy_abdominal_pain, poultry_or_pet_exposure, perfusion_signs]
     red_flags: [fever_over_38_5, toxic_megacolon, stec_antibiotic_contraindication, severe_dehydration_iv]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_fever_chills, ask_food_relation, exam_abdomen_palpation, exam_digital_rectal]
     tests: [stool_culture_pcr, stool_study, cbc_blood_test]
@@ -267,7 +270,7 @@ diseases:
   - id: nontyphoidal_salmonella
     role: differential
     required_symptoms: [inflammatory_diarrhea]
-    discriminators: [high_fever, severe_abdominal_pain, reptile_or_foodborne_exposure]
+    discriminators: [high_fever, severe_abdominal_pain, reptile_or_foodborne_exposure, perfusion_signs]
     red_flags: [fever_over_38_5, toxic_megacolon, stec_antibiotic_contraindication, severe_dehydration_iv]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_fever_chills, ask_food_relation, exam_abdomen_palpation]
     tests: [stool_culture_pcr, stool_study, cbc_blood_test]
@@ -281,7 +284,7 @@ diseases:
   - id: yersinia_enterocolitis
     role: differential
     required_symptoms: [pseudoappendicitis]
-    discriminators: [severe_abdominal_pain, high_fever]
+    discriminators: [severe_abdominal_pain, high_fever, perfusion_signs]
     red_flags: [fever_over_38_5, stec_antibiotic_contraindication, severe_dehydration_iv]
     checklist_items: [ask_onset_duration_diarrhea, ask_food_relation, ask_fever_chills, exam_abdomen_palpation]
     tests: [stool_culture_pcr, stool_study, cbc_blood_test]
@@ -295,7 +298,7 @@ diseases:
   - id: shigellosis_dysentery
     role: differential
     required_symptoms: [inflammatory_diarrhea]
-    discriminators: [bloody_diarrhea, high_fever, tenesmus_mucoid_stool, severe_abdominal_pain, fecal_leukocytes]
+    discriminators: [bloody_diarrhea, high_fever, tenesmus_mucoid_stool, severe_abdominal_pain, fecal_leukocytes, perfusion_signs]
     red_flags: [overtly_bloody_stool, fever_over_38_5, hemolytic_uremic_syndrome, stec_antibiotic_contraindication]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_fever_chills, ask_food_relation, exam_abdomen_palpation, exam_digital_rectal]
     tests: [stool_culture_pcr, stool_study, cbc_blood_test]
@@ -309,8 +312,8 @@ diseases:
   - id: stec_infection
     role: differential
     required_symptoms: [initially_nonbloody_then_bloody, severe_abdominal_pain]
-    discriminators: [undercooked_beef_unpasteurized_milk, minimal_or_no_fever]
-    red_flags: [hemolytic_uremic_syndrome, stec_antibiotic_contraindication, overtly_bloody_stool]
+    discriminators: [undercooked_beef_unpasteurized_milk, minimal_or_no_fever, perfusion_signs]
+    red_flags: [hemolytic_uremic_syndrome, stec_antibiotic_contraindication, overtly_bloody_stool, hus_fluid_caution]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_fever_chills, ask_food_relation, ask_thirst_dehydration, exam_abdomen_palpation]
     tests: [stool_culture_pcr, stool_study, cbc_blood_test]
     education_items: [explain_test_purpose, explain_red_flag_return]
@@ -323,7 +326,7 @@ diseases:
   - id: preformed_toxin_food_poisoning
     role: differential
     required_symptoms: [acute_watery_diarrhea, onset_within_hours_of_meal]
-    discriminators: [vomiting_prominent, minimal_or_no_fever, shared_meal_history]
+    discriminators: [vomiting_prominent, minimal_or_no_fever, shared_meal_history, perfusion_signs]
     red_flags: [dehydration_signs, severe_dehydration_iv, botulism_neurotoxin]
     checklist_items: [ask_onset_duration_diarrhea, ask_food_relation, ask_fever_chills, ask_thirst_dehydration, exam_dehydration_tongue]
     tests: [stool_study]
@@ -337,7 +340,7 @@ diseases:
   - id: in_vivo_toxin_food_poisoning
     role: differential
     required_symptoms: [acute_watery_diarrhea, onset_6_24h_after_meal]
-    discriminators: [reheated_food_history, crampy_abdominal_pain, minimal_or_no_fever, shared_meal_history]
+    discriminators: [reheated_food_history, crampy_abdominal_pain, minimal_or_no_fever, shared_meal_history, perfusion_signs]
     red_flags: [dehydration_signs, severe_dehydration_iv]
     checklist_items: [ask_onset_duration_diarrhea, ask_food_relation, ask_fever_chills, ask_thirst_dehydration, exam_dehydration_tongue]
     tests: [stool_study, stool_culture_pcr]
@@ -351,7 +354,7 @@ diseases:
   - id: travelers_diarrhea
     role: differential
     required_symptoms: [acute_watery_diarrhea, recent_travel_history]
-    discriminators: [watery_diarrhea_during_travel, crampy_abdominal_pain, minimal_or_no_fever]
+    discriminators: [watery_diarrhea_during_travel, crampy_abdominal_pain, minimal_or_no_fever, perfusion_signs]
     red_flags: [dehydration_signs, overtly_bloody_stool]
     checklist_items: [ask_onset_duration_diarrhea, ask_recent_travel, ask_food_relation, ask_thirst_dehydration, exam_dehydration_tongue]
     tests: [stool_study, stool_culture_pcr]
@@ -382,7 +385,7 @@ diseases:
     role: differential
     required_symptoms: [rectal_bleeding_tenesmus_mucus]
     discriminators: [chronic_bloody_diarrhea, abdominal_pain_with_diarrhea, extraintestinal_manifestation, young_adult_onset]
-    red_flags: [overtly_bloody_stool, toxic_megacolon, bowel_obstruction_sign, severe_uc_activity, avoid_antimotility_inflammatory]
+    red_flags: [overtly_bloody_stool, toxic_megacolon, bowel_obstruction_sign, severe_uc_activity, avoid_antimotility_inflammatory, acute_severe_colitis]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_weight_loss, ask_fever_chills, ask_family_hx, exam_abdomen_palpation, exam_digital_rectal]
     tests: [colonoscopy, fecal_calprotectin, cbc_blood_test]
     education_items: [explain_test_purpose, explain_red_flag_return]
