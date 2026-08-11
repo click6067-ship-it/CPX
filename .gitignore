@@ -9,6 +9,9 @@ data/raw/
 data/raw_private/
 # 비식별 작업본 + 분할(train_prompt/dev_tune/locked_eval) — 비공개
 data/working/
+# 외부 공개 데이터셋(MIMIC 등) — 본체는 미추적, provenance README만 커밋
+data/external/*
+!data/external/README.md
 *.zip
 *.hwp
 *.pdf
@@ -18,3 +21,6 @@ data/working/
 materials/
 # Flowise 로컬 세션 토큰(JWT) — 절대 커밋 금지
 flowise/.cookies
+
+# 세션 요약 자동 축적 파일 — public repo라 커밋 금지 (2026-07-26 노출 전수조사)
+DEVLOG.md

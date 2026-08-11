@@ -19,7 +19,7 @@ DEFAULT_OUT = os.path.join(ROOT, "docs", "chest_pain-graph.html")
 
 _TEMPLATE = """<!DOCTYPE html>
 <html lang="ko"><head><meta charset="utf-8">
-<title>흉통 온톨로지 그래프 (CPX)</title>
+<title>__CCKO__ 온톨로지 그래프 (CPX)</title>
 __VISJS__
 <style>
   body{margin:0;font-family:'Malgun Gothic',sans-serif;background:#fafafa}
@@ -34,8 +34,8 @@ __VISJS__
 </style></head>
 <body>
 <div id="hd">
-  <h1>흉통(chest pain) 온톨로지 — CPX 사례 생성 뼈대</h1>
-  <div class="sub">__TITLE__ · 정본 ontology/chest_pain.yaml → 한 방향 렌더(거울)</div>
+  <h1>__CCKO__(__CCID__) 온톨로지 — CPX 사례 생성 뼈대</h1>
+  <div class="sub">__TITLE__ · 정본 ontology/__CCID__.yaml → 한 방향 렌더(거울)</div>
   <div class="warn">⚠ review_status: draft — 임상 내용은 교수 검증 전 구조 시연용 초안</div>
 </div>
 <div id="legend">__LEGEND__</div>
@@ -69,7 +69,9 @@ def _vis_script() -> str:
 
 
 def build_html(yaml_path: str) -> str:
-    _, nodes, edges = load_graph(yaml_path)
+    data, nodes, edges = load_graph(yaml_path)
+    cc_id = data["chief_complaint"]
+    cc_ko = data.get("labels", {}).get(cc_id, cc_id)
 
     vis_nodes = []
     for n in nodes.values():
@@ -99,6 +101,8 @@ def build_html(yaml_path: str) -> str:
         .replace("__EDGES__", json.dumps(vis_edges, ensure_ascii=False))
         .replace("__LEGEND__", legend)
         .replace("__TITLE__", title)
+        .replace("__CCKO__", cc_ko)
+        .replace("__CCID__", cc_id)
         .replace("__VISJS__", _vis_script())
     )
 

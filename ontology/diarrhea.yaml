@@ -1,0 +1,343 @@
+# CPX 온톨로지 — 주증상: 설사 (diarrhea)
+# ──────────────────────────────────────────────────────────────
+# 이 파일이 정본(master). 편집·검증·버전관리는 여기서만.
+# Neo4j/HTML 그래프는 scripts/yaml_to_cypher.py · yaml_to_html.py 로 한 방향 렌더(거울).
+#
+# 범위 = **임시 12-card teaching set** — 공식 출제범위가 아님.
+#   ⚠️ 공식 CPX 감별목록(기본진료수행지침)을 확보하지 못했으므로, 이 12개는 실사례 채점표 + Harrison을
+#      근거로 만든 **AI 초안**이다. "설사 station 출제범위"라고 말하지 말 것 — 교수 확인 전까지는
+#      교육·구조 시연용 카드 묶음이다. (Codex 검수 지적 반영, 2026-08-11)
+# ⚠️ review_status: draft — 임상 내용은 PI·지도교수 검증 전 초안.
+#
+# 📌 근거 표기(출처·근거 명시): 질환마다 `evidence` 블록.
+#    level = real_case_direct(설사 station 실사례의 확정진단)
+#          · station_differential_listed(동일 station 실사례 채점표에 감별·문진 대상으로 명시, 확정진단 아님)
+#          · standard_textbook(사례 언급 없음 — Harrison 원문 근거 초안).
+#    실사례 근거는 부산대 CPX 실 사례 채점표에서 확인. 원문·개인정보 미수록(포인터만).
+# 설계 정본 = docs/ontology-plan.md · 자료 지형 = docs/source-landscape.md
+# ──────────────────────────────────────────────────────────────
+
+chief_complaint: diarrhea
+
+meta:
+  station_minutes: 10
+  ppi_assessed: true
+  review_status: draft
+  professor_approved: false
+  scope: cpx_station_differential
+
+# ── 근거 출처 레지스트리 ── (공개 YAML엔 포인터만 — 원문·개인정보 미수록)
+sources:
+  pusan_cpx_diarrhea_ibs_2022:
+    type: real_cpx_case
+    ref: "부산대 CPX 사례 '설사(과민성대장증후군)' 2022 — 로컬·비공개. 설사 station 직접. 채점표 진단항목의 근거 요지=복통 동반·증상 지속기간·기질적 질환 가능성 낮음. 검사계획=혈액검사·대변검사·결장경."
+    grounds: ibs_diarrhea
+  harrison_ch49_diarrhea_constipation:
+    type: textbook
+    ref: "Harrison's Principles of Internal Medicine, Ch.49 'Diarrhea and Constipation' (Camilleri M, Murray JA) — Table 49-2(급성 감염성 설사: 병태생리↔임상소견), Table 49-3(만성 설사 기전별 원인), Table 49-4(만성 설사 진찰), Fig.49-3/49-4(알고리듬). 로컬 텍스트 코퍼스 직독 — 파일 `cpx-agent/data/raw/textbook/내과/harrison/PART2_Cardinal_Manifestations_and_Presentation_of_Diseases.md`(비공개·저작권, 이 repo 미포함), 챕터 구간 26555–28092행, 원문 페이지마커 [[p211]]–[[p222]]. ⚠️ **원본에 판(edition) 미표기** — 인용 참고문헌 최신 2023년. **basis의 수치는 원문 대조는 마쳤으나 판이 확정되지 않았으므로, 논문·대외 인용 전 원본 PDF로 판·페이지를 확정해야 함.**"
+
+# 표시용 한국어 라벨 (id → 한국어). 그래프 렌더가 이걸 씀. 없으면 id 그대로.
+labels:
+  diarrhea: 설사
+  # ── 질환 (대표 IBS-D + 감별 11)
+  ibs_diarrhea: 과민성대장증후군(설사형)
+  viral_gastroenteritis: 바이러스 장염
+  invasive_bacterial_enterocolitis: 세균성 장염(침습성·이질)
+  foodborne_toxin_illness: 독소형 식중독
+  travelers_diarrhea: 여행자 설사
+  cdi_antibiotic_associated: 항생제연관 설사(C. difficile)
+  inflammatory_bowel_disease: 염증성 장질환(크론·궤양성대장염)
+  lactose_intolerance: 유당불내증(삼투성)
+  hyperthyroidism_diarrhea: 갑상선기능항진증
+  bile_acid_diarrhea: 담즙산 설사(담낭절제·회장질환 후)
+  colorectal_cancer_diarrhea: 대장암
+  drug_induced_diarrhea: 약물유발 설사
+
+  # ── 증상·감별단서 (공통)
+  chronic_recurrent_diarrhea: 만성·재발성 설사(4주 초과)
+  acute_watery_diarrhea: 급성 물설사
+  abdominal_pain_with_diarrhea: 설사 동반 복통
+  # IBS
+  pain_relieved_by_defecation: 배변 후 복통 완화
+  no_nocturnal_symptoms: 야간에는 증상 없음
+  stress_related_symptoms: 스트레스와 연관
+  alternating_constipation: 변비와 교대
+  no_weight_loss: 체중감소 없음
+  # 바이러스 장염
+  vomiting_prominent: 구토 우세
+  fever_present: 발열
+  outbreak_contact: 집단발생·주변 동일증상
+  # 침습성 세균성
+  bloody_diarrhea: 혈성 설사(이질)
+  high_fever: 고열
+  severe_abdominal_pain: 심한 복통
+  fecal_leukocytes: 대변 백혈구
+  # 독소형 식중독
+  onset_within_hours_of_meal: 식후 수 시간 내 발생
+  minimal_or_no_fever: 발열 없거나 미미
+  shared_meal_history: 같은 음식 먹은 사람 동시 발병
+  # 여행자 설사
+  recent_travel_history: 최근 여행·타지역 방문력
+  watery_diarrhea_during_travel: 여행 중·직후 물설사
+  # C. difficile
+  recent_antibiotic_use: 최근 항생제 사용력
+  healthcare_exposure: 입원·요양시설 노출
+  crampy_abdominal_pain: 경련성 복통
+  # IBD
+  chronic_bloody_diarrhea: 만성 혈성 설사
+  weight_loss: 체중감소
+  extraintestinal_manifestation: 장외 증상(관절·눈·피부)
+  young_adult_onset: 젊은 나이 발병
+  # 유당불내증
+  symptoms_after_dairy: 유제품 섭취 후 증상
+  bloating_flatus: 복부팽만·가스
+  resolves_with_fasting: 금식하면 호전
+  # 갑상선기능항진증
+  heat_intolerance: 더위를 못 참음
+  palpitations: 두근거림
+  unintentional_weight_loss: 의도치 않은 체중감소
+  goiter_or_thyroid_disease_hx: 갑상선 종대·질환 과거력
+  # 담즙산 설사
+  cholecystectomy_or_ileal_surgery_hx: 담낭절제·회장 수술 과거력
+  urgency_after_meals: 식후 급박변
+  # 대장암
+  change_in_stool_caliber: 변 굵기 변화
+  hematochezia: 혈변
+  anemia_symptoms: 빈혈 증상(피로·창백)
+  age_over_50: 50세 이상
+  family_hx_colorectal_cancer: 대장암 가족력
+  # 약물유발
+  temporal_relation_to_drug: 약물 시작과 시간적 연관
+  laxative_or_antidiarrheal_use: 완하제·지사제 복용력
+
+  # ── red flag
+  dehydration_signs: 탈수 징후(구강건조·갈증)
+  fever_over_38_5: 발열 ≥38.5℃
+  overtly_bloody_stool: 육안적 혈변
+  duration_over_48h_no_improvement: 48시간 이상 호전 없음
+  elderly_or_immunocompromised: 고령(≥70세)·면역저하
+  severe_pain_over_age_50: 50세 초과에서 심한 복통
+  fecal_incontinence: 변실금(변을 지림)
+  toxic_megacolon: 독성 거대결장
+  bowel_obstruction_sign: 장폐색 징후
+
+  # ── 병력청취 채점항목 (실사례 채점표 기반)
+  ask_onset_duration_diarrhea: 언제부터 설사했는지 묻기
+  ask_stool_frequency: 설사 빈도 묻기
+  ask_stool_form: 변의 형태 묻기
+  ask_stool_volume: 변의 양 묻기
+  ask_fecal_incontinence: 변 지리는지 묻기
+  ask_blood_or_color: 변 색깔·혈변 묻기
+  ask_weight_loss: 체중감소 묻기
+  ask_fever_chills: 발열·오한 묻기
+  ask_thirst_dehydration: 갈증·탈수 묻기
+  ask_abdominal_surgery_hx: 복부수술(담낭절제) 과거력 묻기
+  ask_hyperthyroid_symptoms: 갑상선기능항진 증상 묻기
+  ask_recent_travel: 최근 여행·타지역 방문 묻기
+  ask_food_relation: 음식과 증상 연관성 묻기
+  ask_pain_with_diarrhea: 설사 시 복통 묻기
+  ask_pain_onset: 복통 시작 시기 묻기
+  ask_pain_relief: 복통 호전 상황 묻기
+  ask_stress_relation: 스트레스 연관 묻기
+  ask_medication_hx: 복용 약물력 묻기
+  ask_antibiotic_hx: 최근 항생제 사용 묻기
+  ask_family_hx: 가족력 묻기
+  ask_dairy_relation: 유제품 섭취 연관 묻기
+
+  # ── 신체진찰 채점항목
+  exam_dehydration_tongue: 탈수 평가(혀·구강)
+  exam_thyroid: 갑상샘 진찰
+  exam_abdomen_auscultation: 복부 청진
+  exam_abdomen_percussion: 복부 타진
+  exam_abdomen_palpation: 복부 촉진
+  exam_digital_rectal: 항문·직장 진찰
+
+  # ── 검사
+  cbc_blood_test: 혈액검사
+  stool_study: 대변검사
+  colonoscopy: 결장경(대장내시경)
+  stool_culture_pcr: 대변 배양·분자검사
+  cdiff_toxin_assay: C. difficile 독소검사
+  thyroid_function_test: 갑상선기능검사
+  lactose_breath_test: 유당 호기검사
+  fecal_calprotectin: 대변 칼프로텍틴
+  serum_electrolytes: 혈청 전해질
+
+  # ── 환자교육
+  explain_ibs_diagnosis_basis: 과민성대장증후군 진단 근거 설명
+  explain_test_purpose: 검사 목적 설명
+  explain_oral_rehydration: 경구 수분·전해질 보충 교육
+  explain_red_flag_return: 재방문 필요 위험징후 설명
+  explain_dietary_modification: 식이조절 교육
+  explain_hand_hygiene_transmission: 전파 예방·손위생 교육
+
+# ── 질환 카드 (대표 IBS-D + 감별 11) ─────────────────────────
+diseases:
+  - id: ibs_diarrhea
+    role: primary
+    required_symptoms: [chronic_recurrent_diarrhea, abdominal_pain_with_diarrhea]
+    discriminators: [pain_relieved_by_defecation, no_nocturnal_symptoms, stress_related_symptoms, alternating_constipation, no_weight_loss]
+    red_flags: []
+    checklist_items: [ask_onset_duration_diarrhea, ask_stool_frequency, ask_stool_form, ask_stool_volume, ask_pain_with_diarrhea, ask_pain_onset, ask_pain_relief, ask_stress_relation, exam_abdomen_auscultation, exam_abdomen_percussion, exam_abdomen_palpation, exam_digital_rectal]
+    tests: [cbc_blood_test, stool_study, colonoscopy]
+    education_items: [explain_ibs_diagnosis_basis, explain_test_purpose, explain_dietary_modification]
+    disclosure:
+      spontaneous: [chronic_recurrent_diarrhea]
+      disclose_if_asked: [abdominal_pain_with_diarrhea, pain_relieved_by_defecation, stress_related_symptoms]
+    evidence:
+      level: real_case_direct
+      sources: [pusan_cpx_diarrhea_ibs_2022, harrison_ch49_diarrhea_constipation]
+      basis: "실사례(설사·과민성대장증후군) 채점표 진단항목의 근거 요지=복통 동반·증상 지속기간·기질적 질환 가능성 낮음. 검사=혈액·대변·결장경(채점표 25번). 문진 채점항목 1–17·진찰 18–23이 이 카드의 checklist 출처. Harrison Ch.49 Dysmotile Causes: IBS는 배변으로 완화되는 복통을 동반하고, 배변 횟수 증가는 대개 야간에 멈추며, 변비와 교대하고, 체중감소는 드묾."
+
+  - id: viral_gastroenteritis
+    role: differential
+    required_symptoms: [acute_watery_diarrhea]
+    discriminators: [vomiting_prominent, fever_present, outbreak_contact, crampy_abdominal_pain]
+    red_flags: [dehydration_signs, elderly_or_immunocompromised]
+    checklist_items: [ask_onset_duration_diarrhea, ask_stool_frequency, ask_fever_chills, ask_thirst_dehydration, exam_dehydration_tongue, exam_abdomen_palpation]
+    tests: [stool_study, serum_electrolytes]
+    education_items: [explain_oral_rehydration, explain_hand_hygiene_transmission, explain_red_flag_return]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "Harrison Ch.49: 급성 설사의 90% 초과가 감염성이며 구토·발열·복통을 동반. Table 49-2 'Invasive organisms — minimal inflammation: Rotavirus and norovirus' 잠복기 1–3일, 구토 1–3+, 복통 2–3+, 발열 3–4+, 물설사 1–3+. ⚠️ 'Invasive organisms'는 **Harrison 표의 분류 그대로**이며(하위 구분 = minimal inflammation), 로타·노로가 병태생리적으로 점막 침습성이라는 뜻이 아니다 — 오독 주의. 크루즈선 등 노로바이러스 집단발생 명시. ⚠️ 설사 station 실사례에 이 진단명은 없음 — 채점표 8번(발열·오한)·9번(탈수) 문진이 이 감별을 겨냥."
+
+  - id: invasive_bacterial_enterocolitis
+    role: differential
+    required_symptoms: [acute_watery_diarrhea]
+    discriminators: [bloody_diarrhea, high_fever, severe_abdominal_pain, fecal_leukocytes]
+    red_flags: [overtly_bloody_stool, fever_over_38_5, toxic_megacolon]
+    checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_fever_chills, ask_food_relation, exam_abdomen_palpation, exam_digital_rectal]
+    tests: [stool_culture_pcr, stool_study, cbc_blood_test]
+    education_items: [explain_test_purpose, explain_red_flag_return]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "Harrison Ch.49 Table 49-2 'Invasive organisms': Salmonella·Campylobacter·Yersinia(잠복 12h–11d, 발열 3–4+, 물 또는 혈성) / 'Severe inflammation: Shigella·enteroinvasive E. coli·Entamoeba histolytica'(발열 3–4+, 혈성 1–2+). 본문: 침습 세균과 E. histolytica는 흔히 혈성 설사(dysentery)를 일으킴. Yersinia는 말단회장·근위대장 침범으로 급성 충수염과 혼동될 심한 복통·압통. ⚠️ 실사례에 이 진단명 없음 — 채점표 6번(혈변)·8번(발열) 문진이 겨냥."
+
+  - id: foodborne_toxin_illness
+    role: differential
+    required_symptoms: [acute_watery_diarrhea, onset_within_hours_of_meal]
+    discriminators: [vomiting_prominent, minimal_or_no_fever, shared_meal_history]
+    red_flags: [dehydration_signs]
+    checklist_items: [ask_onset_duration_diarrhea, ask_food_relation, ask_fever_chills, ask_thirst_dehydration, exam_dehydration_tongue]
+    tests: [stool_study]
+    education_items: [explain_oral_rehydration, explain_dietary_modification]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "⚠️ 실사례에 이 진단명 없음 — 교과서 근거만. (참고: station 문진에 음식-증상 연관 항목이 있어 '음식 관련 설사' 축은 다루지만 질환명 특정은 아니라 승격 근거로 쓰지 않음.) Harrison Ch.49 Table 49-2 'Toxin producers — preformed toxin: Bacillus cereus, Staphylococcus aureus, Clostridium perfringens' — ⚠️ 이 행의 잠복기는 표에 **두 값이 병기**(1–8시간 / 8–24시간)되어 있고 균종별로 갈린다(통상 B. cereus·S. aureus=1–8시간, C. perfringens=8–24시간). 구토 3–4+, 복통 1–2+, 발열 0–1+, 물설사 3–4+. 본문: 섭취 수 시간 내 급작 발병 + 구토 뚜렷 + 발열 없거나 미미 → 독소 원인 시사."
+
+  - id: travelers_diarrhea
+    role: differential
+    required_symptoms: [acute_watery_diarrhea, recent_travel_history]
+    discriminators: [watery_diarrhea_during_travel, crampy_abdominal_pain, minimal_or_no_fever]
+    red_flags: [dehydration_signs, overtly_bloody_stool]
+    checklist_items: [ask_onset_duration_diarrhea, ask_recent_travel, ask_food_relation, ask_thirst_dehydration, exam_dehydration_tongue]
+    tests: [stool_study, stool_culture_pcr]
+    education_items: [explain_oral_rehydration, explain_hand_hygiene_transmission]
+    evidence:
+      level: station_differential_listed
+      sources: [pusan_cpx_diarrhea_ibs_2022, harrison_ch49_diarrhea_constipation]
+      basis: "실사례 채점표 12번(최근 여행·타지역 방문 문진)이 이 감별을 명시적으로 겨냥(확정진단은 아님). Harrison Ch.49: 유행지역 여행 미국인의 최대 40%가 여행자 설사 — 가장 흔한 원인은 enterotoxigenic·enteroaggregative E. coli, 그 외 Campylobacter·Shigella·Aeromonas·노로바이러스·Salmonella. 캠핑·수영자에서는 Giardia·Cyclospora."
+
+  - id: cdi_antibiotic_associated
+    role: differential
+    required_symptoms: [acute_watery_diarrhea]
+    discriminators: [recent_antibiotic_use, crampy_abdominal_pain, healthcare_exposure, fever_present]
+    red_flags: [toxic_megacolon, fever_over_38_5, elderly_or_immunocompromised]
+    risk_factors: [recent_antibiotic_use, healthcare_exposure]
+    checklist_items: [ask_onset_duration_diarrhea, ask_antibiotic_hx, ask_medication_hx, ask_fever_chills, exam_abdomen_palpation]
+    tests: [cdiff_toxin_assay, stool_study, cbc_blood_test]
+    education_items: [explain_test_purpose, explain_red_flag_return]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "Harrison Ch.49: 항생제에 의한 정상균총 교란이 Clostridioides difficile 등 병원체 과증식을 허용해 설사를 유발. 시설수용자에서 병원감염성 설사의 가장 흔한 원인이 C. difficile이며, 항생제 사용력이 없어도 지역사회 획득이 가능. Table 49-2 'Cytotoxin producers — C. difficile' 잠복 1–3일, 복통 3–4+, 대개 물설사·간혹 혈성. ⚠️ 실사례에 이 진단명 없음."
+
+  - id: inflammatory_bowel_disease
+    role: differential
+    required_symptoms: [chronic_recurrent_diarrhea]
+    discriminators: [chronic_bloody_diarrhea, abdominal_pain_with_diarrhea, weight_loss, extraintestinal_manifestation, young_adult_onset]
+    red_flags: [overtly_bloody_stool, toxic_megacolon, bowel_obstruction_sign]
+    checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_weight_loss, ask_fever_chills, ask_family_hx, exam_abdomen_palpation, exam_digital_rectal]
+    tests: [colonoscopy, fecal_calprotectin, cbc_blood_test]
+    education_items: [explain_test_purpose, explain_red_flag_return]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "Harrison Ch.49 Table 49-3 Inflammatory Causes 최상단 'Idiopathic inflammatory bowel disease (Crohn's, chronic ulcerative colitis)'. 본문: 크론병·궤양성대장염은 성인 만성 설사의 가장 흔한 기질적 원인 중 하나이며 포도막염·다발관절통·구강궤양·원발경화쓸개관염·결절홍반·괴저농피증을 동반할 수 있음. 염증성 설사는 통증·발열·출혈을 동반하고 대변에서 백혈구·칼프로텍틴이 검출됨. ⚠️ 실사례에 이 진단명 없음 — 채점표 6·7·8번(혈변·체중감소·발열)이 겨냥."
+
+  - id: lactose_intolerance
+    role: differential
+    required_symptoms: [chronic_recurrent_diarrhea, symptoms_after_dairy]
+    discriminators: [bloating_flatus, resolves_with_fasting, no_weight_loss]
+    red_flags: []
+    checklist_items: [ask_food_relation, ask_dairy_relation, ask_stool_form, ask_pain_with_diarrhea, exam_abdomen_palpation]
+    tests: [lactose_breath_test]
+    education_items: [explain_dietary_modification, explain_ibs_diagnosis_basis]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "⚠️ 실사례에 이 진단명 없음 — 교과서 근거만. (참고: station 문진의 음식-증상 연관 항목이 이 축을 부분적으로 겨냥하나 질환명 특정은 아님.) Harrison Ch.49 Osmotic Causes: '성인 만성 설사의 가장 흔한 원인 중 하나가 유당분해효소 결핍'으로 전세계 비백인의 3/4·미국인의 5–30%가 해당하며, 한 번에 섭취한 총 유당량이 증상을 좌우하고 대부분 유제품 회피로 관리. 삼투성 설사는 금식하거나 원인물질을 끊으면 특징적으로 멎음."
+
+  - id: hyperthyroidism_diarrhea
+    role: differential
+    required_symptoms: [chronic_recurrent_diarrhea, heat_intolerance]
+    discriminators: [palpitations, unintentional_weight_loss, goiter_or_thyroid_disease_hx]
+    red_flags: []
+    checklist_items: [ask_hyperthyroid_symptoms, ask_weight_loss, ask_family_hx, exam_thyroid, exam_abdomen_palpation]
+    tests: [thyroid_function_test, cbc_blood_test]
+    education_items: [explain_test_purpose]
+    evidence:
+      level: station_differential_listed
+      sources: [pusan_cpx_diarrhea_ibs_2022, harrison_ch49_diarrhea_constipation]
+      basis: "실사례 채점표 11번(갑상선기능항진 증상 문진 — 더위·두근거림·갑상선질환 과거력)과 19번(갑상샘 진찰)으로 이 감별이 station에 명시(확정진단은 아님). Harrison Ch.49 Table 49-3 Dysmotile Causes에 'Hyperthyroidism' 수록, 본문: 갑상선기능항진증·카르시노이드 증후군·일부 약물이 운동항진을 통해 설사를 유발."
+
+  - id: bile_acid_diarrhea
+    role: differential
+    required_symptoms: [chronic_recurrent_diarrhea]
+    discriminators: [cholecystectomy_or_ileal_surgery_hx, urgency_after_meals, no_weight_loss]
+    red_flags: []
+    risk_factors: [cholecystectomy_or_ileal_surgery_hx]
+    checklist_items: [ask_abdominal_surgery_hx, ask_onset_duration_diarrhea, ask_stool_form, ask_food_relation, exam_abdomen_palpation]
+    tests: [cbc_blood_test, stool_study]
+    education_items: [explain_test_purpose, explain_dietary_modification]
+    evidence:
+      level: station_differential_listed
+      sources: [pusan_cpx_diarrhea_ibs_2022, harrison_ch49_diarrhea_constipation]
+      basis: "실사례 채점표 10번(복부수술·담낭절제술 과거력 문진)이 이 감별을 명시적으로 겨냥(확정진단은 아님). Harrison Ch.49: 말단회장 100cm 미만의 질환(예: 크론 회장염)이나 절제에서 이수산 담즙산이 흡수를 벗어나 대장 분비를 자극(cholerheic diarrhea). 겉보기 정상 말단회장에서 담즙산이 기능적으로 흡수되지 않는 담즙산 설사(BAD)는 원인불명 만성 설사의 평균 40%를 차지하며, 심한 설사·급박감·화장실 접근 필요로 삶의 질을 떨어뜨림. Table 49-3 Iatrogenic Causes에 'Cholecystectomy'·'Ileal resection' 수록."
+
+  - id: colorectal_cancer_diarrhea
+    role: differential
+    required_symptoms: [chronic_recurrent_diarrhea]
+    discriminators: [hematochezia, change_in_stool_caliber, weight_loss, age_over_50, family_hx_colorectal_cancer, anemia_symptoms]
+    red_flags: [overtly_bloody_stool, bowel_obstruction_sign, severe_pain_over_age_50]
+    checklist_items: [ask_blood_or_color, ask_weight_loss, ask_family_hx, ask_stool_form, exam_abdomen_palpation, exam_digital_rectal]
+    tests: [colonoscopy, cbc_blood_test, stool_study]
+    education_items: [explain_test_purpose, explain_red_flag_return]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "Harrison Ch.49: '중년 이상에서 만성 염증형 설사, 특히 혈변을 동반하면 대장종양 배제를 위해 대장내시경 등으로 신중히 평가해야 한다.' 서문: 경미한 증상이라도 대장직장암 같은 중대한 위장관 병변이나 갑상선질환 같은 전신질환의 신호일 수 있음. Table 49-3 Inflammatory Causes에 'Gastrointestinal malignancies' 수록. ⚠️ 실사례에 이 진단명 없음 — 채점표 6·7번(혈변·체중감소)이 겨냥."
+
+  - id: drug_induced_diarrhea
+    role: differential
+    required_symptoms: [chronic_recurrent_diarrhea, temporal_relation_to_drug]
+    discriminators: [laxative_or_antidiarrheal_use, resolves_with_fasting, no_weight_loss]
+    red_flags: []
+    checklist_items: [ask_medication_hx, ask_antibiotic_hx, ask_onset_duration_diarrhea, ask_stool_form]
+    tests: [cbc_blood_test, serum_electrolytes]
+    education_items: [explain_test_purpose, explain_dietary_modification]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "⚠️ 실사례 채점표(배점 항목)에 약물력 문진이 독립 항목으로 없어 승격 근거 불충분 — 교과서 근거만. (SP 대본의 개별 복약 내용은 사례 고유 정보라 미수록.) Harrison Ch.49: '약물 부작용이 급성 설사의 비감염성 원인 중 가장 흔하며, 복용 시점과 증상 발생의 시간적 연관으로 원인을 시사할 수 있다' — 항생제·항부정맥제·항고혈압제·NSAID·일부 항우울제·체중감량제·항암제·기관지확장제·제산제·완하제. Table 49-3 Secretory Causes 최상단이 'Exogenous stimulant laxatives'이며 세나·카스카라·비사코딜의 은밀·습관적 사용을 반드시 고려."

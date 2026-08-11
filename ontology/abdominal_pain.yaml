@@ -1,0 +1,373 @@
+# CPX 온톨로지 — 주증상: 복통 (abdominal pain)
+# ──────────────────────────────────────────────────────────────
+# 이 파일이 정본(master). 편집·검증·버전관리는 여기서만.
+# Neo4j/HTML 그래프는 scripts/yaml_to_cypher.py · yaml_to_html.py 로 한 방향 렌더(거울).
+#
+# 범위 = **CPX 복통 station 출제범위 수준(~11 질환)**. 전체 의학감별(30+) 아님.
+# ⚠️ review_status: draft — 질환 목록·감별은 표준 교과서 기준 초안. 공식 출제범위 확정 =
+#    기본진료수행지침(스캔·OCR 불가/미완) 또는 교수 확인 후.
+#
+# 📌 근거 표기(출처·근거 명시): 질환마다 `evidence` 블록.
+#    level = real_case_direct(복통 station 실사례) · real_case_related(동일질환·타 주증상 station 실사례)
+#          · standard_textbook(실사례 없음, 표준지식 초안).
+#    실사례 근거는 부산대 CPX 실 사례 채점표에서 확인. 원문·개인정보는 미수록(포인터만).
+# 설계 정본 = docs/ontology-plan.md · 자료 지형 = docs/source-landscape.md
+# ──────────────────────────────────────────────────────────────
+
+chief_complaint: abdominal_pain
+
+meta:
+  station_minutes: 10
+  ppi_assessed: true
+  review_status: draft
+  professor_approved: false
+  scope: cpx_station_differential
+
+# ── 근거 출처 레지스트리 (evidence 블록이 참조) ──
+# ⚠️ 공개 YAML엔 포인터만 — 사례 원문·개인정보(이름·연락처·SP 페르소나) 미수록.
+sources:
+  pusan_cpx_abdominal_ureteral_stone_2024:
+    type: real_cpx_case
+    ref: "부산대 CPX 사례 '급성복통(요로결석)' 2024 — 로컬·비공개. **복통 station 직접**."
+    grounds: ureteral_stone
+  urology_textbook_6ed:
+    type: textbook
+    ref: "비뇨의학 제6판 Ch.17 요로결석 p.179–195, 일조각, 2019 (요로결석 사례 인용문헌)"
+  pusan_cpx_vomiting_bowel_obstruction_2026:
+    type: real_cpx_case
+    ref: "부산대 CPX 사례 '구토(장폐색)' 2026 — 로컬·비공개. 구토 station(동일 질환)."
+    grounds: bowel_obstruction
+  sabiston_surgery:
+    type: textbook
+    ref: "Sabiston Textbook of Surgery: The Biological Basis of Modern Surgical Practice (장폐색 사례 인용문헌)"
+  pusan_cpx_vomiting_peptic_ulcer_stenosis_2024:
+    type: real_cpx_case
+    ref: "부산대 CPX 사례 '구토(소화성궤양 협착)' 2024 — 로컬·비공개. 구토 station(궤양 합병증). 진단근거=식후 30–60분 구토·먹은음식 그대로, 감별=위암. (참고문헌 미기재)"
+    grounds: peptic_ulcer_disease
+  pusan_cpx_jaundice_cholangitis_2024:
+    type: real_cpx_case
+    ref: "부산대 CPX 사례 '황달(급성담관염)' 2024 — 로컬·비공개. 담도 응급(담낭염과 동일 담도계). 진단근거=황달·우상복부통·열감(우상복부통 필수). (참고문헌 미기재)"
+    grounds: acute_cholecystitis
+  pusan_cpx_fever_pyelonephritis_2023:
+    type: real_cpx_case
+    ref: "부산대 CPX 사례 '발열(신우신염)' 2023 — 로컬·비공개. 발열 station(동일 질환). 진단근거=발열·우측 갈비척추각압통(CVA), 감별=뇌수막염·장염. (참고문헌 미기재)"
+    grounds: pyelonephritis
+
+# 표시용 한국어 라벨 (id → 한국어). 그래프 렌더가 이걸 씀. 없으면 id 그대로.
+labels:
+  abdominal_pain: 복통
+  # ── 질환 (대표 1 + 감별 10, CPX 출제범위 수준) ──
+  acute_appendicitis: 급성 충수염
+  peptic_ulcer_disease: 소화성 궤양
+  acute_cholecystitis: 급성 담낭염/담석산통
+  acute_pancreatitis: 급성 췌장염
+  gastroenteritis: 위장관염
+  bowel_obstruction: 장폐색
+  diverticulitis: 게실염
+  ureteral_stone: 요관결석
+  pyelonephritis: 급성 신우신염
+  ectopic_pregnancy: 자궁외임신
+  pelvic_inflammatory_disease: 골반염(PID)
+  # 충수염
+  rlq_pain: 우하복부 통증
+  pain_migration_periumbilical_to_rlq: 배꼽 주위→우하복부 통증 이동
+  fever_low_grade: 미열
+  anorexia: 식욕부진
+  nausea_vomiting: 오심/구토
+  rebound_tenderness: 반발통
+  peritoneal_sign: 복막자극징후
+  high_fever: 고열
+  young_age: 젊은 연령
+  ask_onset_duration: 발병·기간 묻기
+  ask_location_migration: 통증 위치·이동 묻기
+  ask_associated_fever_gi: 발열·소화기 동반증상 묻기
+  exam_rebound_tenderness: 반발통·압통 진찰
+  abdominal_ct: 복부 CT
+  cbc: 전혈구검사(CBC)
+  explain_surgery_possibility: 수술 가능성 설명
+  explain_npo: 금식 설명
+  # 소화성 궤양
+  epigastric_pain: 상복부 통증
+  relation_to_meals: 식사와 연관(공복/식후)
+  heartburn: 속쓰림
+  nocturnal_pain: 야간통
+  relieved_by_antacid: 제산제로 완화
+  melena: 흑색변
+  postprandial_vomiting: 식후 구토(협착 시)
+  gi_bleeding: 위장관 출혈
+  perforation_sign: 천공 징후(판자 같은 배)
+  gastric_cancer_ddx: 위암(감별)
+  nsaid_use: NSAID 복용력
+  ask_meal_relation: 식사 연관 묻기
+  ask_heartburn: 속쓰림 묻기
+  ask_nsaid_history: NSAID 복용력 묻기
+  ask_alarm_features: 경고증상(출혈·체중감소) 묻기
+  egd: 위내시경
+  # 급성 담낭염
+  ruq_pain: 우상복부 통증
+  worse_after_fatty_meal: 기름진 음식 후 악화
+  radiation_to_right_shoulder: 우측 어깨로 방사
+  murphy_sign: Murphy 징후
+  fever_chill: 발열/오한
+  jaundice: 황달
+  charcot_triad: 담관염(고열·황달·복통)
+  ask_pain_location_radiation: 통증 위치·방사 묻기
+  ask_food_relation: 음식 연관 묻기
+  ask_fever_jaundice: 발열·황달 묻기
+  exam_murphy_sign: Murphy 징후 진찰
+  abdominal_ultrasound: 복부 초음파
+  lft: 간기능검사
+  # 급성 췌장염
+  radiation_to_back: 등으로 방사
+  worse_lying_better_leaning_forward: 누우면 악화·앞으로 숙이면 완화
+  persistent_severe_pain: 지속적 극심한 통증
+  alcohol_or_gallstone_history: 음주·담석 과거력
+  shock_organ_failure: 쇼크·장기부전
+  alcohol_use: 음주력
+  gallstone_history: 담석 병력
+  ask_alcohol_history: 음주력 묻기
+  ask_nausea_vomiting: 오심·구토 묻기
+  ask_prior_gallstone: 담석 병력 묻기
+  serum_lipase_amylase: 혈청 리파아제/아밀라아제
+  # 위장관염
+  diffuse_crampy_pain: 광범위 쥐어짜는 복통
+  diarrhea: 설사
+  recent_food_or_contact: 최근 음식·접촉력
+  mild_self_limiting: 경증·자연호전 경향
+  dehydration_sign: 탈수 징후
+  bloody_stool: 혈변
+  ask_diarrhea: 설사 묻기
+  ask_food_history: 음식력 묻기
+  ask_sick_contacts: 유사증상 접촉 묻기
+  ask_dehydration: 탈수증상 묻기
+  stool_test: 대변검사
+  # 장폐색
+  crampy_abdominal_pain: 쥐어짜는 복통(간헐)
+  abdominal_distension: 복부 팽만
+  vomiting: 구토
+  obstipation: 배변·가스 중단
+  prior_abdominal_surgery: 복부수술 과거력
+  hyperactive_then_absent_bowel_sounds: 항진→소실 장음
+  strangulation_sign: 교액(strangulation) 징후
+  ask_bowel_gas_passage: 배변·가스 배출 묻기
+  ask_prior_surgery: 수술력 묻기
+  ask_vomiting: 구토 묻기
+  exam_abdominal_distension: 복부 팽만 진찰
+  abdominal_xray: 복부 단순촬영
+  # 게실염
+  llq_pain: 좌하복부 통증
+  fever: 발열
+  altered_bowel_habit: 배변습관 변화
+  older_age: 고령
+  localized_tenderness: 국소 압통
+  ask_pain_location: 통증 위치 묻기
+  ask_bowel_habit_change: 배변습관 변화 묻기
+  ask_fever: 발열 묻기
+  exam_llq_tenderness: 좌하복부 압통 진찰
+  # 요관결석 (근거화 — 실사례)
+  flank_pain: 옆구리 통증
+  sudden_severe_pain: 갑작스런 극심한 통증
+  cva_tenderness: 갈비척추각압통(CVA tenderness)
+  position_independent_pain: 자세 무관 지속통증
+  hematuria: 혈뇨
+  radiation_to_groin: 서혜부로 방사
+  obstruction_pyelonephritis: 폐색성 신우신염(합병증)
+  acute_kidney_injury: 급성 신부전(합병증)
+  dehydration: 탈수/수분부족
+  ask_character: 통증 양상 묻기
+  ask_fever_chill: 발열·오한 묻기
+  ask_urinary_symptoms: 배뇨증상(배뇨통·빈뇨·혈뇨) 묻기
+  ask_pregnancy_menstruation: 임신·월경력 묻기
+  exam_cva_tenderness: 갈비척추각압통 진찰
+  urinalysis: 요검사
+  pregnancy_test_hcg: 소변 임신검사(hCG)
+  blood_test: 혈액검사
+  kub_xray: 단순 X선(KUB)
+  stone_ct: 비조영 CT(요로결석)
+  explain_analgesia_first: 진통제 우선 설명
+  explain_stone_treatment: 결석 치료(수분/ESWL/수술) 설명
+  explain_obstruction_emergency: 폐색 합병증(신우신염·신부전) 설명
+  # 급성 신우신염
+  dysuria_frequency: 배뇨통·빈뇨
+  sepsis_sign: 패혈증 징후
+  urine_culture: 소변배양검사
+  # 자궁외임신
+  lower_abdominal_pain: 하복부 통증
+  amenorrhea: 무월경
+  vaginal_bleeding: 질출혈
+  dizziness_syncope: 어지럼/실신
+  pregnancy_possible: 임신 가능성
+  hypotension_shock: 저혈압/쇼크
+  syncope: 실신
+  female_reproductive_age: 가임기 여성
+  ask_menstrual_history: 월경력 묻기
+  ask_sexual_contraception: 성생활·피임력 묻기
+  ask_vaginal_bleeding: 질출혈 묻기
+  exclude_pregnancy: 임신 배제(검사)
+  beta_hcg: 임신검사(β-hCG)
+  transvaginal_us: 경질 초음파
+  # 골반염(PID)
+  vaginal_discharge: 질분비물
+  cervical_motion_tenderness: 자궁경부 운동통
+  sexual_activity_history: 성접촉력
+  deep_dyspareunia: 깊은 성교통
+  tubo_ovarian_abscess: 난관난소 농양
+  ask_vaginal_discharge: 질분비물 묻기
+  ask_sexual_history: 성생활력 묻기
+  exam_pelvic: 골반 진찰
+  pelvic_exam_test: 내진
+  sti_test: 성매개감염 검사
+
+# ── 질환 카드 (대표 충수염 + 감별 10) ─────────────────────────
+diseases:
+  - id: acute_appendicitis
+    role: primary
+    required_symptoms: [rlq_pain, pain_migration_periumbilical_to_rlq]
+    discriminators: [fever_low_grade, anorexia, nausea_vomiting, rebound_tenderness]
+    red_flags: [peritoneal_sign, high_fever]
+    risk_factors: [young_age]
+    checklist_items: [ask_onset_duration, ask_location_migration, ask_associated_fever_gi, exam_rebound_tenderness]
+    tests: [abdominal_ct, cbc]
+    education_items: [explain_surgery_possibility, explain_npo]
+    disclosure:
+      spontaneous: [rlq_pain]
+      disclose_if_asked: [pain_migration_periumbilical_to_rlq, anorexia]
+    evidence:
+      level: standard_textbook
+      real_case: none          # 부산대 실사례 없음(복통 station 대표지만 사례 미보유)
+      note: "표준 교과서 기준 초안 — 교수 검증 필요."
+
+  - id: peptic_ulcer_disease
+    role: differential
+    required_symptoms: [epigastric_pain, relation_to_meals]
+    discriminators: [heartburn, nocturnal_pain, relieved_by_antacid, melena, postprandial_vomiting]
+    red_flags: [gi_bleeding, perforation_sign, gastric_cancer_ddx]
+    risk_factors: [nsaid_use]
+    checklist_items: [ask_meal_relation, ask_heartburn, ask_nsaid_history, ask_alarm_features]
+    tests: [egd]
+    evidence:
+      level: real_case_related
+      sources: [pusan_cpx_vomiting_peptic_ulcer_stenosis_2024]
+      basis: "실사례(궤양 협착) 진단근거=식후 30–60분 구토·먹은 음식 그대로. 감별진단=위암(경고증상). 검사=내시경·복부CT."
+      note: "실사례는 궤양의 협착 합병증(구토 presentation) — 궤양 자체는 교과서 기준. 위암 감별 반영."
+
+  - id: acute_cholecystitis
+    role: differential
+    required_symptoms: [ruq_pain, worse_after_fatty_meal]
+    discriminators: [radiation_to_right_shoulder, murphy_sign, fever_chill, jaundice]
+    red_flags: [charcot_triad, high_fever]
+    checklist_items: [ask_pain_location_radiation, ask_food_relation, ask_fever_jaundice, exam_murphy_sign]
+    tests: [abdominal_ultrasound, lft]
+    evidence:
+      level: real_case_related
+      sources: [pusan_cpx_jaundice_cholangitis_2024]
+      basis: "실사례(급성담관염) 진단근거=황달·우상복부통·열감 중 2개(우상복부통 필수). 검사=혈액·영상(CT/US)."
+      note: "실사례는 담관염(담도 응급) — 담낭염과 동일 담도계. Murphy·기름진음식 연관은 교과서 기준."
+
+  - id: acute_pancreatitis
+    role: differential
+    required_symptoms: [epigastric_pain, radiation_to_back]
+    discriminators: [worse_lying_better_leaning_forward, persistent_severe_pain, nausea_vomiting, alcohol_or_gallstone_history]
+    red_flags: [shock_organ_failure, high_fever]
+    risk_factors: [alcohol_use, gallstone_history]
+    checklist_items: [ask_pain_location_radiation, ask_alcohol_history, ask_nausea_vomiting, ask_prior_gallstone]
+    tests: [serum_lipase_amylase, abdominal_ct]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      note: "표준 교과서 기준 초안 — 실사례 없음, 교수 검증 필요."
+
+  - id: gastroenteritis
+    role: differential
+    required_symptoms: [diffuse_crampy_pain, diarrhea]
+    discriminators: [nausea_vomiting, recent_food_or_contact, mild_self_limiting]
+    red_flags: [dehydration_sign, bloody_stool]
+    checklist_items: [ask_diarrhea, ask_food_history, ask_sick_contacts, ask_dehydration]
+    tests: [stool_test]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      note: "표준 교과서 기준 초안 — 실사례 없음(설사 station에 과민성대장 사례는 있으나 별개). 교수 검증 필요."
+
+  - id: bowel_obstruction
+    role: differential
+    required_symptoms: [crampy_abdominal_pain, abdominal_distension]
+    discriminators: [vomiting, obstipation, hyperactive_then_absent_bowel_sounds]
+    red_flags: [peritoneal_sign, strangulation_sign]
+    risk_factors: [prior_abdominal_surgery]
+    checklist_items: [ask_bowel_gas_passage, ask_prior_surgery, ask_vomiting, exam_abdominal_distension]
+    tests: [abdominal_xray, abdominal_ct]
+    evidence:
+      level: real_case_related
+      sources: [pusan_cpx_vomiting_bowel_obstruction_2026, sabiston_surgery]
+      basis: "실사례(구토·장폐색) 기반. 참고문헌=Sabiston Textbook of Surgery. 구토·복부팽만·배변가스 중단·수술과거력."
+      note: "실사례는 구토 station의 장폐색 — 동일 질환."
+
+  - id: diverticulitis
+    role: differential
+    required_symptoms: [llq_pain, fever]
+    discriminators: [altered_bowel_habit, localized_tenderness]
+    red_flags: [peritoneal_sign, perforation_sign]
+    risk_factors: [older_age]
+    checklist_items: [ask_pain_location, ask_bowel_habit_change, ask_fever, exam_llq_tenderness]
+    tests: [abdominal_ct]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      note: "표준 교과서 기준 초안 — 실사례 없음, 교수 검증 필요."
+
+  - id: ureteral_stone
+    role: differential
+    # ⬇ 실제 부산대 CPX 사례(급성복통·요로결석, 2024)로 근거 보강. 원문·개인정보 미포함(포인터만).
+    required_symptoms: [flank_pain, sudden_severe_pain]
+    discriminators: [cva_tenderness, position_independent_pain, hematuria, radiation_to_groin]
+    red_flags: [obstruction_pyelonephritis, acute_kidney_injury]
+    risk_factors: [dehydration]
+    checklist_items: [ask_onset_duration, ask_pain_location_radiation, ask_character, ask_fever_chill, ask_urinary_symptoms, ask_pregnancy_menstruation, exam_cva_tenderness]
+    tests: [urinalysis, pregnancy_test_hcg, blood_test, kub_xray, stone_ct]
+    education_items: [explain_analgesia_first, explain_stone_treatment, explain_obstruction_emergency]
+    evidence:
+      level: real_case_direct        # 복통 station 실사례 직접
+      sources: [pusan_cpx_abdominal_ureteral_stone_2024, urology_textbook_6ed]
+      key_finding: cva_tenderness    # 사례 진단 결정 소견(갈비척추각압통)
+      basis: "실사례 진단근거=갑작스런 측복통 + 갈비척추각압통 + 무발열/무오한 + 무배뇨증상 + 무임신가능성 → 요로결석. 검사=소변(hCG포함)·혈액·X-ray/CT. 교육=진통제 우선·수분/ESWL/수술·폐색합병증."
+      unsourced: [radiation_to_groin]  # 사례엔 측복부·등 방사만 명시 → 서혜부방사는 교과서 일반(정직 표기)
+
+  - id: pyelonephritis
+    role: differential
+    required_symptoms: [flank_pain, fever_chill]
+    discriminators: [cva_tenderness, dysuria_frequency, nausea_vomiting]
+    red_flags: [sepsis_sign]
+    checklist_items: [ask_fever_chill, ask_urinary_symptoms, ask_pain_location, exam_cva_tenderness]
+    tests: [urinalysis, urine_culture]
+    evidence:
+      level: real_case_related
+      sources: [pusan_cpx_fever_pyelonephritis_2023]
+      basis: "실사례(발열·신우신염) 진단근거=발열 + 우측 갈비척추각압통(CVA). 감별=뇌수막염·급성장염. 검사=CT/초음파·혈액·소변배양."
+      note: "실사례는 발열 station의 신우신염 — 동일 질환."
+
+  - id: ectopic_pregnancy
+    role: differential
+    required_symptoms: [lower_abdominal_pain, amenorrhea]
+    discriminators: [vaginal_bleeding, dizziness_syncope, pregnancy_possible]
+    red_flags: [hypotension_shock, syncope]
+    risk_factors: [female_reproductive_age]
+    checklist_items: [ask_menstrual_history, ask_sexual_contraception, ask_vaginal_bleeding, exclude_pregnancy]
+    tests: [beta_hcg, transvaginal_us]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      note: "표준 교과서 기준 초안 — 실사례 없음. 가임기 여성 복통의 필수 배제진단(교수 검증 필요)."
+
+  - id: pelvic_inflammatory_disease
+    role: differential
+    required_symptoms: [lower_abdominal_pain, vaginal_discharge]
+    discriminators: [cervical_motion_tenderness, fever, sexual_activity_history, deep_dyspareunia]
+    red_flags: [tubo_ovarian_abscess, peritoneal_sign]
+    risk_factors: [female_reproductive_age]
+    checklist_items: [ask_vaginal_discharge, ask_sexual_history, ask_fever, exam_pelvic]
+    tests: [beta_hcg, pelvic_exam_test, sti_test]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      note: "표준 교과서 기준 초안 — 실사례 없음, 교수 검증 필요."

@@ -1,0 +1,356 @@
+# CPX 온톨로지 — 주증상: 변비 (constipation)
+# ──────────────────────────────────────────────────────────────
+# 이 파일이 정본(master). 편집·검증·버전관리는 여기서만.
+# Neo4j/HTML 그래프는 scripts/yaml_to_cypher.py · yaml_to_html.py 로 한 방향 렌더(거울).
+#
+# 범위 = **임시 12-card teaching set** — 공식 출제범위가 아님.
+#   ⚠️ 공식 CPX 감별목록(기본진료수행지침)을 확보하지 못했으므로, 이 12개는 실사례 채점표 + Harrison을
+#      근거로 만든 **AI 초안**이다. "변비 station 출제범위"라고 말하지 말 것 — 교수 확인 전까지는
+#      교육·구조 시연용 카드 묶음이다. (Codex 검수 지적 반영, 2026-08-11)
+# ⚠️ review_status: draft — 임상 내용은 PI·지도교수 검증 전 초안.
+#
+# 📌 근거 표기(출처·근거 명시): 질환마다 `evidence` 블록.
+#    level = real_case_direct(변비 station 실사례의 확정진단 — 기능성변비 2026·직장류 2024)
+#          · station_differential_listed(동일 station 실사례 채점표에 감별·검사로 명시, 확정진단 아님)
+#          · standard_textbook(사례 언급 없음 — Harrison 원문 근거 초안).
+#    변비 station은 실사례가 **2건**(기능성변비·직장류)이라 CPX 주증상 중 근거가 두꺼운 편.
+# 설계 정본 = docs/ontology-plan.md · 자료 지형 = docs/source-landscape.md
+# ──────────────────────────────────────────────────────────────
+
+chief_complaint: constipation
+
+meta:
+  station_minutes: 10
+  ppi_assessed: true
+  review_status: draft
+  professor_approved: false
+  scope: cpx_station_differential
+
+# ── 근거 출처 레지스트리 ── (공개 YAML엔 포인터만 — 원문·개인정보 미수록)
+sources:
+  pusan_cpx_constipation_functional_2026:
+    type: real_cpx_case
+    ref: "부산대 CPX 사례 '변비(기능성 변비)' 2026 — 로컬·비공개. 변비 station 직접. 채점표 진단항목=기능성 변비를 대표진단으로, 과민성대장증후군·대장암을 감별로 제시하며 근거(배변 횟수·변 양상·복부 불편감)를 함께 설명. 검사계획=일반혈액검사·갑상선 검사·대변통과시간검사·대장내시경."
+    grounds: functional_constipation
+  pusan_cpx_constipation_rectocele_2024:
+    type: real_cpx_case
+    ref: "부산대 CPX 사례 '변비(직장류)' 2024 — 로컬·비공개. 변비 station 직접. 채점표 진단항목=직장류를 최우선 진단으로, 직장탈출증·기능성 변비·(드물게) 대장암을 감별로 설명. 검사계획=배변조영술. 문진에 배변시간·힘주기·잔변감·관장/손가락 사용 포함."
+    grounds: rectocele
+  harrison_ch49_diarrhea_constipation:
+    type: textbook
+    ref: "Harrison's Principles of Internal Medicine, Ch.49 'Diarrhea and Constipation' (Camilleri M, Murray JA) — Table 49-5(성인 변비의 원인: 최근발생 vs 만성), Fig.49-5(만성 변비 알고리듬), 배변장애 진찰·항문직장내압·풍선배출·배변조영 서술. 로컬 텍스트 코퍼스 직독 — 파일 `cpx-agent/data/raw/textbook/내과/harrison/PART2_Cardinal_Manifestations_and_Presentation_of_Diseases.md`(비공개·저작권, 이 repo 미포함), 챕터 구간 26555–28092행, 원문 페이지마커 [[p220]]–[[p222]]. ⚠️ **원본에 판(edition) 미표기** — 인용 참고문헌 최신 2023년. **basis의 수치는 원문 대조는 마쳤으나 판이 확정되지 않았으므로, 논문·대외 인용 전 원본 PDF로 판·페이지를 확정해야 함.**"
+
+# 표시용 한국어 라벨 (id → 한국어). 그래프 렌더가 이걸 씀. 없으면 id 그대로.
+labels:
+  constipation: 변비
+  # ── 질환 (대표 기능성 변비 + 감별 11)
+  functional_constipation: 기능성 변비
+  rectocele: 직장류
+  rectal_prolapse: 직장탈출증
+  dyssynergic_defecation: 배변협조장애(골반저기능장애)
+  ibs_constipation: 과민성대장증후군(변비형)
+  colorectal_cancer_constipation: 대장암
+  drug_induced_constipation: 약물유발 변비
+  hypothyroidism_constipation: 갑상선기능저하증
+  metabolic_hypercalcemia: 고칼슘혈증 등 대사장애
+  slow_transit_constipation: 서행성 변비
+  anal_fissure_hemorrhoid: 항문열창·치핵(항문괄약근 연축)
+  neurogenic_constipation: 신경질환성 변비
+
+  # ── 증상·감별단서
+  infrequent_bowel_movement: 배변 횟수 감소(주 3회 미만)
+  hard_lumpy_stool: 딱딱하고 덩어리진 변
+  excessive_straining: 과도한 힘주기
+  incomplete_evacuation: 잔변감
+  abdominal_discomfort: 복부 불편감
+  # 기능성 변비
+  low_fiber_low_fluid_intake: 섬유질·수분 섭취 부족
+  sedentary_lifestyle: 좌식 생활·운동 부족
+  no_alarm_feature: 경고징후 없음
+  normal_rectal_exam: 직장수지검사 정상
+  # 직장류
+  vaginal_pressure_to_defecate: 질 뒤벽을 눌러야 배변
+  digital_maneuver_to_evacuate: 손가락으로 변을 빼내야 함
+  prolonged_defecation_time: 배변 시간 연장
+  female_with_obstetric_hx: 여성·분만력
+  # 직장탈출증
+  protruding_anal_mass: 배변 시 항문 밖으로 나오는 덩이
+  mucus_discharge: 점액 분비
+  fecal_soiling: 변 지림
+  # 배변협조장애
+  paradoxical_puborectalis_contraction: 힘줄 때 치골직장근 역설수축
+  failure_of_perineal_descent: 회음부 하강 부족
+  need_perineal_support: 회음부를 받쳐야 배변
+  high_anal_sphincter_tone: 항문괄약근 긴장도 증가
+  # IBS-C
+  recurrent_abdominal_pain: 반복되는 복통
+  altered_stool_frequency_or_form: 배변 횟수·변 형태 변화
+  pain_relieved_by_defecation: 배변 후 복통 완화
+  alternating_diarrhea: 설사와 교대
+  bloating: 복부 팽만
+  no_weight_loss: 체중감소 없음
+  # 대장암
+  change_in_stool_caliber: 변 굵기 변화
+  hematochezia: 혈변
+  weight_loss: 체중감소
+  anemia_symptoms: 빈혈 증상(피로·창백)
+  recent_onset_constipation: 최근에 새로 생긴 변비
+  age_over_50: 50세 이상
+  family_hx_colorectal_cancer: 대장암 가족력
+  # 약물유발
+  temporal_relation_to_drug: 약물 시작과 시간적 연관
+  opioid_or_anticholinergic_use: 아편유사제·항콜린제 복용
+  calcium_blocker_or_antidepressant: 칼슘차단제·항우울제 복용
+  # 갑상선기능저하증
+  cold_intolerance: 추위를 못 참음
+  fatigue_weight_gain: 피로·체중증가
+  dry_skin_bradycardia: 피부건조·서맥
+  # 대사장애
+  polyuria_polydipsia: 다뇨·다음
+  muscle_weakness_confusion: 근력저하·의식혼탁
+  hypercalcemia: 고칼슘혈증
+  hypokalemia: 저칼륨혈증
+  # 서행성 변비
+  no_urge_to_defecate: 변의 자체가 드묾
+  prolonged_colonic_transit: 대장통과시간 지연
+  laxative_dependence: 완하제 의존
+  # 항문 통증성
+  painful_defecation: 배변 시 항문 통증
+  bright_red_blood_on_tissue: 휴지에 묻는 선홍색 피
+  stool_withholding_due_to_pain: 통증 때문에 변을 참음
+  # 신경질환성
+  parkinsonism_or_neurologic_disease: 파킨슨병·신경질환
+  spinal_cord_injury_hx: 척수손상 과거력
+  diabetic_autonomic_neuropathy: 당뇨병성 자율신경병증
+
+  # ── red flag
+  alarm_weight_loss: 경고징후 — 체중감소
+  alarm_rectal_bleeding: 경고징후 — 직장 출혈
+  alarm_anemia: 경고징후 — 빈혈
+  fecal_impaction: 분변 매복
+  bowel_obstruction_sign: 장폐색 징후
+  incarcerated_prolapse: 감돈된 탈출(응급)
+  megacolon: 거대결장
+
+  # ── 병력청취 채점항목 (실사례 2건 채점표 기반)
+  ask_onset_duration_constipation: 언제부터 변비였는지 묻기
+  ask_bowel_frequency: 배변 횟수·간격 묻기
+  ask_stool_hardness: 변이 딱딱한지 묻기
+  ask_stool_form: 변의 형태 묻기
+  ask_stool_caliber_change: 변 굵기 변화 묻기
+  ask_blood_in_stool: 변에 피가 섞이는지 묻기
+  ask_incomplete_evacuation: 잔변감 묻기
+  ask_abdominal_pain: 복통·복부불편 묻기
+  ask_defecation_time: 배변 시간 묻기
+  ask_straining: 힘을 많이 주는지 묻기
+  ask_digital_or_enema_use: 관장·손가락 사용 여부 묻기
+  ask_easy_difficult_situations: 배변 난이도가 달라지는 상황 묻기
+  ask_weight_change: 체중 변화 묻기
+  ask_prior_colonoscopy: 대장내시경 시행력 묻기
+  ask_diet_exercise_habit: 식사·운동 습관 묻기
+  ask_smoking_alcohol: 흡연·음주 묻기
+  ask_past_illness: 과거 질환 치료력 묻기
+  ask_medication_hx: 복용 약물력 묻기
+  ask_family_hx_crc: 대장암 가족력 묻기
+  ask_hypothyroid_symptoms: 갑상선기능저하 증상 묻기
+  ask_neurologic_symptoms: 신경학적 증상·과거력 묻기
+
+  # ── 신체진찰 채점항목
+  exam_abdomen_auscultation: 복부 청진
+  exam_abdomen_percussion: 복부 타진
+  exam_abdomen_palpation: 복부 촉진
+  exam_position_for_rectal: 직장진찰 자세 취하게 하기
+  exam_perianal_inspection: 항문 주변 시진·촉진
+  exam_digital_rectal: 직장수지검사
+  exam_stool_color_on_glove: 장갑 손가락의 대변 색 확인
+  exam_strain_simulated_evacuation: 힘주기 시 회음 하강·치골직장근 확인
+
+  # ── 검사
+  cbc_blood_test: 일반혈액검사
+  thyroid_function_test: 갑상선 검사
+  colonic_transit_study: 대변통과시간검사
+  colonoscopy: 대장내시경
+  defecography: 배변조영술
+  anoscopy_perianal_exam: 항문경·항문주위 진찰
+  anorectal_manometry: 항문직장내압검사
+  balloon_expulsion_test: 풍선배출검사
+  serum_calcium_potassium: 혈청 칼슘·칼륨
+  abdominal_xray: 복부 X선
+
+  # ── 환자교육
+  explain_functional_constipation_basis: 기능성 변비 진단 근거 설명
+  explain_rectocele_basis: 직장류 진단 근거 설명
+  explain_test_purpose: 검사 목적 설명
+  explain_lifestyle_fluid_fiber: 수분·섬유질·운동 생활습관 교육
+  explain_laxative_use: 변비약 사용 교육
+  explain_followup_after_test: 검사 결과 확인 뒤 치료방향 설명
+  explain_alarm_symptoms_return: 경고징후 시 재방문 설명
+  explain_biofeedback: 바이오피드백(배변 재훈련) 설명
+
+# ── 질환 카드 (대표 기능성 변비 + 감별 11) ───────────────────
+diseases:
+  - id: functional_constipation
+    role: primary
+    required_symptoms: [infrequent_bowel_movement, hard_lumpy_stool]
+    discriminators: [abdominal_discomfort, low_fiber_low_fluid_intake, sedentary_lifestyle, no_alarm_feature, normal_rectal_exam]
+    red_flags: [fecal_impaction]
+    checklist_items: [ask_onset_duration_constipation, ask_bowel_frequency, ask_stool_hardness, ask_blood_in_stool, ask_stool_caliber_change, ask_incomplete_evacuation, ask_abdominal_pain, ask_diet_exercise_habit, ask_smoking_alcohol, ask_family_hx_crc, exam_abdomen_auscultation, exam_abdomen_percussion, exam_abdomen_palpation, exam_digital_rectal, exam_stool_color_on_glove]
+    tests: [cbc_blood_test, thyroid_function_test, colonic_transit_study, colonoscopy]
+    education_items: [explain_functional_constipation_basis, explain_test_purpose, explain_lifestyle_fluid_fiber]
+    disclosure:
+      spontaneous: [infrequent_bowel_movement]
+      disclose_if_asked: [hard_lumpy_stool, abdominal_discomfort, low_fiber_low_fluid_intake]
+    evidence:
+      level: real_case_direct
+      sources: [pusan_cpx_constipation_functional_2026, harrison_ch49_diarrhea_constipation]
+      basis: "실사례(변비·기능성 변비 2026) 채점표 진단항목=기능성 변비를 대표진단으로, 과민성대장증후군·대장암을 감별로 설명하고 근거(배변 횟수·변 양상·복부 불편감)를 제시. 검사=일반혈액검사·갑상선 검사·대변통과시간검사·대장내시경(채점표 21번). 문진 1–11·진찰 12–14 + 직장수지검사가 이 카드의 checklist 출처. Harrison Ch.49: 대부분(>90%)은 기저 원인(암·우울증·갑상선저하)이 없고 충분한 수분·운동·식이섬유(15–25 g/일) 보충에 반응하며, 진찰 특히 직장수지검사는 필수."
+
+  - id: rectocele
+    role: differential
+    required_symptoms: [incomplete_evacuation, excessive_straining]
+    discriminators: [vaginal_pressure_to_defecate, digital_maneuver_to_evacuate, prolonged_defecation_time, female_with_obstetric_hx]
+    red_flags: []
+    checklist_items: [ask_bowel_frequency, ask_stool_form, ask_defecation_time, ask_straining, ask_incomplete_evacuation, ask_digital_or_enema_use, ask_easy_difficult_situations, ask_blood_in_stool, ask_weight_change, ask_prior_colonoscopy, ask_diet_exercise_habit, ask_past_illness, ask_family_hx_crc, exam_abdomen_auscultation, exam_abdomen_percussion, exam_abdomen_palpation, exam_position_for_rectal, exam_perianal_inspection, exam_digital_rectal]
+    tests: [defecography, anorectal_manometry]
+    education_items: [explain_rectocele_basis, explain_test_purpose, explain_lifestyle_fluid_fiber, explain_laxative_use, explain_followup_after_test]
+    evidence:
+      level: real_case_direct
+      sources: [pusan_cpx_constipation_rectocele_2024, harrison_ch49_diarrhea_constipation]
+      basis: "실사례(변비·직장류 2024) 채점표 진단항목=직장류를 최우선 진단으로, 직장탈출증·기능성 변비·(드물게) 대장암을 감별로 설명. 검사=배변조영술(채점표 29번). 문진 2–14(배변시간·힘주기·잔변감·관장 및 손가락 사용·배변 난이도가 달라지는 상황)·진찰 15–23(항문 주변 시진·촉진 + 직장수지검사)이 checklist 출처. Harrison Ch.49: 골반저기능장애는 직장을 완전히 비우지 못함·지속적 직장충만감·손가락으로 변을 빼내야 함·**질 뒤벽에 압력을 가해야 배변(전방 직장류 시사)**·회음부를 받쳐야 함·과도한 힘주기로 시사되며, Table 49-5의 'Disorders of rectal evacuation'에 rectocele이 직접 수록. 배변조영술은 직장류·중첩·직장점막탈출 같은 해부학적 결손을 측정."
+
+  - id: rectal_prolapse
+    role: differential
+    required_symptoms: [protruding_anal_mass, incomplete_evacuation]
+    discriminators: [mucus_discharge, fecal_soiling, excessive_straining, female_with_obstetric_hx]
+    red_flags: [incarcerated_prolapse]
+    checklist_items: [ask_straining, ask_incomplete_evacuation, ask_digital_or_enema_use, ask_blood_in_stool, exam_perianal_inspection, exam_digital_rectal, exam_strain_simulated_evacuation]
+    tests: [defecography, anorectal_manometry]
+    education_items: [explain_test_purpose, explain_followup_after_test]
+    evidence:
+      level: station_differential_listed
+      sources: [pusan_cpx_constipation_rectocele_2024, harrison_ch49_diarrhea_constipation]
+      basis: "실사례(변비·직장류 2024) 채점표 진단항목에 **직장탈출증**이 감별로 명시(최우선 진단은 직장류이고 이 카드는 확정진단이 아님). Harrison Ch.49 Table 49-5 'Disorders of rectal evacuation'에 rectal mucosal prolapse 수록. 본문: 해부학적 평가의 적응증은 직장점막탈출 증상, 배변을 돕기 위한 질 뒤벽 압박(전방 직장류 시사), 또는 장류를 합병할 수 있는 골반수술력."
+
+  - id: dyssynergic_defecation
+    role: differential
+    required_symptoms: [excessive_straining, incomplete_evacuation]
+    discriminators: [paradoxical_puborectalis_contraction, failure_of_perineal_descent, need_perineal_support, high_anal_sphincter_tone]
+    red_flags: [fecal_impaction]
+    checklist_items: [ask_straining, ask_defecation_time, ask_incomplete_evacuation, ask_digital_or_enema_use, exam_digital_rectal, exam_strain_simulated_evacuation]
+    tests: [anorectal_manometry, balloon_expulsion_test, defecography]
+    education_items: [explain_biofeedback, explain_test_purpose, explain_lifestyle_fluid_fiber]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "Harrison Ch.49: 배변 출구폐쇄(배변장애·배변협조장애)는 3차의료에서 변비 환자의 최소 1/4을 차지하며 대장통과 지연을 유발할 수 있고 대개 바이오피드백 재훈련으로 교정. 진료실 간이검사=직장수지검사 중 손가락을 밀어내게 시켜 치골직장근이 뒤로 이동하면 정상, 앞쪽 역설수축이나 회음하강 <1.5cm면 골반저기능장애. 항문직장내압에서 안정기 압력 >80mmHg면 anismus 시사, 풍선배출시간 >60초가 배변장애의 가장 유용한 지표. 골반저기능장애 단독이면 3개월 바이오피드백 성공률 70–80%. ⚠️ 실사례에 이 진단명 자체는 없음(직장류 사례의 문진·진찰 항목이 이 기전을 겨냥)."
+
+  - id: ibs_constipation
+    role: differential
+    required_symptoms: [recurrent_abdominal_pain, altered_stool_frequency_or_form]
+    discriminators: [pain_relieved_by_defecation, alternating_diarrhea, bloating, no_weight_loss]
+    red_flags: []
+    checklist_items: [ask_onset_duration_constipation, ask_bowel_frequency, ask_stool_form, ask_abdominal_pain, ask_incomplete_evacuation, ask_diet_exercise_habit, exam_abdomen_palpation]
+    tests: [cbc_blood_test, colonoscopy]
+    education_items: [explain_test_purpose, explain_lifestyle_fluid_fiber]
+    evidence:
+      level: station_differential_listed
+      sources: [pusan_cpx_constipation_functional_2026, harrison_ch49_diarrhea_constipation]
+      basis: "실사례(변비·기능성 변비 2026) 채점표 진단항목에 **과민성대장증후군**이 감별로 명시(대표진단은 기능성 변비이고 이 카드는 확정진단이 아님). Harrison Ch.49 Table 49-5 만성 변비 원인 최상단이 'Irritable bowel syndrome — constipation-predominant, alternating'. 본문(설사 절): IBS의 배변 증상은 변비 시기와 교대하고 배변으로 완화되는 복통을 동반하며 체중감소는 드묾. 단순한 잔변감은 IBS에서 흔해, 배변장애를 시사하는 중대한 증상들과 대비됨."
+
+  - id: colorectal_cancer_constipation
+    role: differential
+    required_symptoms: [recent_onset_constipation]
+    discriminators: [change_in_stool_caliber, hematochezia, weight_loss, anemia_symptoms, age_over_50, family_hx_colorectal_cancer]
+    red_flags: [alarm_weight_loss, alarm_rectal_bleeding, alarm_anemia, bowel_obstruction_sign]
+    checklist_items: [ask_onset_duration_constipation, ask_stool_caliber_change, ask_blood_in_stool, ask_weight_change, ask_prior_colonoscopy, ask_family_hx_crc, exam_abdomen_palpation, exam_digital_rectal, exam_stool_color_on_glove]
+    tests: [colonoscopy, cbc_blood_test, abdominal_xray]
+    education_items: [explain_test_purpose, explain_alarm_symptoms_return]
+    evidence:
+      level: station_differential_listed
+      sources: [pusan_cpx_constipation_functional_2026, pusan_cpx_constipation_rectocele_2024, harrison_ch49_diarrhea_constipation]
+      basis: "실사례 2건 모두 채점표 진단항목에 **대장암**을 감별로 명시(2026 기능성변비 사례·2024 직장류 사례 — 어느 쪽도 확정진단은 아님). 두 사례 모두 대장암 가족력 문진 항목을 별도 배점. Harrison Ch.49: '최근에 시작된 변비는 대장직장암·항문직장 자극·협착 같은 중대한 기질적 질환의 증상일 수 있다.' Table 49-5 Recent Onset 최상단 'Colonic obstruction — Neoplasm'. 본문: 변비에 체중감소·직장출혈·빈혈이 동반되면 대장직장암이나 협착 배제를 위해 대장내시경(또는 굴곡에스결장경+바륨관장)이 필수."
+
+  - id: drug_induced_constipation
+    role: differential
+    required_symptoms: [infrequent_bowel_movement, temporal_relation_to_drug]
+    discriminators: [opioid_or_anticholinergic_use, calcium_blocker_or_antidepressant, hard_lumpy_stool]
+    red_flags: [fecal_impaction]
+    checklist_items: [ask_medication_hx, ask_onset_duration_constipation, ask_bowel_frequency, ask_past_illness]
+    tests: [cbc_blood_test]
+    education_items: [explain_test_purpose, explain_lifestyle_fluid_fiber, explain_laxative_use]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "Harrison Ch.49 Table 49-5: 'Medications'가 최근발생·만성 양쪽 축에 모두 수록되며 만성 축의 예시는 'Ca2+ blockers, antidepressants'. 본문: 만성 변비는 좌식 생활, 변의를 습관적으로 무시함, 섬유질·수분 섭취 부족, 대장통과·항문직장기능 장애에서 비롯되고 이는 신경위장관 장애·특정 약물·고령·위장관에 영향을 주는 다수의 전신질환과 연관. ⚠️ 실사례 채점표에 약물력 항목이 명시되지 않아(과거 질환 치료력 문진만 존재) 이 카드는 교과서 근거."
+
+  - id: hypothyroidism_constipation
+    role: differential
+    required_symptoms: [infrequent_bowel_movement, cold_intolerance]
+    discriminators: [fatigue_weight_gain, dry_skin_bradycardia, hard_lumpy_stool]
+    red_flags: []
+    checklist_items: [ask_hypothyroid_symptoms, ask_weight_change, ask_past_illness, ask_medication_hx, exam_abdomen_palpation]
+    tests: [thyroid_function_test, cbc_blood_test]
+    education_items: [explain_test_purpose]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "⚠️ 실사례 채점표의 **진단·감별 항목에 이 질환명은 없음** — 교과서 근거만. (참고: 검사계획에 갑상선 검사가 있어 내분비 배제 축은 station에 내장되나, 검사 지정이 질환명 명시는 아니므로 승격 근거로 쓰지 않음 — Codex 검수 지적 반영.) Harrison Ch.49 Table 49-5 만성 변비 'Endocrinopathies — Hypothyroidism, hypercalcemia, pregnancy'. 본문: 혈청 칼슘·칼륨·갑상선자극호르몬 측정으로 드문 대사성 원인 환자를 가려낼 수 있음."
+
+  - id: metabolic_hypercalcemia
+    role: differential
+    required_symptoms: [infrequent_bowel_movement]
+    discriminators: [hypercalcemia, hypokalemia, polyuria_polydipsia, muscle_weakness_confusion]
+    red_flags: [megacolon]
+    checklist_items: [ask_past_illness, ask_medication_hx, ask_weight_change, ask_neurologic_symptoms]
+    tests: [serum_calcium_potassium, cbc_blood_test, thyroid_function_test]
+    education_items: [explain_test_purpose]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "Harrison Ch.49 Table 49-5 'Endocrinopathies — Hypothyroidism, **hypercalcemia**, pregnancy'. 본문: 혈청 칼슘·칼륨·TSH 측정이 드문 대사성 원인 환자를 식별. ⚠️ 실사례에 이 진단명 없음 — 2026 사례의 '일반혈액검사·갑상선 검사' 계획이 대사성 배제 축을 부분적으로 담당."
+
+  - id: slow_transit_constipation
+    role: differential
+    required_symptoms: [infrequent_bowel_movement, no_urge_to_defecate]
+    discriminators: [prolonged_colonic_transit, laxative_dependence, hard_lumpy_stool, bloating]
+    red_flags: [megacolon, fecal_impaction]
+    checklist_items: [ask_bowel_frequency, ask_onset_duration_constipation, ask_digital_or_enema_use, ask_medication_hx, exam_abdomen_percussion, exam_abdomen_palpation]
+    tests: [colonic_transit_study, abdominal_xray, anorectal_manometry]
+    education_items: [explain_test_purpose, explain_lifestyle_fluid_fiber, explain_laxative_use]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "⚠️ 실사례 채점표의 **진단·감별 항목에 이 질환명은 없음** — 교과서 근거만. (참고: 검사계획에 대변통과시간검사가 있어 대장통과 지연 축은 station에 내장되나, 검사 지정이 질환명 명시는 아니므로 승격 근거로 쓰지 않음 — Codex 검수 지적 반영.) Harrison Ch.49 Table 49-5 'Colonic pseudoobstruction — Slow-transit constipation, megacolon'. 본문: 방사선비투과 표지자 검사는 간편·재현성·저비용으로 변비 환자 평가에 널리 쓰이며, 표지자 섭취 5일 후 복부 단순촬영에서 80%가 대장을 빠져나가야 정상. 서행성 변비는 적극적 내과·외과 치료가 필요하고, 배변장애가 통과를 함께 지연시키므로 배변장애 의심 시 항문직장검사를 통과검사보다 먼저."
+
+  - id: anal_fissure_hemorrhoid
+    role: differential
+    required_symptoms: [hard_lumpy_stool]
+    discriminators: [painful_defecation, bright_red_blood_on_tissue, stool_withholding_due_to_pain, high_anal_sphincter_tone]
+    red_flags: [alarm_rectal_bleeding]
+    checklist_items: [ask_blood_in_stool, ask_stool_hardness, ask_straining, exam_perianal_inspection, exam_digital_rectal]
+    tests: [anoscopy_perianal_exam]
+    education_items: [explain_lifestyle_fluid_fiber, explain_laxative_use, explain_alarm_symptoms_return]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "Harrison Ch.49 Table 49-5 Recent Onset 'Anal sphincter spasm — Anal fissure, painful hemorrhoids'. 본문: 최근 발생한 변비는 항문직장 자극이나 협착의 증상일 수 있으며, 소아에서는 항문 자극에 의한 통증이 두려워 변을 참기도 함. 과도한 힘주기는 치핵을 유발할 수 있음. ⚠️ **한 카드에 두 병태가 묶여 있음(Codex 지적)** — 열창은 배변통이 전형적이나 **치핵은 무통성 출혈만 있을 수 있어** 배변통을 필수로 두지 않고 감별단서로 내림. 진단은 항문 시진·수지검사로 갈리며, **대장내시경은 이 카드의 일상 검사가 아니라 경고징후(체중감소·빈혈·지속 출혈) 동반 시의 적응증**이라 tests에서 제외. ⚠️ 실사례에 이 진단명 없음 — 교과서 근거만(참고: 두 사례 모두 항문 주변 시진·직장수지검사 항목 있음)."
+
+  - id: neurogenic_constipation
+    role: differential
+    required_symptoms: [infrequent_bowel_movement, parkinsonism_or_neurologic_disease]
+    discriminators: [spinal_cord_injury_hx, diabetic_autonomic_neuropathy, no_urge_to_defecate, sedentary_lifestyle]
+    red_flags: [megacolon, fecal_impaction]
+    checklist_items: [ask_neurologic_symptoms, ask_past_illness, ask_medication_hx, ask_bowel_frequency, exam_digital_rectal]
+    tests: [colonic_transit_study, anorectal_manometry, abdominal_xray]
+    education_items: [explain_test_purpose, explain_lifestyle_fluid_fiber, explain_laxative_use]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      sources: [harrison_ch49_diarrhea_constipation]
+      basis: "Harrison Ch.49 Table 49-5 만성 변비 'Neurologic disease — Parkinsonism, multiple sclerosis, spinal cord injury'. 본문: 변비는 척수손상 환자와 파킨슨병·다발경화증·당뇨병성 신경병증 같은 신경질환 환자에서 흔하며, 척수손상이나 기타 신경질환 환자는 직장자극·관장요법·시간을 맞춘 완하제를 포함하는 전용 배변 프로그램이 필요. ⚠️ 실사례에 이 진단명 없음 — 2024 사례의 과거 질환 치료력 문진이 부분적으로 겨냥."

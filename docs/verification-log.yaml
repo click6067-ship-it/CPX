@@ -1,0 +1,153 @@
+# 검수·검증 기록 (정본) — docs/ontology-grounding-report.html 에 렌더됨
+# ──────────────────────────────────────────────────────────────
+# 규칙: **실측한 것만 적는다.** 안 돌렸으면 NOT_RUN, 막혔으면 BLOCKED(사유·원문 에러 포함).
+#       PASS는 실제 출력이 있을 때만. 결과 없는 실행은 PASS가 아니다.
+# status = PASS | FAIL | PARTIAL | BLOCKED | NOT_RUN
+# ──────────────────────────────────────────────────────────────
+
+runs:
+  - date: "2026-08-11"
+    scope: "설사(diarrhea)·변비(constipation) 온톨로지 신규 2종 + 렌더 파이프라인"
+    by: "Claude (개발 담당 지시)"
+    checks:
+      - name: "구조 정합성 (노드·엣지·라벨·출처)"
+        method: "scripts/ontology_graph.py 공통 로더로 4개 YAML 전수 로드 후 대조"
+        status: PASS
+        detail: >-
+          설사 98노드·192엣지(12질환) / 변비 107노드·217엣지(12질환) /
+          흉통 94·100(8질환) / 복통 137·164(11질환).
+          **라벨 누락 0 · 미등록 출처 0.** 기존 흉통·복통 수치는 이전 기록과 동일 → 회귀 없음.
+
+      - name: "Harrison 인용 충실도 (가짜 인용 방지)"
+        method: >-
+          각 evidence.basis의 사실 주장 39건을 Harrison Ch.49 원문 발췌본에 정규식으로 직접 대조
+          (로컬 코퍼스, 외부 전송 없음)
+        status: PARTIAL
+        detail: >-
+          **토큰 대조는 39/39 적중이나, 이것으로 PASS를 선언한 것은 과대선언이었음(Codex 지적 수용).**
+          정규식은 "그 문자열이 원문에 있는가"만 보고 "그 값이 그 대상에 걸리는가"는 못 본다.
+          실제로 Codex가 잡아낸 **Table 49-2 전형독소 행의 잠복기 혼동**(표에 1–8시간과 8–24시간이
+          병기되어 균종별로 갈리는데 1–8시간으로 뭉갬)을 이 검사는 통과시켰다 — 수정 완료.
+          → 이 항목은 **PARTIAL**이며, 완전한 검증은 claim별 판·표·페이지 매핑이 있어야 한다.
+          아래는 토큰 대조 자체의 기록: 1차에서 3건 불일치로 나왔으나 전부 원문 조판 아티팩트였음 —
+          단어 중간 하이픈 줄바꿈(`bio-` + `feedback`, `expul -` + `sion`)과 굽은 아포스트로피(Crohn’s).
+          하이픈 허용 정규식으로 재대조하여 3건 모두 원문에 존재함을 확인.
+          대조 항목 예: Table 49-2 잠복기·증상 배점, 유당분해효소 결핍 비백인 3/4·미국 5–30%,
+          섬유 15–25 g/d, 방사선표지자 5일 후 80% 배출, 풍선배출 60초, 항문압 80 mmHg,
+          회음하강 1.5 cm, 바이오피드백 70–80%, Table 49-5 전 행.
+
+      - name: "개인정보(PII) 유출 스캔"
+        method: "공개 산출물 8종(YAML·cypher·HTML)에 전화·이메일·주민번호 패턴 정규식 스캔"
+        status: PASS
+        detail: >-
+          **0건.** 1차 스캔의 히트 3건은 인라인된 vendor `vis-network.min.js` 내부 숫자
+          리터럴 오탐으로 확인(벤더 파일 대조 완료).
+
+      - name: "실사례 원문 축자 인용 스캔"
+        method: "실사례 추출 텍스트와 공개 산출물 간 한글 12자 이상 연속 일치 전수 탐색"
+        status: PASS
+        detail: >-
+          **최종 0건.** 초기 작성본에는 채점표 문구를 그대로 인용한 구간이 다수 있었고
+          (거버넌스 위반: 공개 파일엔 포인터+비식별 사실만), 전량 패러프레이즈로 교체한 뒤 재스캔하여
+          0건 확인. 항목번호 포인터(예: "채점표 12번")는 원문이 아니므로 유지.
+
+      - name: "렌더 실물 관측"
+        method: "생성된 HTML을 headless(playwright)로 PNG 캡처 후 육안 확인"
+        status: PASS
+        detail: >-
+          설사·변비 그래프 PNG에서 제목·범례·질환수·노드 라벨이 의도대로 표시됨을 확인.
+          부수 발견: `scripts/graph_shot.js`가 **이미 깨져 있었음**(하드코딩된 flowise puppeteer
+          경로 소멸 → MODULE_NOT_FOUND). 전역 headless 번들의 playwright로 교체하여 4개 주증상 전부 재렌더.
+
+      - name: "Codex 적대검수 (gpt-5.6-luna, xhigh)"
+        method: >-
+          codex exec --sandbox read-only. 브리프 = 근거날조·등급오용·임상타당성·과대주장 축.
+          ⚠️ 실사례 추출본·Harrison 원문은 **열람 금지**로 명시(개인정보·저작권의 외부 SaaS 전송 금지)
+          — 따라서 Codex는 자기 의학지식으로만 판정하고, 원문 대조는 별도 항목이 담당
+        status: FAIL
+        detail: >-
+          **실시 완료 · 판정 REVISE — BLOCKER 4 · MAJOR 14 · MINOR 4.**
+          (인증 실패로 4회 무산된 뒤 원인 규명 후 성공: `CODEX_HOME` 불일치 — 로그인은 Orca 런타임 홈에,
+          실행은 `~/.codex`에서 읽어 2주 묵은 토큰을 제시하고 있었음.)
+          **BLOCKER 3건 수용·수정 완료:** ① Table 49-2 전형독소 잠복기 혼동(1–8h/8–24h 병기 누락)
+          ② `drug_induced_diarrhea` basis에 SP 대본 고유 복약 내용 잔존 → 제거
+          ③ 본 로그의 인용충실도 PASS 과대선언 → PARTIAL로 강등.
+          **BLOCKER 1건은 원문 대조로 반박:** 로타·노로의 'Invasive organisms' 배정은 오인용이 아니라
+          **Harrison 표의 분류 그대로**임을 원문에서 확인(하위 구분 = minimal inflammation).
+          오독 방지 주석만 추가. **MAJOR 14건은 미반영 — 별도 라운드 필요**(주로 `required_symptoms`
+          과잉 고정, `station_differential_listed` 승격 근거 과대, 리포트 stale 문구, source-landscape 자체모순).
+
+      - name: "임상 내용 교수 검증"
+        method: "PI·지도교수 검토"
+        status: NOT_RUN
+        detail: >-
+          전체 `review_status: draft`. 질환 목록·필수소견·red flag 배정 모두 미검증 초안이며
+          의학적 정확성을 주장하지 않음.
+
+  - date: "2026-08-11 (2라운드)"
+    scope: "Codex REVISE 지적 반영 — MAJOR 14 · MINOR 4"
+    by: "Claude (개발 담당 지시 '둘다 ㄱㄱ')"
+    checks:
+      - name: "근거등급 재분류 (승격 근거 과대 해소)"
+        method: "채점표에 **질환명이 명시**된 경우만 station_differential_listed 유지, 나머지는 강등"
+        status: PASS
+        detail: >-
+          **5건 강등 → standard_textbook.** 설사=독소형식중독·유당불내증(둘 다 '음식 연관성' 문진 하나에
+          기대고 있어 질환명 특정 불가)·약물유발(채점표 독립 배점 항목 없음).
+          변비=갑상선기능저하증·서행성변비(검사명 지정만으로는 감별 명시 아님).
+          분포 변화: 설사 직접1·감별목록6·표준5 → **직접1·감별목록3·표준8** /
+          변비 직접2·감별목록5·표준5 → **직접2·감별목록3·표준7**.
+
+      - name: "required_symptoms 과잉 고정 해소"
+        method: "정의적 필수소견만 required로 두고 나머지는 discriminator·risk_factor로 이동"
+        status: PASS
+        detail: >-
+          **9카드 수정.** 설사=바이러스장염(구토 필수 해제)·세균성장염(고열)·C.difficile(항생제력)·
+          IBD(혈성설사+복통)·담즙산설사(수술력)·대장암(혈변). 변비=IBS-C(반복 복통 개념 신설
+          `recurrent_abdominal_pain`+`altered_stool_frequency_or_form`로 교체)·대장암(변 굵기 변화 해제)·
+          대사장애(저칼륨·고칼슘을 한 concept로 묶던 것 분리). 항문열창·치핵은 배변통을 필수에서 내리고
+          (치핵은 무통성 가능) 검사를 대장내시경→항문경·항문주위 진찰로 교정.
+
+      - name: "과대주장·문서 자체모순 제거"
+        method: "YAML 헤더·source-landscape·리포트 문구 대조"
+        status: PASS
+        detail: >-
+          ① 두 YAML 헤더의 "CPX station 출제범위(12질환)" → **"임시 12-card teaching set · 공식 출제범위 아님"**
+          으로 강등(공식 감별목록 미확보 상태에서의 범위 주장 금지 명시).
+          ② `source-landscape.md`의 "실사례는 요로결석뿐"이 문서 전역 주장처럼 읽혀 §5 표(설사1·변비2)와
+          충돌하던 것 → "복통 한정"으로 한정하고 갱신 주석 추가.
+          ③ 리포트의 "교과서 수준 초안일 뿐, 출처가 없습니다" → **"출처 없음이 아니라 실사례 없음"**으로 교정
+          (Harrison 출처가 붙은 카드를 무출처로 표시하던 모순).
+          ④ 리포트의 Codex 검수 상태 하드코딩 제거 → verification-log 렌더 결과가 정본임을 명시.
+
+      - name: "Harrison 출처 재현성 보강"
+        method: "생략된 경로(PART2…md)를 전체 파일명·행구간·페이지마커로 확장"
+        status: PARTIAL
+        detail: >-
+          파일명·챕터 행구간(26555–28092)·페이지마커 범위를 기재해 제3자 재현성을 높였으나,
+          **claim별 판·페이지 매핑은 미완**이며 **판(edition) 자체가 원본에 미표기**다.
+          → 논문·대외 인용 전 원본 PDF 대조가 여전히 필수(YAML sources에 경고 명시).
+
+      - name: "렌더 파이프라인 견고화"
+        method: "하드코딩 제거 + 리소스 정리"
+        status: PASS
+        detail: >-
+          `yaml_to_evidence_html.py` 부제의 "복통·흉통" 하드코딩 → SYMS에서 도출(설사·변비 누락 해소),
+          범례 문구 "근거 없는 표준 초안" → "실 CPX 사례 없음(교과서 출처는 있을 수 있음)"으로 교정.
+          `graph_shot.js` 스크린샷을 try/finally로 감싸 실패 시 브라우저 잔존 제거, 고정 6초 대기 →
+          안정화 이벤트 대기 + 폴백.
+
+      - name: "재검증 (구조·렌더)"
+        method: "4개 YAML 전수 로드 + 전체 재렌더"
+        status: PASS
+        detail: >-
+          설사 98노드·191엣지 / 변비 111노드·217엣지 / 흉통 94·100 / 복통 137·164.
+          라벨 누락 0 · 미등록 출처 0. 그래프 HTML·PNG·근거그래프·리포트 전부 재생성 확인.
+
+      - name: "Codex 2차 적대검수 (수정본)"
+        method: "1차와 동일 브리프로 재검수"
+        status: NOT_RUN
+        detail: >-
+          1차 REVISE 지적을 반영한 **수정본은 재검수받지 않았다** — 개발 담당 판단으로 이번 커밋·푸시에서는 생략.
+          MAJOR 14건 중 다수가 "등급·필수소견 재설계"라 **새 판단 오류가 들어갔을 수 있다.**
+          공개 저장소에 푸시된 상태이므로, 교수 검증 전 이 점을 전제로 읽어야 한다.

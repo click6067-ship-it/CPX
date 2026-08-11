@@ -23,9 +23,11 @@ def _esc(s: str) -> str:
 
 
 def to_cypher(yaml_path: str) -> str:
-    _, nodes, edges = load_graph(yaml_path)
+    data, nodes, edges = load_graph(yaml_path)
+    cc_id = data["chief_complaint"]
+    cc_ko = data.get("labels", {}).get(cc_id, cc_id)
     lines = [
-        "// 흉통 온톨로지 — YAML→Cypher 자동생성. 정본=ontology/chest_pain.yaml. 손편집 금지.",
+        f"// {cc_ko} 온톨로지 — YAML→Cypher 자동생성. 정본=ontology/{cc_id}.yaml. 손편집 금지.",
         "MATCH (n) DETACH DELETE n;",  # 멱등: 매번 깨끗이 재로드
     ]
     for n in nodes.values():

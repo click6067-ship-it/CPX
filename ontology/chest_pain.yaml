@@ -3,9 +3,14 @@
 # 이 파일이 정본(master). 편집·검증·버전관리는 여기서만.
 # Neo4j/HTML 그래프는 scripts/yaml_to_cypher.py · yaml_to_html.py 로 한 방향 렌더(거울).
 #
-# ⚠️ review_status: draft — 임상 내용은 임선주/박정빈 교수 검증 전 *구조 시연용 초안*.
-#    의학적 정확성을 주장하지 않음. 교수 검증 후 professor_approved 갱신.
-# 설계 정본 문서 = docs/ontology-plan.md
+# 범위 = **CPX 흉통 station 출제범위 수준(8 질환)**.
+# ⚠️ review_status: draft — 임상 내용은 PI·지도교수 검증 전 초안.
+#
+# 📌 근거 표기(출처·근거 명시): 질환마다 `evidence` 블록.
+#    level = real_case_direct(흉통 station 실사례) · standard_textbook(실사례 없음, 표준지식 초안).
+#    실사례 근거는 부산대 CPX 실 사례 채점표에서 확인. 원문·개인정보 미수록(포인터만).
+#    → 심막염·기흉 = 실사례로 근거화. ACS·대동맥박리·폐색전·GERD·근골격·공황 = 표준 교과서 초안.
+# 설계 정본 = docs/ontology-plan.md · 자료 지형 = docs/source-landscape.md
 # ──────────────────────────────────────────────────────────────
 
 chief_complaint: chest_pain
@@ -15,83 +20,136 @@ meta:
   ppi_assessed: true
   review_status: draft
   professor_approved: false
+  scope: cpx_station_differential
+
+# ── 근거 출처 레지스트리 ── (공개 YAML엔 포인터만 — 원문·개인정보 미수록)
+sources:
+  pusan_cpx_chest_pericarditis_2022:
+    type: real_cpx_case
+    ref: "부산대 CPX 사례 '가슴통증(심막염)' 2022 — 로컬·비공개. 흉통 station 직접. 진단근거=갑자기 발생·호흡/자세 따라 통증 변화."
+    grounds: pericarditis
+  harrison_im:
+    type: textbook
+    ref: "Harrison's Principles of Internal Medicine (심막염 사례 인용문헌)"
+  pusan_cpx_chest_pneumothorax_2023:
+    type: real_cpx_case
+    ref: "부산대 CPX 사례 '가슴통증(기흉)' 2023 — 로컬·비공개. 흉통 station 직접. 진단근거=갑자기·호흡곤란·심호흡시 악화·환측 호흡음 감소·폐질환 과거력."
+    grounds: pneumothorax
+  sabiston_spencer_chest:
+    type: textbook
+    ref: "Sabiston & Spencer, Surgery of the Chest, 9th ed, 2015 (기흉 사례 인용문헌)"
 
 # 표시용 한국어 라벨 (id → 한국어). 그래프 렌더가 이걸 씀. 없으면 id 그대로.
 labels:
   chest_pain: 흉통
-  # 질환
+  # 질환 (대표 ACS + 감별 7)
   acute_coronary_syndrome: 급성 관상동맥증후군(ACS)
+  aortic_dissection: 대동맥박리
+  pulmonary_embolism: 폐색전증
+  pneumothorax: 기흉
+  pericarditis: 심막염
   gerd: 위식도역류질환(GERD)
   musculoskeletal_chest_pain: 근골격계 흉통
   panic_anxiety: 공황/불안
-  aortic_dissection: 대동맥박리
-  # 증상·감별단서
+  # ACS
   chest_pressure: 쥐어짜는 압박감
   exertional_or_rest_onset: 운동/안정 시 발생
   radiation_to_left_arm_or_jaw: 좌측 팔·턱 방사
   diaphoresis: 식은땀
   dyspnea: 호흡곤란
-  retrosternal_burning: 흉골 뒤 작열감
-  relation_to_meals_or_lying_down: 식후/눕기와 연관
-  acid_regurgitation: 산 역류
-  relieved_by_antacid: 제산제로 완화
-  no_exertional_relation: 운동과 무관
-  localized_pain: 국소 통증
-  reproducible_on_movement: 움직임으로 재현
-  pain_on_chest_wall_palpation: 흉벽 압통
-  worse_with_breathing_or_motion: 호흡/동작 시 악화
-  strain_history: 무리·외상 과거력
-  chest_tightness: 가슴 답답함
-  palpitations: 두근거림
-  hyperventilation: 과호흡
-  paresthesia: 손발 저림
-  situational_trigger: 상황 유발
-  young_low_risk: 젊고 위험인자 적음
-  sudden_tearing_pain: 갑작스런 찢어지는 통증
-  maximal_at_onset: 시작 시 최고조
-  radiation_to_back: 등으로 방사
-  bp_differential_between_arms: 양팔 혈압차
-  hypertension_hx: 고혈압 병력
-  # red flags
   hypotension: 저혈압
   syncope: 실신
-  dysphagia: 연하곤란
-  weight_loss: 체중감소
-  gi_bleeding: 위장관 출혈
-  must_exclude_cardiac_first: 심장 원인 우선 배제
-  bp_differential: 양팔 혈압차
-  neurologic_deficit: 신경학적 결손
-  # 체크리스트(채점, 1 행동 단위)
+  hypertension_hx: 고혈압 병력
   ask_onset_duration: 발병·기간 묻기
   ask_character: 통증 양상 묻기
   ask_radiation: 방사 묻기
   ask_aggravating_relieving: 악화·완화인자 묻기
   ask_associated_sx: 동반증상 묻기
   ask_cardiac_risk_factors: 심혈관 위험인자 묻기
-  ask_relation_to_meals: 식사 연관 묻기
-  ask_regurgitation: 역류 묻기
-  ask_antacid_response: 제산제 반응 묻기
-  ask_alarm_features: 경고증상 묻기
-  ask_palpation_reproducibility: 압통 재현 확인
-  ask_movement_relation: 동작 연관 묻기
-  ask_trauma_hx: 외상력 묻기
-  exam_chest_wall: 흉벽 진찰
-  ask_anxiety_sx: 불안증상 묻기
-  ask_triggers: 유발요인 묻기
-  ask_pattern: 발작 양상 묻기
-  exclude_red_flags: red flag 배제
+  ecg_12lead: 12유도 심전도
+  cardiac_troponin: 심근 트로포닌
+  explain_need_for_ecg_troponin: 심전도·효소 검사 설명
+  explain_emergency_nature: 응급성 설명
+  # 대동맥박리
+  sudden_tearing_pain: 갑작스런 찢어지는 통증
+  maximal_at_onset: 시작 시 최고조
+  radiation_to_back: 등으로 방사
+  bp_differential_between_arms: 양팔 혈압차
+  bp_differential: 양팔 혈압차
+  neurologic_deficit: 신경학적 결손
   ask_onset_abruptness: 발병 급격성 묻기
   ask_tearing_quality: 찢어지는 양상 묻기
   ask_radiation_to_back: 등 방사 묻기
   measure_bp_both_arms: 양팔 혈압 측정
-  # 검사·교육
-  ecg_12lead: 12유도 심전도
-  cardiac_troponin: 심근 트로포닌
   ct_angiography: CT 혈관조영
-  explain_need_for_ecg_troponin: 심전도·효소 검사 설명
-  explain_emergency_nature: 응급성 설명
+  # 폐색전증
+  pleuritic_chest_pain: 흡기성 흉통(숨쉴 때 악화)
+  tachycardia: 빈맥
+  immobilization_or_dvt_risk: 부동·수술·DVT 위험
+  hemoptysis: 객혈
+  hypoxia_shock: 저산소·쇼크(대량 색전)
+  ask_dyspnea: 호흡곤란 묻기
+  ask_dvt_risk: 부동·수술·장거리이동 묻기
+  ask_leg_swelling: 다리 부종 묻기
+  ct_pulmonary_angiography: CT 폐동맥조영
+  d_dimer: D-dimer
+  # 기흉 (근거화 — 실사례)
+  sudden_pleuritic_chest_pain: 갑작스런 흡기성 흉통
+  decreased_breath_sounds: 환측 호흡음 감소
+  worse_with_deep_breath: 심호흡 시 악화
+  tall_thin_or_copd_history: 마른 체형/폐질환(결핵·폐기종) 과거력
+  tension_pneumothorax: 긴장성 기흉(응급)
+  ask_lung_disease_history: 폐질환 과거력 묻기
+  exam_breath_sounds: 호흡음 청진
+  chest_xray: 흉부 X선
+  explain_cxr_purpose: 흉부 X선 목적 설명
+  # 심막염 (근거화 — 실사례)
+  positional_pain_worse_supine: 누우면 악화·앉으면 완화
+  sharp_pain: 날카로운 통증
+  recent_viral_illness: 최근 바이러스 감염력
+  pericardial_friction_rub: 심막마찰음
+  pericardial_effusion_tamponade: 심막삼출·심장눌림증(응급)
+  ask_positional_pleuritic: 자세·호흡 연관 묻기
+  ask_recent_infection: 최근 감염력 묻기
+  exam_auscultation_rub: 심막마찰음 청진
+  explain_ecg_purpose: 심전도 목적 설명
+  # GERD
+  retrosternal_burning: 흉골 뒤 작열감
+  relation_to_meals_or_lying_down: 식후/눕기와 연관
+  acid_regurgitation: 산 역류
+  relieved_by_antacid: 제산제로 완화
+  no_exertional_relation: 운동과 무관
+  dysphagia: 연하곤란
+  weight_loss: 체중감소
+  gi_bleeding: 위장관 출혈
+  ask_relation_to_meals: 식사 연관 묻기
+  ask_regurgitation: 역류 묻기
+  ask_antacid_response: 제산제 반응 묻기
+  ask_alarm_features: 경고증상 묻기
+  # 근골격계 흉통
+  localized_pain: 국소 통증
+  reproducible_on_movement: 움직임으로 재현
+  pain_on_chest_wall_palpation: 흉벽 압통
+  worse_with_breathing_or_motion: 호흡/동작 시 악화
+  strain_history: 무리·외상 과거력
+  ask_palpation_reproducibility: 압통 재현 확인
+  ask_movement_relation: 동작 연관 묻기
+  ask_trauma_hx: 외상력 묻기
+  exam_chest_wall: 흉벽 진찰
+  # 공황/불안
+  chest_tightness: 가슴 답답함
+  palpitations: 두근거림
+  hyperventilation: 과호흡
+  paresthesia: 손발 저림
+  situational_trigger: 상황 유발
+  young_low_risk: 젊고 위험인자 적음
+  must_exclude_cardiac_first: 심장 원인 우선 배제
+  ask_anxiety_sx: 불안증상 묻기
+  ask_triggers: 유발요인 묻기
+  ask_pattern: 발작 양상 묻기
+  exclude_red_flags: red flag 배제
 
-# ── 질환 카드 (대표진단 1 + 주요 감별 4) ───────────────────────
+# ── 질환 카드 (대표 ACS + 감별 7) ─────────────────────────────
 diseases:
   - id: acute_coronary_syndrome
     role: primary
@@ -105,36 +163,91 @@ diseases:
     disclosure:
       spontaneous: [chest_pressure]
       disclose_if_asked: [radiation_to_left_arm_or_jaw, diaphoresis]
-
-  - id: gerd
-    role: differential
-    differential_of: acute_coronary_syndrome
-    required_symptoms: [retrosternal_burning, relation_to_meals_or_lying_down]
-    discriminators: [acid_regurgitation, relieved_by_antacid, no_exertional_relation]
-    red_flags: [dysphagia, weight_loss, gi_bleeding]   # alarm features
-    checklist_items: [ask_relation_to_meals, ask_regurgitation, ask_antacid_response, ask_alarm_features]
-
-  - id: musculoskeletal_chest_pain
-    role: differential
-    differential_of: acute_coronary_syndrome
-    required_symptoms: [localized_pain, reproducible_on_movement]
-    discriminators: [pain_on_chest_wall_palpation, worse_with_breathing_or_motion, strain_history]
-    red_flags: []
-    checklist_items: [ask_palpation_reproducibility, ask_movement_relation, ask_trauma_hx, exam_chest_wall]
-
-  - id: panic_anxiety
-    role: differential
-    differential_of: acute_coronary_syndrome
-    required_symptoms: [chest_tightness, palpitations]
-    discriminators: [hyperventilation, paresthesia, situational_trigger, young_low_risk]
-    red_flags: [must_exclude_cardiac_first]
-    checklist_items: [ask_anxiety_sx, ask_triggers, ask_pattern, exclude_red_flags]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      note: "표준 교과서 기준 초안 — 실사례 없음. 흉통 최우선 배제진단(교수 검증 필요)."
 
   - id: aortic_dissection
     role: differential
-    differential_of: acute_coronary_syndrome
     required_symptoms: [sudden_tearing_pain, maximal_at_onset]
     discriminators: [radiation_to_back, bp_differential_between_arms, hypertension_hx]
     red_flags: [bp_differential, neurologic_deficit, syncope, hypotension]
     checklist_items: [ask_onset_abruptness, ask_tearing_quality, ask_radiation_to_back, measure_bp_both_arms]
     tests: [ct_angiography]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      note: "표준 교과서 기준 초안 — 실사례 없음. 필수 배제(응급)."
+
+  - id: pulmonary_embolism
+    role: differential
+    required_symptoms: [pleuritic_chest_pain, dyspnea]
+    discriminators: [tachycardia, immobilization_or_dvt_risk, hemoptysis]
+    red_flags: [hypoxia_shock]
+    risk_factors: [immobilization_or_dvt_risk]
+    checklist_items: [ask_dyspnea, ask_dvt_risk, ask_leg_swelling]
+    tests: [ct_pulmonary_angiography, d_dimer]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      note: "표준 교과서 기준 초안 — 실사례 없음. 필수 배제(응급)."
+
+  - id: pneumothorax
+    role: differential
+    required_symptoms: [sudden_pleuritic_chest_pain, dyspnea]
+    discriminators: [decreased_breath_sounds, worse_with_deep_breath, tall_thin_or_copd_history]
+    red_flags: [tension_pneumothorax]
+    checklist_items: [ask_dyspnea, ask_lung_disease_history, exam_breath_sounds]
+    tests: [chest_xray]
+    education_items: [explain_cxr_purpose]
+    evidence:
+      level: real_case_direct
+      sources: [pusan_cpx_chest_pneumothorax_2023, sabiston_spencer_chest]
+      basis: "실사례(가슴통증·기흉) 진단근거=갑자기 발생·호흡곤란 동반·심호흡 시 악화·결핵/폐기종 과거력·환측 호흡음 감소. 검사=가슴 X선 우선."
+
+  - id: pericarditis
+    role: differential
+    required_symptoms: [pleuritic_chest_pain, positional_pain_worse_supine]
+    discriminators: [sharp_pain, recent_viral_illness, pericardial_friction_rub]
+    red_flags: [pericardial_effusion_tamponade]
+    checklist_items: [ask_positional_pleuritic, ask_recent_infection, exam_auscultation_rub]
+    tests: [ecg_12lead]
+    education_items: [explain_ecg_purpose]
+    evidence:
+      level: real_case_direct
+      sources: [pusan_cpx_chest_pericarditis_2022, harrison_im]
+      basis: "실사례(가슴통증·심막염) 진단근거=갑자기 발생한 통증·호흡과 자세에 따른 통증 변화. 검사=심전도 우선(심막 염증 ECG 변화 확인)."
+
+  - id: gerd
+    role: differential
+    required_symptoms: [retrosternal_burning, relation_to_meals_or_lying_down]
+    discriminators: [acid_regurgitation, relieved_by_antacid, no_exertional_relation]
+    red_flags: [dysphagia, weight_loss, gi_bleeding]
+    checklist_items: [ask_relation_to_meals, ask_regurgitation, ask_antacid_response, ask_alarm_features]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      note: "표준 교과서 기준 초안 — 흉통 station 실사례 없음(소화불량 station에 GERD 별개)."
+
+  - id: musculoskeletal_chest_pain
+    role: differential
+    required_symptoms: [localized_pain, reproducible_on_movement]
+    discriminators: [pain_on_chest_wall_palpation, worse_with_breathing_or_motion, strain_history]
+    red_flags: []
+    checklist_items: [ask_palpation_reproducibility, ask_movement_relation, ask_trauma_hx, exam_chest_wall]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      note: "표준 교과서 기준 초안 — 실사례 없음."
+
+  - id: panic_anxiety
+    role: differential
+    required_symptoms: [chest_tightness, palpitations]
+    discriminators: [hyperventilation, paresthesia, situational_trigger, young_low_risk]
+    red_flags: [must_exclude_cardiac_first]
+    checklist_items: [ask_anxiety_sx, ask_triggers, ask_pattern, exclude_red_flags]
+    evidence:
+      level: standard_textbook
+      real_case: none
+      note: "표준 교과서 기준 초안 — 실사례 없음."
