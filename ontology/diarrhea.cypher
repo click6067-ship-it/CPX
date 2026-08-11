@@ -33,7 +33,7 @@ MERGE (:Symptom {id:"outbreak_contact", label:"집단발생·주변 동일증상
 MERGE (:Symptom {id:"crampy_abdominal_pain", label:"경련성 복통"});
 MERGE (:RedFlag {id:"dehydration_signs", label:"탈수 징후(구강건조·갈증)"});
 MERGE (:RedFlag {id:"elderly_or_immunocompromised", label:"고령(≥70세)·면역저하"});
-MERGE (:RedFlag {id:"severe_dehydration_iv", label:"심한 탈수 — 정맥 수액 필요"});
+MERGE (:RedFlag {id:"severe_dehydration_iv", label:"심한 탈수(쇼크·의식저하·경구수액 실패) — 정맥 수액"});
 MERGE (:ChecklistItem {id:"ask_fever_chills", label:"발열·오한 묻기"});
 MERGE (:ChecklistItem {id:"ask_thirst_dehydration", label:"갈증·탈수 묻기"});
 MERGE (:ChecklistItem {id:"exam_dehydration_tongue", label:"탈수 평가(혀·구강)"});
@@ -66,6 +66,7 @@ MERGE (:Symptom {id:"minimal_or_no_fever", label:"발열 없거나 미미"});
 MERGE (:DiseaseDifferential {id:"preformed_toxin_food_poisoning", label:"전구성 독소 식중독(황색포도알균·B. cereus 구토독소)"});
 MERGE (:Symptom {id:"onset_within_hours_of_meal", label:"식후 수 시간(1~6h) 내 발생"});
 MERGE (:Symptom {id:"shared_meal_history", label:"같은 음식 먹은 사람 동시 발병"});
+MERGE (:RedFlag {id:"botulism_neurotoxin", label:"보툴리즘(뇌신경마비·하행성 이완마비) — 설사독소 아님"});
 MERGE (:DiseaseDifferential {id:"in_vivo_toxin_food_poisoning", label:"정착 후 독소생성 식중독(C. perfringens 등)"});
 MERGE (:Symptom {id:"onset_6_24h_after_meal", label:"식후 6~24시간 발생"});
 MERGE (:Symptom {id:"reheated_food_history", label:"다시 데우거나 오래 방치한 음식 섭취"});
@@ -78,6 +79,7 @@ MERGE (:Symptom {id:"recent_antibiotic_use", label:"최근 항생제 사용력"}
 MERGE (:Symptom {id:"healthcare_exposure", label:"입원·요양시설 노출"});
 MERGE (:RedFlag {id:"fulminant_cdi", label:"전격성 CDI(설사 없이 급성 복증·패혈증)"});
 MERGE (:RedFlag {id:"unexplained_leukocytosis", label:"설명되지 않는 백혈구증가(≥15,000/μL)"});
+MERGE (:RedFlag {id:"avoid_antimotility_inflammatory", label:"염증성 설사에서 지사제 회피"});
 MERGE (:ChecklistItem {id:"ask_antibiotic_hx", label:"최근 항생제 사용 묻기"});
 MERGE (:ChecklistItem {id:"ask_medication_hx", label:"복용 약물력 묻기"});
 MERGE (:Test {id:"cdiff_toxin_assay", label:"C. difficile 독소검사"});
@@ -264,6 +266,7 @@ MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"minimal_or_no_fever"}) 
 MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"shared_meal_history"}) MERGE (a)-[:DISCRIMINATOR]->(b);
 MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"dehydration_signs"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"severe_dehydration_iv"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"botulism_neurotoxin"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"ask_food_relation"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"preformed_toxin_food_poisoning"}), (b {id:"ask_fever_chills"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -312,6 +315,7 @@ MATCH (a {id:"cdi_antibiotic_associated"}), (b {id:"fever_over_38_5"}) MERGE (a)
 MATCH (a {id:"cdi_antibiotic_associated"}), (b {id:"elderly_or_immunocompromised"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"cdi_antibiotic_associated"}), (b {id:"fulminant_cdi"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"cdi_antibiotic_associated"}), (b {id:"unexplained_leukocytosis"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"cdi_antibiotic_associated"}), (b {id:"avoid_antimotility_inflammatory"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"cdi_antibiotic_associated"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"cdi_antibiotic_associated"}), (b {id:"ask_antibiotic_hx"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"cdi_antibiotic_associated"}), (b {id:"ask_medication_hx"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -330,6 +334,7 @@ MATCH (a {id:"ulcerative_colitis"}), (b {id:"overtly_bloody_stool"}) MERGE (a)-[
 MATCH (a {id:"ulcerative_colitis"}), (b {id:"toxic_megacolon"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"ulcerative_colitis"}), (b {id:"bowel_obstruction_sign"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"ulcerative_colitis"}), (b {id:"severe_uc_activity"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"ulcerative_colitis"}), (b {id:"avoid_antimotility_inflammatory"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"ulcerative_colitis"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"ulcerative_colitis"}), (b {id:"ask_blood_or_color"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"ulcerative_colitis"}), (b {id:"ask_weight_loss"}) MERGE (a)-[:CHECKLIST]->(b);
@@ -350,6 +355,7 @@ MATCH (a {id:"crohn_disease"}), (b {id:"bowel_obstruction_sign"}) MERGE (a)-[:HA
 MATCH (a {id:"crohn_disease"}), (b {id:"toxic_megacolon"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"crohn_disease"}), (b {id:"overtly_bloody_stool"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"crohn_disease"}), (b {id:"crohn_complication"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
+MATCH (a {id:"crohn_disease"}), (b {id:"avoid_antimotility_inflammatory"}) MERGE (a)-[:HAS_RED_FLAG]->(b);
 MATCH (a {id:"crohn_disease"}), (b {id:"ask_onset_duration_diarrhea"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"crohn_disease"}), (b {id:"ask_blood_or_color"}) MERGE (a)-[:CHECKLIST]->(b);
 MATCH (a {id:"crohn_disease"}), (b {id:"ask_weight_loss"}) MERGE (a)-[:CHECKLIST]->(b);

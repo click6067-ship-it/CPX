@@ -156,7 +156,9 @@ labels:
   thyroid_storm: 갑상선중독 위기(고열·섬망·경련·혼수)
   severe_uc_activity: 중증 활동성 대장염(하루 6회↑ 혈변·맥박≥90·발열·빈혈·ESR↑)
   crohn_complication: 크론 합병증(협착성 장폐색·누공·농양)
-  severe_dehydration_iv: 심한 탈수 — 정맥 수액 필요
+  severe_dehydration_iv: 심한 탈수(쇼크·의식저하·경구수액 실패) — 정맥 수액
+  botulism_neurotoxin: 보툴리즘(뇌신경마비·하행성 이완마비) — 설사독소 아님
+  avoid_antimotility_inflammatory: 염증성 설사에서 지사제 회피
   stec_antibiotic_contraindication: STEC 의심 시 항생제·지사제 금기
   elderly_or_immunocompromised: 고령(≥70세)·면역저하
   severe_pain_over_age_50: 50세 초과에서 심한 복통
@@ -322,7 +324,7 @@ diseases:
     role: differential
     required_symptoms: [acute_watery_diarrhea, onset_within_hours_of_meal]
     discriminators: [vomiting_prominent, minimal_or_no_fever, shared_meal_history]
-    red_flags: [dehydration_signs, severe_dehydration_iv]
+    red_flags: [dehydration_signs, severe_dehydration_iv, botulism_neurotoxin]
     checklist_items: [ask_onset_duration_diarrhea, ask_food_relation, ask_fever_chills, ask_thirst_dehydration, exam_dehydration_tongue]
     tests: [stool_study]
     education_items: [explain_oral_rehydration, explain_dietary_modification]
@@ -363,7 +365,7 @@ diseases:
     role: differential
     required_symptoms: [acute_watery_diarrhea]
     discriminators: [recent_antibiotic_use, crampy_abdominal_pain, healthcare_exposure, fever_present]
-    red_flags: [toxic_megacolon, fever_over_38_5, elderly_or_immunocompromised, fulminant_cdi, unexplained_leukocytosis]
+    red_flags: [toxic_megacolon, fever_over_38_5, elderly_or_immunocompromised, fulminant_cdi, unexplained_leukocytosis, avoid_antimotility_inflammatory]
     risk_factors: [recent_antibiotic_use, healthcare_exposure]
     checklist_items: [ask_onset_duration_diarrhea, ask_antibiotic_hx, ask_medication_hx, ask_fever_chills, exam_abdomen_palpation]
     tests: [cdiff_toxin_assay, stool_study, cbc_blood_test]
@@ -380,7 +382,7 @@ diseases:
     role: differential
     required_symptoms: [rectal_bleeding_tenesmus_mucus]
     discriminators: [chronic_bloody_diarrhea, abdominal_pain_with_diarrhea, extraintestinal_manifestation, young_adult_onset]
-    red_flags: [overtly_bloody_stool, toxic_megacolon, bowel_obstruction_sign, severe_uc_activity]
+    red_flags: [overtly_bloody_stool, toxic_megacolon, bowel_obstruction_sign, severe_uc_activity, avoid_antimotility_inflammatory]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_weight_loss, ask_fever_chills, ask_family_hx, exam_abdomen_palpation, exam_digital_rectal]
     tests: [colonoscopy, fecal_calprotectin, cbc_blood_test]
     education_items: [explain_test_purpose, explain_red_flag_return]
@@ -394,7 +396,7 @@ diseases:
     role: differential
     required_symptoms: [rluq_pain_recurrent]
     discriminators: [perianal_disease, extraintestinal_manifestation, weight_loss, young_adult_onset]
-    red_flags: [bowel_obstruction_sign, toxic_megacolon, overtly_bloody_stool, crohn_complication]
+    red_flags: [bowel_obstruction_sign, toxic_megacolon, overtly_bloody_stool, crohn_complication, avoid_antimotility_inflammatory]
     checklist_items: [ask_onset_duration_diarrhea, ask_blood_or_color, ask_weight_loss, ask_fever_chills, ask_family_hx, exam_abdomen_palpation, exam_digital_rectal]
     tests: [colonoscopy, fecal_calprotectin, cbc_blood_test]
     education_items: [explain_test_purpose, explain_red_flag_return]

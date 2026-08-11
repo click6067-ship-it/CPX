@@ -363,6 +363,42 @@ def all_items(d: dict) -> list:
     return d.get("findings", []) + d.get("conditions", []) + d.get("참고항목", [])
 
 
+def structural_warnings(data: dict) -> list[str]:
+    """렌더는 통과하지만 표를 **모순되게** 만드는 것들.
+
+    2026-08-11 실제로 터진 것들만 검사한다 —
+      ① 같은 인용이 한 카드에 두 번(수정 스크립트가 한쪽만 고쳐 role이 갈린다. 실제 발생)
+      ② `required_없음_사유`를 써 놓고 required가 남아 있음
+      ③ `해당없음`으로 선언한 축에 소견이 존재
+      ④ required가 없는데 사유도 없음
+    """
+    warn = []
+    for d in data["질환목록"]:
+        nm = d["질환"]
+        fs, cs = d.get("findings", []), d.get("conditions", [])
+        # ⚠️ 중복 판정은 **같은 축 안에서만.** 한 문장이 증상과 노출을 함께 담는 일은 흔해서
+        #    (예: "Campylobacter 설사·혈변… 가금류 접촉") 소견과 배경조건이 같은 인용을 쓰는 건 정상이다.
+        #    (2026-08-11: 축을 안 가리고 지웠다가 배경조건 6건을 잃고 복구했다.)
+        for axis, items in (("발현소견", fs), ("배경조건", cs)):
+            seen: dict[str, str] = {}
+            for it in items:
+                q = it["reference"].get("quote", "")
+                if q in seen:
+                    warn.append(f"{nm}: {axis} 안에서 같은 인용이 중복 — [{seen[q]}] / [{it.get('role')}] "
+                                f"❝{q[:45]}…❞")
+                seen[q] = it.get("role", "")
+        reqs = [x for x in fs + cs if x.get("role") == "required"]
+        if d.get("required_없음_사유") and reqs:
+            warn.append(f"{nm}: 'required 없음' 사유를 명시했는데 required {len(reqs)}건이 남아 있음")
+        if not reqs and not d.get("required_없음_사유"):
+            warn.append(f"{nm}: required가 없는데 사유도 없음")
+        na = {x.get("feature") for x in d.get("해당없음", [])}
+        clash = na & {x.get("feature") for x in fs}
+        if clash:
+            warn.append(f"{nm}: '해당없음'으로 선언한 축에 소견이 있음 — {sorted(clash)}")
+    return warn
+
+
 def main():
     src = Path(sys.argv[1])
     snap = "--snap" in sys.argv          # 인용을 문장 경계까지 넓혀 저장(1회성 정비)
@@ -396,6 +432,10 @@ def main():
         for it in all_items(d):
             if not it["_quote_verified"]:
                 print(f"  ✗ {d['질환']} | {it.get('name') or it.get('value')} | {it['_quote_note']}")
+    if (warn := structural_warnings(data)):
+        print(f"\n⚠ 구조 경고 {len(warn)}건 (인용 대조는 통과하지만 표가 모순된다)")
+        for w in warn:
+            print(f"  ⚠ {w}")
 
 
 if __name__ == "__main__":
