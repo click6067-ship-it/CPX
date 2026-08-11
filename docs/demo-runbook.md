@@ -58,18 +58,33 @@ PYTHONPATH=src .venv/bin/python demo_ontology_case.py \
 
 ---
 
-## 시연 3 — 설사·변비 온톨로지로 실제 생성 (**API 키 필요**)
+## 시연 3 — 설사·변비 온톨로지로 생성한 사례 (**이미 생성·캐시됨**)
+
+2026-08-12에 **3건을 실제로 생성해 캐시**해 뒀다. 키 없이 바로 열린다.
 
 ```bash
-set -a; source ~/.secrets/api-keys.env; set +a     # 사용자가 직접 실행
-PYTHONPATH=src .venv/bin/python demo_ontology_case.py \
-  --ontology ontology/diarrhea.yaml --disease ibs_diarrhea --generate
+PYTHONPATH=src .venv/bin/python demo_ontology_case.py --ontology ontology/diarrhea.yaml \
+  --disease ibs_diarrhea --case data/working/demo/diarrhea_ibs_diarrhea_case.json
 ```
 
-생성 → 자동 검증 → HTML까지 한 번에 나온다. 다른 질환은 `--list`의 id를 쓰면 된다.
-변비는 `--ontology ontology/constipation.yaml`.
+| 사례 | 모델 | 필수증상 | 위험징후 | 감별단서 | 공개규칙 | 종합 |
+|---|---|---|---|---|---|---|
+| 과민성대장증후군(설사형) | gemini-2.5-flash | **100%** | **100%** | 60% | ❌ 실패 | 실패 |
+| 항생제연관 설사(C. difficile) | gpt-4.1-mini | **100%** | 17% | **100%** | 건너뜀 | 검토필요 |
+| 기능성 변비 | gpt-4.1-mini | **100%** | 50% | 60% | ❌ 실패 | 실패 |
 
-**이걸 한 번 돌려 두면** 시연 1을 설사로도 할 수 있다(생성본 vs 기존 사례).
+**보여줄 지점 — 실패가 나오는 것이 이 시스템의 요점이다.**
+공개규칙 실패는 환자가 **묻기도 전에 "스트레스"를 먼저 말해버린 것**을 검증기가 잡은 결과다.
+카드의 `disclosure` 규칙이 "물어봐야만 답한다"를 요구하는데 생성이 그걸 어겼다.
+사람이 읽어서는 놓치는 종류이고, **규칙 기반이라 매번 같은 자리에서 잡힌다.**
+
+새로 만들려면:
+```bash
+set -a; source ~/.secrets/api-keys.env; set +a
+PYTHONPATH=src .venv/bin/python demo_ontology_case.py \
+  --ontology ontology/diarrhea.yaml --disease ibs_diarrhea --generate --regenerate
+# 모델 교체: --model gpt-4.1-mini  (Gemini 무료 티어는 하루 20회 제한)
+```
 
 ---
 
@@ -92,6 +107,8 @@ PYTHONPATH=src .venv/bin/python demo_ontology_case.py --ontology ontology/diarrh
 ```
 
 세 개가 모두 통과하면 시연 준비 완료다.
+
+> 캐시된 생성 사례는 `data/working/demo/*_case.json`. 키 없이도 `--case` 로 전부 재현된다.
 
 ---
 

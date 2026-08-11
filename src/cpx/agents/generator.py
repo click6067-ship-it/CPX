@@ -56,7 +56,7 @@ def _draft(symptom: str, diagnosis: str, model: str | None = None, ontology=None
 - patient: 주증상 서술 + 생각/걱정/기대/배경을 구체적으로, **환자 구어체**
 - present_illness: 시간순 현병력(평소→며칠전→오늘)
 - 가족력·사회력·(여성이면)산부인과력·과거력
-- checklist: '의사질문-환자답변' 쌍을 **20개 이상**, domain별(병력청취/신체진찰/환자교육/환자의사관계).
+- checklist: '의사질문-환자답변' 쌍을 **20~28개**(이 범위를 넘기지 말 것), domain별(병력청취/신체진찰/환자교육/환자의사관계).
   각 항목 scoring_rule(관찰가능·행동위주) + keywords(동의어 3~6, v0 채점용).
 자가검토: 연령-성별-과거력-진단이 임상적으로 일관. 비현실 정보·지어낸 수치 금지."""
     return llm.complete_json(prompt, CpxCase, model=model)

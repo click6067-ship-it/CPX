@@ -276,6 +276,7 @@ def main() -> int:
     ap.add_argument("--compare", nargs=2, metavar=("BASELINE","SCAFFOLDED"),
                     help="온톨로지 제약 유무 두 사례를 나란히 검증(핵심 시연)")
     ap.add_argument("--model", default=os.environ.get("GEN_MODEL", "gemini-2.5-flash"))
+    ap.add_argument("--regenerate", action="store_true", help="캐시 무시하고 새로 생성")
     ap.add_argument("--list", action="store_true", help="이 온톨로지의 질환 목록만 출력")
     a = ap.parse_args()
 
@@ -327,12 +328,22 @@ def main() -> int:
                   f"(키 없이 볼 수 있는 것: --list · --case · --compare)")
             return 2
         from cpx.agents import generator
-        print(f"① 생성 중 — {symptom_ko} / {label} (model={a.model}) …")
-        case, log = generator.generate(symptom_ko, label, model=a.model, rounds=1,
-                                       clinical=True, ontology=(card, labels))
-        for l in log:
-            print("   ", l)
-        mode = f"LLM 생성 ({a.model})"
+        OUT.mkdir(parents=True, exist_ok=True)
+        cache = OUT / f"{symptom}_{card['id']}_case.json"
+        if cache.exists() and not a.regenerate:
+            case = CpxCase(**json.loads(cache.read_text(encoding="utf-8")))
+            print(f"① 캐시 재사용 — {cache.name} (새로 만들려면 --regenerate)")
+            mode = f"LLM 생성(캐시) — {a.model}"
+        else:
+            print(f"① 생성 중 — {symptom_ko} / {label} (model={a.model}) …")
+            case, log = generator.generate(symptom_ko, label, model=a.model, rounds=1,
+                                           clinical=True, ontology=(card, labels))
+            for l in log:
+                print("   ", l)
+            cache.write_text(case.model_dump_json(indent=2), encoding="utf-8")
+            (OUT / f"{symptom}_{card['id']}_genlog.txt").write_text("\n".join(log), encoding="utf-8")
+            print(f"   캐시 저장 → {cache.name}")
+            mode = f"LLM 생성 ({a.model})"
     else:
         src = a.case or f"data/cases/{symptom}_kim.json"
         if not Path(src).exists():

@@ -38,6 +38,8 @@ load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 DEFAULT_MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest")
 EMBED_MODEL = os.environ.get("EMBED_MODEL", "gemini-embedding-001")
 MAX_TOK = int(os.environ.get("MAX_TOKENS", "8192"))
+# Gemini 구조화 출력 상한. 기본 16k — CpxCase(체크리스트 20~28항목)가 대략 5~8k 토큰이라 여유 2배.
+GEMINI_MAX_OUT = int(os.environ.get("GEMINI_MAX_OUT", "16384"))
 
 
 def _provider(model: str) -> str:
@@ -99,10 +101,21 @@ def complete_json(prompt: str, schema, *, model: str | None = None, temperature:
     model = model or DEFAULT_MODEL
     p = _provider(model)
     if p == "gemini":
-        return _retry(lambda: _gemini().models.generate_content(
+        r = _retry(lambda: _gemini().models.generate_content(
             model=model, contents=prompt,
             config={"temperature": temperature, "response_mime_type": "application/json",
-                    "response_schema": schema})).parsed
+                    "response_schema": schema, "max_output_tokens": GEMINI_MAX_OUT}))
+        if r.parsed is None:
+            # ⚠️ 조용히 None 을 흘리면 호출부에서 AttributeError 로 터져 원인이 안 보인다.
+            #    실제로 그렇게 죽었다(2026-08-12): 상한 없는 "checklist 20개 이상" 지시로 모델이
+            #    폭주 → 출력 59,780 토큰 → MAX_TOKENS 로 잘린 JSON → parsed=None → downstream 폭발.
+            fr = getattr(r.candidates[0], "finish_reason", "?") if r.candidates else "?"
+            out = getattr(r.usage_metadata, "candidates_token_count", "?") if r.usage_metadata else "?"
+            raise RuntimeError(
+                f"gemini 구조화 출력 파싱 실패 (finish_reason={fr}, 출력토큰={out}). "
+                f"MAX_TOKENS 면 프롬프트에서 리스트 길이에 **상한**을 주거나 "
+                f"GEMINI_MAX_OUT 환경변수를 올릴 것.")
+        return r.parsed
     if p == "openai":
         r = _retry(lambda: _openai().beta.chat.completions.parse(
             model=model, messages=[{"role": "user", "content": prompt}],
